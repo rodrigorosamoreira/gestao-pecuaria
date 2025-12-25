@@ -5,7 +5,6 @@ import Login from './components/Login';
 import Dashboard from './components/Dashboard';
 import AnimalManager from './components/AnimalManager';
 import FinanceManager from './components/FinanceManager';
-import AiAdvisor from './components/AiAdvisor';
 import InventoryManager from './components/InventoryManager';
 import LotManager from './components/LotManager';
 import ToolsCalculator from './components/ToolsCalculator';
@@ -13,7 +12,6 @@ import HealthManager from './components/HealthManager';
 import TaskManager from './components/TaskManager';
 import { 
   Animal, 
-  AnimalGender, 
   AnimalStatus, 
   Transaction, 
   TransactionType, 
@@ -29,7 +27,6 @@ const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [currentView, setCurrentView] = useState('dashboard');
   
-  // App State - Inicializado vazio conforme solicitado
   const [animals, setAnimals] = useState<Animal[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
@@ -38,7 +35,6 @@ const App: React.FC = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [globalDailyCost, setGlobalDailyCost] = useState<number>(0);
 
-  // Load User from Session
   useEffect(() => {
     const savedUser = localStorage.getItem('agro_session');
     if (savedUser) {
@@ -46,7 +42,6 @@ const App: React.FC = () => {
     }
   }, []);
 
-  // Load/Save Logic per User
   useEffect(() => {
     if (user) {
       const dataKey = `agro_data_${user.id}`;
@@ -62,7 +57,6 @@ const App: React.FC = () => {
         setTasks(parsed.tasks || []);
         setGlobalDailyCost(parsed.globalDailyCost || 0);
       } else {
-        // Garantir que novos usuários comecem sem animais cadastrados
         setAnimals([]);
         setTransactions([]);
         setInventory([]);
@@ -74,7 +68,6 @@ const App: React.FC = () => {
     }
   }, [user]);
 
-  // Persist Changes
   useEffect(() => {
     if (user) {
       const dataKey = `agro_data_${user.id}`;
@@ -106,9 +99,7 @@ const App: React.FC = () => {
   const handleUpdateAnimal = (updatedAnimal: Animal) => setAnimals(prev => prev.map(a => a.id === updatedAnimal.id ? updatedAnimal : a));
   
   const handleDeleteAnimal = (id: string) => {
-    // Remove o animal
     setAnimals(prev => prev.filter(a => a.id !== id));
-    // Remove dados vinculados (Saúde)
     setHealthRecords(prev => prev.filter(r => r.animalId !== id));
   };
 
@@ -154,8 +145,6 @@ const App: React.FC = () => {
         return <FinanceManager transactions={transactions} onAddTransaction={t => setTransactions(prev => [...prev, t])} />;
       case 'tools':
         return <ToolsCalculator onSaveDailyCost={(c, l) => l ? setLots(prev => prev.map(item => item.id === l ? { ...item, dailyCost: c } : item)) : setGlobalDailyCost(c)} lots={lots} />;
-      case 'ai-advisor':
-        return <AiAdvisor animals={animals} transactions={transactions} />;
       default:
         return <Dashboard animals={animals} transactions={transactions} inventory={inventory} healthRecords={healthRecords} onChangeView={setCurrentView} />;
     }

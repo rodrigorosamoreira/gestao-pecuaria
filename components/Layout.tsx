@@ -4,7 +4,6 @@ import {
   LayoutDashboard, 
   Beef, 
   Wallet, 
-  BrainCircuit, 
   Menu, 
   X,
   LogOut,
@@ -22,7 +21,7 @@ import {
 import { User, Animal, InventoryItem, HealthRecord, HealthSeverity, Task } from '../types';
 
 interface LayoutProps {
-  children: React.ReactNode;
+  children: React.InnerNode;
   currentView: string;
   onChangeView: (view: string) => void;
   onLogout: () => void;
@@ -47,13 +46,11 @@ const Layout: React.FC<LayoutProps> = ({
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
 
-  // Derivando notificações
   const getNotifications = () => {
     const today = new Date();
     today.setHours(0,0,0,0);
 
     const notices = [
-      // 1. Tarefas Próximas ou Atrasadas
       ...tasks
         .filter(t => t.status === 'Pendente' && new Date(t.dueDate) <= today)
         .map(t => {
@@ -66,7 +63,6 @@ const Layout: React.FC<LayoutProps> = ({
             view: 'tasks'
           };
         }),
-      // 2. Saúde Crítica
       ...healthRecords
         .filter(r => r.status === 'Em Tratamento' && r.severity === HealthSeverity.CRITICAL)
         .map(r => ({
@@ -76,7 +72,6 @@ const Layout: React.FC<LayoutProps> = ({
           type: 'error' as const,
           view: 'health'
         })),
-      // 3. Estoque Baixo
       ...inventory
         .filter(i => i.quantity <= i.minQuantity)
         .map(i => ({
@@ -101,7 +96,6 @@ const Layout: React.FC<LayoutProps> = ({
     { id: 'inventory', label: 'Estoque / Insumos', icon: <Warehouse size={20} /> },
     { id: 'finance', label: 'Financeiro', icon: <Wallet size={20} /> },
     { id: 'tools', label: 'Ferramentas', icon: <Calculator size={20} /> },
-    { id: 'ai-advisor', label: 'Consultor IA', icon: <BrainCircuit size={20} /> },
   ];
 
   const toggleSidebar = () => setSidebarOpen(!isSidebarOpen);
@@ -221,9 +215,7 @@ const Layout: React.FC<LayoutProps> = ({
                                 n.type === 'warning' ? 'bg-orange-50 text-orange-600' :
                                 'bg-blue-50 text-blue-600'
                               }`}>
-                                {n.type === 'error' ? <AlertTriangle size={18} /> : 
-                                 n.type === 'warning' ? <AlertTriangle size={18} /> : 
-                                 <Info size={18} />}
+                                <AlertTriangle size={18} />
                               </div>
                               <div>
                                 <p className="text-sm font-bold text-gray-800 leading-tight">{n.title}</p>
