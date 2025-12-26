@@ -16,7 +16,9 @@ import {
   Info,
   CheckCircle2,
   CheckSquare,
-  Instagram
+  Instagram,
+  DollarSign,
+  Zap
 } from 'lucide-react';
 import { User, Animal, InventoryItem, HealthRecord, HealthSeverity, Task } from '../types';
 
@@ -95,7 +97,9 @@ const Layout: React.FC<LayoutProps> = ({
     { id: 'lots', label: 'Gestão de Lotes', icon: <Layers size={20} /> },
     { id: 'inventory', label: 'Estoque / Insumos', icon: <Warehouse size={20} /> },
     { id: 'finance', label: 'Financeiro', icon: <Wallet size={20} /> },
-    { id: 'tools', label: 'Ferramentas', icon: <Calculator size={20} /> },
+    { id: 'valor_diario', label: 'Valor Diário', icon: <DollarSign size={20} /> },
+    { id: 'suplementacao', label: 'Suplementação', icon: <Zap size={20} /> },
+    { id: 'tools', label: 'Simulador', icon: <Calculator size={20} /> },
   ];
 
   const toggleSidebar = () => setSidebarOpen(!isSidebarOpen);

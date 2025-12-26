@@ -144,7 +144,11 @@ const App: React.FC = () => {
       case 'finance':
         return <FinanceManager transactions={transactions} onAddTransaction={t => setTransactions(prev => [...prev, t])} />;
       case 'tools':
-        return <ToolsCalculator onSaveDailyCost={(c, l) => l ? setLots(prev => prev.map(item => item.id === l ? { ...item, dailyCost: c } : item)) : setGlobalDailyCost(c)} lots={lots} />;
+        return <ToolsCalculator initialTab="prediction" onSaveDailyCost={(c, l) => l ? setLots(prev => prev.map(item => item.id === l ? { ...item, dailyCost: c } : item)) : setGlobalDailyCost(c)} lots={lots} />;
+      case 'valor_diario':
+        return <ToolsCalculator initialTab="daily_value" onSaveDailyCost={(c, l) => l ? setLots(prev => prev.map(item => item.id === l ? { ...item, dailyCost: c } : item)) : setGlobalDailyCost(c)} lots={lots} />;
+      case 'suplementacao':
+        return <ToolsCalculator initialTab="diet" onSaveDailyCost={(c, l) => l ? setLots(prev => prev.map(item => item.id === l ? { ...item, dailyCost: c } : item)) : setGlobalDailyCost(c)} lots={lots} />;
       default:
         return <Dashboard animals={animals} transactions={transactions} inventory={inventory} healthRecords={healthRecords} onChangeView={setCurrentView} />;
     }
