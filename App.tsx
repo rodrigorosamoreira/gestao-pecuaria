@@ -95,7 +95,23 @@ const App: React.FC = () => {
     setCurrentView('dashboard');
   };
 
-  const handleAddAnimal = (newAnimal: Animal) => setAnimals(prev => [...prev, newAnimal]);
+  const handleAddAnimal = (newAnimal: Animal) => {
+    setAnimals(prev => [...prev, newAnimal]);
+    
+    // Vínculo Financeiro: Registro de Despesa de Compra
+    if (newAnimal.purchaseValue && newAnimal.purchaseValue > 0) {
+      const buyTransaction: Transaction = {
+        id: `buy-${Date.now()}`,
+        date: newAnimal.entryDate || new Date().toISOString().split('T')[0],
+        description: `Compra Animal: ${newAnimal.earTag} (${newAnimal.breed})`,
+        amount: newAnimal.purchaseValue,
+        type: TransactionType.EXPENSE,
+        category: 'Compra de Animais'
+      };
+      setTransactions(prev => [...prev, buyTransaction]);
+    }
+  };
+
   const handleUpdateAnimal = (updatedAnimal: Animal) => setAnimals(prev => prev.map(a => a.id === updatedAnimal.id ? updatedAnimal : a));
   
   const handleDeleteAnimal = (id: string) => {
@@ -106,23 +122,75 @@ const App: React.FC = () => {
   const handleSellAnimal = (id: string, date: string, value: number, finalWeight: number) => {
       const animal = animals.find(a => a.id === id);
       if (!animal) return;
+      
       const lot = lots.find(l => l.id === animal.lotId);
       const dailyCost = lot?.dailyCost || globalDailyCost;
       const entryDate = animal.entryDate ? new Date(animal.entryDate) : new Date();
       const saleDate = new Date(date);
+      
       entryDate.setUTCHours(0,0,0,0);
       saleDate.setUTCHours(0,0,0,0);
+      
       const days = Math.max(0, Math.ceil((saleDate.getTime() - entryDate.getTime()) / (1000 * 3600 * 24)));
-      const prodCost = days * dailyCost;
-      const profit = value - (animal.purchaseValue || 0) - prodCost;
+      const totalMaintenanceCost = days * dailyCost;
+      const purchaseVal = animal.purchaseValue || 0;
+      const netProfit = value - purchaseVal - totalMaintenanceCost;
 
       setAnimals(prev => prev.map(a => a.id === id ? { ...a, status: AnimalStatus.SOLD, weightKg: finalWeight } : a));
-      const desc = `Venda: ${animal.earTag} | Bruto: R$ ${value.toLocaleString()} | Lucro Liq Est: R$ ${profit.toLocaleString()}`;
-      setTransactions(prev => [...prev, { id: Date.now().toString(), date, description: desc, amount: value, type: TransactionType.INCOME, category: 'Vendas' }]);
+      
+      const newTransactions: Transaction[] = [];
+      
+      // 1. Registro da Receita de Venda
+      newTransactions.push({ 
+        id: `sale-in-${Date.now()}`, 
+        date, 
+        description: `Venda Animal: ${animal.earTag} | Lucro Liq Est: R$ ${netProfit.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`, 
+        amount: value, 
+        type: TransactionType.INCOME, 
+        category: 'Vendas' 
+      });
+
+      // 2. Registro do Custo de Manutenção/Estadia (Despesa acumulada que se concretiza na saída)
+      if (totalMaintenanceCost > 0) {
+        newTransactions.push({
+          id: `maint-ex-${Date.now()}`,
+          date,
+          description: `Custo Estadia: ${animal.earTag} (${days} dias x R$ ${dailyCost.toFixed(2)})`,
+          amount: totalMaintenanceCost,
+          type: TransactionType.EXPENSE,
+          category: 'Custo de Produção'
+        });
+      }
+
+      setTransactions(prev => [...prev, ...newTransactions]);
   };
 
   const handleAnimalDeath = (id: string, date: string, cause: string) => {
+    const animal = animals.find(a => a.id === id);
+    if (!animal) return;
+
     setAnimals(prev => prev.map(a => a.id === id ? { ...a, status: AnimalStatus.DEAD, deathDate: date, deathCause: cause } : a));
+
+    // Opcional: Registrar a perda como prejuízo no financeiro (valor de compra + estadia até o óbito)
+    const lot = lots.find(l => l.id === animal.lotId);
+    const dailyCost = lot?.dailyCost || globalDailyCost;
+    const entryDate = animal.entryDate ? new Date(animal.entryDate) : new Date();
+    const deathD = new Date(date);
+    entryDate.setUTCHours(0,0,0,0);
+    deathD.setUTCHours(0,0,0,0);
+    const days = Math.max(0, Math.ceil((deathD.getTime() - entryDate.getTime()) / (1000 * 3600 * 24)));
+    const totalMaintenanceCost = days * dailyCost;
+
+    if (totalMaintenanceCost > 0) {
+      setTransactions(prev => [...prev, {
+        id: `death-loss-${Date.now()}`,
+        date,
+        description: `Perda (Óbito): ${animal.earTag} | Estadia acumulada até morte`,
+        amount: totalMaintenanceCost,
+        type: TransactionType.EXPENSE,
+        category: 'Perdas/Mortalidade'
+      }]);
+    }
   };
 
   if (!user) return <Login onLogin={handleLogin} />;
@@ -140,7 +208,24 @@ const App: React.FC = () => {
       case 'lots':
         return <LotManager lots={lots} animals={animals} onAddLot={l => setLots(prev => [...prev, l])} onUpdateLot={l => setLots(prev => prev.map(lot => lot.id === l.id ? l : lot))} />;
       case 'inventory':
-        return <InventoryManager inventory={inventory} onAddStock={i => setInventory(prev => [...prev, i])} onUpdateStock={i => setInventory(prev => prev.map(item => item.id === i.id ? i : item))} />;
+        return <InventoryManager 
+          inventory={inventory} 
+          onAddStock={i => {
+            setInventory(prev => [...prev, i]);
+            // Vínculo Financeiro: Registro de Despesa de Insumo
+            if (i.unitCost * i.quantity > 0) {
+              setTransactions(prev => [...prev, {
+                id: `stock-buy-${Date.now()}`,
+                date: new Date().toISOString().split('T')[0],
+                description: `Compra Insumo: ${i.name} (${i.quantity} ${i.unit})`,
+                amount: i.unitCost * i.quantity,
+                type: TransactionType.EXPENSE,
+                category: 'Insumos'
+              }]);
+            }
+          }} 
+          onUpdateStock={i => setInventory(prev => prev.map(item => item.id === i.id ? i : item))} 
+        />;
       case 'finance':
         return <FinanceManager transactions={transactions} onAddTransaction={t => setTransactions(prev => [...prev, t])} />;
       case 'tools':
