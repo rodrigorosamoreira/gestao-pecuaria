@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 import Layout from './components/Layout';
 import Login from './components/Login';
 import Dashboard from './components/Dashboard';
@@ -251,6 +252,7 @@ const App: React.FC = () => {
       tasks={tasks}
     >
       {renderContent()}
+      <SpeedInsights />
     </Layout>
   );
 };
