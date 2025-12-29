@@ -98,13 +98,29 @@ const App: React.FC = () => {
   const handleAddAnimal = (newAnimal: Animal) => {
     setAnimals(prev => [...prev, newAnimal]);
     
-    // Vínculo Financeiro: Registro de Despesa de Compra
     if (newAnimal.purchaseValue && newAnimal.purchaseValue > 0) {
       const buyTransaction: Transaction = {
         id: `buy-${Date.now()}`,
         date: newAnimal.entryDate || new Date().toISOString().split('T')[0],
         description: `Compra Animal: ${newAnimal.earTag} (${newAnimal.breed})`,
         amount: newAnimal.purchaseValue,
+        type: TransactionType.EXPENSE,
+        category: 'Compra de Animais'
+      };
+      setTransactions(prev => [...prev, buyTransaction]);
+    }
+  };
+
+  const handleAddBatch = (newAnimals: Animal[], totalCost: number) => {
+    setAnimals(prev => [...prev, ...newAnimals]);
+    
+    if (totalCost > 0) {
+      const first = newAnimals[0];
+      const buyTransaction: Transaction = {
+        id: `batch-buy-${Date.now()}`,
+        date: first.entryDate || new Date().toISOString().split('T')[0],
+        description: `Compra Carga: ${newAnimals.length} animais (Peso Médio: ${first.weightKg}kg)`,
+        amount: totalCost,
         type: TransactionType.EXPENSE,
         category: 'Compra de Animais'
       };
@@ -139,8 +155,6 @@ const App: React.FC = () => {
       setAnimals(prev => prev.map(a => a.id === id ? { ...a, status: AnimalStatus.SOLD, weightKg: finalWeight } : a));
       
       const newTransactions: Transaction[] = [];
-      
-      // 1. Registro da Receita de Venda
       newTransactions.push({ 
         id: `sale-in-${Date.now()}`, 
         date, 
@@ -150,7 +164,6 @@ const App: React.FC = () => {
         category: 'Vendas' 
       });
 
-      // 2. Registro do Custo de Manutenção/Estadia (Despesa acumulada que se concretiza na saída)
       if (totalMaintenanceCost > 0) {
         newTransactions.push({
           id: `maint-ex-${Date.now()}`,
@@ -165,13 +178,70 @@ const App: React.FC = () => {
       setTransactions(prev => [...prev, ...newTransactions]);
   };
 
+  const handleSellLot = (lotId: string, date: string, avgWeight: number, priceMode: 'head' | 'arroba', priceValue: number) => {
+      const lotAnimals = animals.filter(a => a.lotId === lotId && a.status === AnimalStatus.ACTIVE);
+      if (lotAnimals.length === 0) return;
+      
+      const lot = lots.find(l => l.id === lotId);
+      const dailyCost = lot?.dailyCost || globalDailyCost;
+      const saleDate = new Date(date);
+      saleDate.setUTCHours(0,0,0,0);
+      
+      let totalPurchaseVal = 0;
+      let totalStayCost = 0;
+      let totalRevenue = 0;
+      const headcount = lotAnimals.length;
+
+      // Cálculo da Receita Total do Lote
+      if (priceMode === 'head') {
+        totalRevenue = headcount * priceValue;
+      } else {
+        totalRevenue = headcount * (avgWeight / 30) * priceValue;
+      }
+      
+      lotAnimals.forEach(animal => {
+          totalPurchaseVal += (animal.purchaseValue || 0);
+          const entryDate = animal.entryDate ? new Date(animal.entryDate) : new Date();
+          entryDate.setUTCHours(0,0,0,0);
+          const days = Math.max(0, Math.ceil((saleDate.getTime() - entryDate.getTime()) / (1000 * 3600 * 24)));
+          totalStayCost += (days * dailyCost);
+      });
+      
+      const netProfit = totalRevenue - totalPurchaseVal - totalStayCost;
+
+      // Atualiza status e peso final de todos os animais do lote
+      setAnimals(prev => prev.map(a => a.lotId === lotId && a.status === AnimalStatus.ACTIVE ? { ...a, status: AnimalStatus.SOLD, weightKg: avgWeight } : a));
+      
+      const newTransactions: Transaction[] = [];
+      newTransactions.push({ 
+        id: `lot-sale-${Date.now()}`, 
+        date, 
+        description: `Venda Lote: ${lot?.name} (${headcount} cab. @ ${avgWeight}kg) | Lucro Liq: R$ ${netProfit.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`, 
+        amount: totalRevenue, 
+        type: TransactionType.INCOME, 
+        category: 'Vendas' 
+      });
+
+      if (totalStayCost > 0) {
+        newTransactions.push({
+          id: `lot-maint-${Date.now()}`,
+          date,
+          description: `Custo Estadia Acumulado Lote: ${lot?.name} (Até ${date})`,
+          amount: totalStayCost,
+          type: TransactionType.EXPENSE,
+          category: 'Custo de Produção'
+        });
+      }
+
+      setTransactions(prev => [...prev, ...newTransactions]);
+  };
+
   const handleAnimalDeath = (id: string, date: string, cause: string) => {
     const animal = animals.find(a => a.id === id);
     if (!animal) return;
 
     setAnimals(prev => prev.map(a => a.id === id ? { ...a, status: AnimalStatus.DEAD, deathDate: date, deathCause: cause } : a));
 
-    // Opcional: Registrar a perda como prejuízo no financeiro (valor de compra + estadia até o óbito)
     const lot = lots.find(l => l.id === animal.lotId);
     const dailyCost = lot?.dailyCost || globalDailyCost;
     const entryDate = animal.entryDate ? new Date(animal.entryDate) : new Date();
@@ -200,19 +270,27 @@ const App: React.FC = () => {
       case 'dashboard':
         return <Dashboard animals={animals} transactions={transactions} inventory={inventory} healthRecords={healthRecords} onChangeView={setCurrentView} />;
       case 'animals':
-        return <AnimalManager animals={animals} lots={lots} onAddAnimal={handleAddAnimal} onUpdateAnimal={handleUpdateAnimal} onDeleteAnimal={handleDeleteAnimal} onSellAnimal={handleSellAnimal} onAnimalDeath={handleAnimalDeath} savedDailyCost={globalDailyCost} />;
+        return <AnimalManager 
+          animals={animals} 
+          lots={lots} 
+          onAddAnimal={handleAddAnimal} 
+          onAddBatch={handleAddBatch}
+          onUpdateAnimal={handleUpdateAnimal} 
+          onDeleteAnimal={handleDeleteAnimal} 
+          onSellAnimal={handleSellAnimal} 
+          onAnimalDeath={handleAnimalDeath} 
+          onSellLot={handleSellLot}
+          savedDailyCost={globalDailyCost} 
+        />;
       case 'health':
         return <HealthManager animals={animals} healthRecords={healthRecords} onAddRecord={r => setHealthRecords(prev => [...prev, r])} onUpdateRecord={r => setHealthRecords(prev => prev.map(rec => rec.id === r.id ? r : rec))} />;
       case 'tasks':
         return <TaskManager tasks={tasks} onAddTask={t => setTasks(prev => [...prev, t])} onUpdateTask={t => setTasks(prev => prev.map(task => task.id === t.id ? t : task))} onDeleteTask={id => setTasks(prev => prev.filter(t => t.id !== id))} />;
       case 'lots':
-        return <LotManager lots={lots} animals={animals} onAddLot={l => setLots(prev => [...prev, l])} onUpdateLot={l => setLots(prev => prev.map(lot => lot.id === l.id ? l : lot))} />;
+        return <LotManager lots={lots} animals={animals} onAddLot={l => setLots(prev => [...prev, l])} onUpdateLot={l => setLots(prev => prev.map(lot => lot.id === l.id ? l : lot))} onSellLot={(id, date, total) => handleSellLot(id, date, 540, 'head', total / (animals.filter(a => a.lotId === id).length || 1))} />;
       case 'inventory':
-        return <InventoryManager 
-          inventory={inventory} 
-          onAddStock={i => {
+        return <InventoryManager inventory={inventory} onAddStock={i => {
             setInventory(prev => [...prev, i]);
-            // Vínculo Financeiro: Registro de Despesa de Insumo
             if (i.unitCost * i.quantity > 0) {
               setTransactions(prev => [...prev, {
                 id: `stock-buy-${Date.now()}`,
@@ -223,17 +301,13 @@ const App: React.FC = () => {
                 category: 'Insumos'
               }]);
             }
-          }} 
-          onUpdateStock={i => setInventory(prev => prev.map(item => item.id === i.id ? i : item))} 
-        />;
+          }} onUpdateStock={i => setInventory(prev => prev.map(item => item.id === i.id ? i : item))} />;
       case 'finance':
         return <FinanceManager transactions={transactions} onAddTransaction={t => setTransactions(prev => [...prev, t])} />;
       case 'tools':
-        return <ToolsCalculator initialTab="prediction" onSaveDailyCost={(c, l) => l ? setLots(prev => prev.map(item => item.id === l ? { ...item, dailyCost: c } : item)) : setGlobalDailyCost(c)} lots={lots} />;
       case 'valor_diario':
-        return <ToolsCalculator initialTab="daily_value" onSaveDailyCost={(c, l) => l ? setLots(prev => prev.map(item => item.id === l ? { ...item, dailyCost: c } : item)) : setGlobalDailyCost(c)} lots={lots} />;
       case 'suplementacao':
-        return <ToolsCalculator initialTab="diet" onSaveDailyCost={(c, l) => l ? setLots(prev => prev.map(item => item.id === l ? { ...item, dailyCost: c } : item)) : setGlobalDailyCost(c)} lots={lots} />;
+        return <ToolsCalculator initialTab={currentView === 'suplementacao' ? 'diet' : currentView === 'valor_diario' ? 'daily_value' : 'prediction'} onSaveDailyCost={(c, l) => l ? setLots(prev => prev.map(item => item.id === l ? { ...item, dailyCost: c } : item)) : setGlobalDailyCost(c)} lots={lots} />;
       default:
         return <Dashboard animals={animals} transactions={transactions} inventory={inventory} healthRecords={healthRecords} onChangeView={setCurrentView} />;
     }
