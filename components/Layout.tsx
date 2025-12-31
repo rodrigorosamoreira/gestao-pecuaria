@@ -18,12 +18,15 @@ import {
   CheckSquare,
   Instagram,
   DollarSign,
-  Zap
+  Zap,
+  ChevronDown,
+  Tractor,
+  Plus
 } from 'lucide-react';
-import { User, Animal, InventoryItem, HealthRecord, HealthSeverity, Task } from '../types';
+import { User, Animal, InventoryItem, HealthRecord, HealthSeverity, Task, Farm } from '../types';
 
 interface LayoutProps {
-  children: React.InnerNode;
+  children: React.ReactNode;
   currentView: string;
   onChangeView: (view: string) => void;
   onLogout: () => void;
@@ -32,6 +35,10 @@ interface LayoutProps {
   inventory?: InventoryItem[];
   healthRecords?: HealthRecord[];
   tasks?: Task[];
+  farms?: Farm[];
+  activeFarmId?: string | null;
+  onSelectFarm?: (id: string) => void;
+  onCreateFarm?: () => void;
 }
 
 const Layout: React.FC<LayoutProps> = ({ 
@@ -43,10 +50,17 @@ const Layout: React.FC<LayoutProps> = ({
   animals = [],
   inventory = [],
   healthRecords = [],
-  tasks = []
+  tasks = [],
+  farms = [],
+  activeFarmId = null,
+  onSelectFarm,
+  onCreateFarm
 }) => {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
+  const [isFarmMenuOpen, setIsFarmMenuOpen] = useState(false);
+
+  const activeFarm = farms.find(f => f.id === activeFarmId);
 
   const getNotifications = () => {
     const today = new Date();
@@ -117,20 +131,70 @@ const Layout: React.FC<LayoutProps> = ({
         className={`
           fixed inset-y-0 left-0 z-30 w-64 bg-green-900 text-white transform transition-transform duration-300 ease-in-out
           ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
-          lg:relative lg:translate-x-0 lg:shadow-xl
+          lg:relative lg:translate-x-0 lg:shadow-xl flex flex-col
         `}
       >
-        <div className="flex items-center justify-between p-6 border-b border-green-800">
-          <div className="flex items-center space-x-2">
-            <Beef className="text-green-400" size={32} />
-            <span className="text-xl font-bold tracking-tight">Gestão Pecuária</span>
+        <div className="p-6 border-b border-green-800 shrink-0">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center space-x-2">
+              <Beef className="text-green-400" size={32} />
+              <span className="text-xl font-bold tracking-tight">Gestão Pecuária</span>
+            </div>
+            <button onClick={toggleSidebar} className="lg:hidden text-green-200 hover:text-white">
+              <X size={24} />
+            </button>
           </div>
-          <button onClick={toggleSidebar} className="lg:hidden text-green-200 hover:text-white">
-            <X size={24} />
-          </button>
+
+          {/* Farm Switcher */}
+          <div className="relative">
+            <button 
+              onClick={() => setIsFarmMenuOpen(!isFarmMenuOpen)}
+              className="w-full bg-green-800 hover:bg-green-700 p-4 rounded-2xl flex items-center justify-between transition-all group border border-green-700"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-green-600 flex items-center justify-center text-white">
+                  <Tractor size={16} />
+                </div>
+                <div className="text-left overflow-hidden">
+                   <p className="text-[9px] font-black text-green-400 uppercase tracking-widest">Fazenda Ativa</p>
+                   <p className="text-sm font-bold truncate">{activeFarm?.name || 'Selecionar...'}</p>
+                </div>
+              </div>
+              <ChevronDown size={16} className={`text-green-400 transition-transform ${isFarmMenuOpen ? 'rotate-180' : ''}`} />
+            </button>
+
+            {isFarmMenuOpen && (
+              <>
+                <div className="fixed inset-0 z-[40]" onClick={() => setIsFarmMenuOpen(false)}></div>
+                <div className="absolute top-full left-0 w-full mt-2 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden z-[50] animate-in slide-in-from-top-2">
+                   <div className="p-2 max-h-60 overflow-y-auto">
+                      {farms.map(farm => (
+                        <button 
+                          key={farm.id}
+                          onClick={() => {
+                            onSelectFarm?.(farm.id);
+                            setIsFarmMenuOpen(false);
+                          }}
+                          className={`w-full p-4 rounded-xl text-left transition-colors flex items-center justify-between ${activeFarmId === farm.id ? 'bg-green-50 text-green-700' : 'text-gray-700 hover:bg-gray-50'}`}
+                        >
+                          <span className="font-bold text-sm truncate">{farm.name}</span>
+                          {activeFarmId === farm.id && <CheckCircle2 size={16} />}
+                        </button>
+                      ))}
+                   </div>
+                   <button 
+                    onClick={() => { onCreateFarm?.(); setIsFarmMenuOpen(false); }}
+                    className="w-full p-4 bg-gray-50 border-t border-gray-100 text-green-600 font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-green-600 hover:text-white transition-all"
+                   >
+                     <Plus size={14} /> Adicionar Fazenda
+                   </button>
+                </div>
+              </>
+            )}
+          </div>
         </div>
 
-        <nav className="mt-6 px-4 space-y-2 overflow-y-auto max-h-[calc(100vh-280px)]">
+        <nav className="flex-1 mt-6 px-4 space-y-2 overflow-y-auto custom-scrollbar">
           {navItems.map((item) => (
             <button
               key={item.id}
@@ -139,19 +203,19 @@ const Layout: React.FC<LayoutProps> = ({
                 setSidebarOpen(false);
               }}
               className={`
-                w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors
+                w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all
                 ${currentView === item.id 
                   ? 'bg-green-700 text-white shadow-md' 
                   : 'text-green-100 hover:bg-green-800 hover:text-white'}
               `}
             >
-              {item.icon}
-              <span className="font-medium text-sm">{item.label}</span>
+              <div className={currentView === item.id ? 'text-green-400' : ''}>{item.icon}</div>
+              <span className="font-bold text-sm">{item.label}</span>
             </button>
           ))}
         </nav>
 
-        <div className="absolute bottom-0 w-full p-4 border-t border-green-800 bg-green-900 space-y-2">
+        <div className="p-4 border-t border-green-800 bg-green-900 shrink-0 space-y-2">
           <a 
             href="https://instagram.com.br/vivendoapecuaria" 
             target="_blank" 
@@ -172,13 +236,15 @@ const Layout: React.FC<LayoutProps> = ({
       </aside>
 
       <div className="flex-1 flex flex-col overflow-hidden">
-        <header className="bg-white shadow-sm z-10">
+        <header className="bg-white shadow-sm z-10 border-b border-gray-100">
           <div className="flex items-center justify-between px-6 py-4">
             <button onClick={toggleSidebar} className="lg:hidden text-gray-600 hover:text-gray-900">
               <Menu size={24} />
             </button>
-            <h1 className="text-2xl font-semibold text-gray-800 hidden md:block">
+            <h1 className="text-xl font-black text-gray-800 uppercase tracking-tighter hidden md:block">
               {navItems.find(i => i.id === currentView)?.label || 'Painel'}
+              <span className="mx-3 text-gray-300 font-light">|</span>
+              <span className="text-sm font-bold text-green-600 bg-green-50 px-3 py-1 rounded-full">{activeFarm?.name}</span>
             </h1>
 
             <div className="flex items-center space-x-6">
@@ -255,7 +321,7 @@ const Layout: React.FC<LayoutProps> = ({
           </div>
         </header>
 
-        <main className="flex-1 overflow-auto p-6 bg-gray-50">
+        <main className="flex-1 overflow-auto p-6 bg-gray-50 custom-scrollbar">
           {children}
         </main>
       </div>

@@ -120,3 +120,11 @@ export interface FarmData {
   tasks: Task[];
   globalDailyCost: number;
 }
+
+export interface Farm {
+  id: string;
+  user_id: string;
+  name: string;
+  data: FarmData;
+  updated_at: string;
+}

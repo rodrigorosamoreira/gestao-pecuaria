@@ -68,17 +68,6 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
     }
   };
 
-  const handleGoogleLogin = async () => {
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-      });
-      if (error) throw error;
-    } catch (err: any) {
-      setError(err.message);
-    }
-  };
-
   return (
     <div className="min-h-screen bg-green-900 flex items-center justify-center p-4">
       <div className="bg-white w-full max-w-md rounded-3xl shadow-2xl overflow-hidden transition-all duration-500">
@@ -104,25 +93,6 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
           )}
 
           <div className="space-y-4">
-            {mode === 'login' && (
-              <>
-                <button 
-                  onClick={handleGoogleLogin}
-                  disabled={isLoading}
-                  className="w-full flex items-center justify-center gap-3 border border-gray-300 py-3 rounded-xl hover:bg-gray-50 transition-colors font-medium text-gray-700 shadow-sm disabled:opacity-50"
-                >
-                  <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-5 h-5" />
-                  Entrar com Google
-                </button>
-
-                <div className="flex items-center gap-4 my-6">
-                  <div className="h-px bg-gray-200 flex-1"></div>
-                  <span className="text-xs text-gray-400 font-bold uppercase">Ou com e-mail</span>
-                  <div className="h-px bg-gray-200 flex-1"></div>
-                </div>
-              </>
-            )}
-
             <form onSubmit={handleAuth} className="space-y-4">
               {mode === 'register' && (
                 <div className="space-y-1">
