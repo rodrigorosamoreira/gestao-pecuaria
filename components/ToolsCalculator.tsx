@@ -19,7 +19,8 @@ import {
   Info,
   ChevronRight,
   Zap,
-  Activity
+  Activity,
+  Clock
 } from 'lucide-react';
 import { Lot, AnimalStatus } from '../types';
 
@@ -244,6 +245,13 @@ const ToolsCalculator: React.FC<ToolsCalculatorProps> = ({ onSaveDailyCost, lots
                    <div className="bg-white p-5 rounded-3xl border border-emerald-200 shadow-sm">
                       <p className="text-[10px] font-black text-emerald-600 uppercase mb-1 tracking-widest">Arroba Produzida</p>
                       <p className="text-3xl font-black text-emerald-700 tracking-tighter">R$ {costPerArrobaProduced.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</p>
+                   </div>
+                   <div className="bg-white p-5 rounded-3xl border border-orange-200 shadow-sm flex items-center justify-between">
+                      <div>
+                        <p className="text-[10px] font-black text-orange-600 uppercase mb-1 tracking-widest">Tempo para +30kg (1@)</p>
+                        <p className="text-3xl font-black text-orange-700 tracking-tighter">{daysPerArroba.toFixed(1)} <span className="text-sm font-bold opacity-60">dias</span></p>
+                      </div>
+                      <div className="p-3 bg-orange-50 text-orange-500 rounded-2xl"><Clock size={24} /></div>
                    </div>
                 </div>
                 {showSaveSuccess && <div className="bg-emerald-600 text-white p-3 rounded-2xl flex items-center justify-center gap-2 animate-bounce relative z-20"><CheckCircle size={18} /> <span className="text-[10px] font-black uppercase tracking-widest">Sincronizado</span></div>}

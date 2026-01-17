@@ -24,7 +24,7 @@ import {
   Task,
   Farm
 } from './types';
-import { Database, Copy, CheckCircle, AlertTriangle, Tractor, X } from 'lucide-react';
+import { Database, Copy, CheckCircle, AlertTriangle, Tractor, X, Loader2 } from 'lucide-react';
 
 const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -33,13 +33,11 @@ const App: React.FC = () => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [dbError, setDbError] = useState<string | null>(null);
   
-  // Farm Management State
   const [farms, setFarms] = useState<Farm[]>([]);
   const [activeFarmId, setActiveFarmId] = useState<string | null>(null);
   const [isCreatingFarm, setIsCreatingFarm] = useState(false);
   const [newFarmName, setNewFarmName] = useState('');
 
-  // Active Farm Data Shorthands
   const activeFarm = farms.find(f => f.id === activeFarmId);
   const farmData = activeFarm?.data || {
     animals: [],
@@ -51,7 +49,6 @@ const App: React.FC = () => {
     globalDailyCost: 0
   };
 
-  // Auth Listener
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
@@ -84,7 +81,6 @@ const App: React.FC = () => {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Load Farms from Supabase
   useEffect(() => {
     if (user) {
       const fetchFarms = async () => {
@@ -122,7 +118,6 @@ const App: React.FC = () => {
     }
   }, [user]);
 
-  // Sync Data to Supabase
   useEffect(() => {
     if (user && isLoaded && !dbError && activeFarmId && activeFarm) {
       const syncData = async () => {
@@ -183,6 +178,46 @@ const App: React.FC = () => {
     }
   };
 
+  const handleDeleteFarm = async (id: string) => {
+    const farmToDelete = farms.find(f => f.id === id);
+    if (!farmToDelete || !user) return;
+
+    const confirmMsg = `⚠️ EXCLUIR FAZENDA: "${farmToDelete.name.toUpperCase()}"?\n\nEsta ação é IRREVERSÍVEL. Todos os dados de animais, finanças e estoque desta fazenda serão apagados para sempre.`;
+    
+    if (!window.confirm(confirmMsg)) return;
+
+    try {
+      const { error } = await supabase
+        .from('user_data')
+        .delete()
+        .eq('id', id);
+
+      if (error) {
+        console.error('Erro Supabase na exclusão:', error);
+        throw new Error(error.message);
+      }
+
+      const updatedFarms = farms.filter(f => f.id !== id);
+      setFarms(updatedFarms);
+
+      if (activeFarmId === id) {
+        if (updatedFarms.length > 0) {
+          const nextId = updatedFarms[0].id;
+          setActiveFarmId(nextId);
+          localStorage.setItem(`activeFarm_${user.id}`, nextId);
+        } else {
+          setActiveFarmId(null);
+          localStorage.removeItem(`activeFarm_${user.id}`);
+        }
+      }
+      
+      alert(`Fazenda "${farmToDelete.name}" removida com sucesso.`);
+    } catch (err: any) {
+      console.error('Falha completa na exclusão:', err);
+      alert(`ERRO AO EXCLUIR: ${err.message || 'Erro desconhecido'}`);
+    }
+  };
+
   const updateActiveFarmData = (updater: (prev: FarmData) => FarmData) => {
     if (!activeFarmId) return;
     setFarms(prev => prev.map(f => f.id === activeFarmId ? { ...f, data: updater(f.data) } : f));
@@ -200,133 +235,8 @@ const App: React.FC = () => {
     setCurrentView('dashboard');
   };
 
-  const sqlSetupScript = `
--- 1. Criar a tabela se não existir
-CREATE TABLE IF NOT EXISTS public.user_data (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_id UUID REFERENCES auth.users(id) NOT NULL,
-  name TEXT NOT NULL,
-  data JSONB DEFAULT '{
-    "animals": [],
-    "transactions": [],
-    "inventory": [],
-    "lots": [],
-    "healthRecords": [],
-    "tasks": [],
-    "globalDailyCost": 0
-  }'::jsonb,
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
-);
-
--- 2. Habilitar RLS (Row Level Security)
-ALTER TABLE public.user_data ENABLE ROW LEVEL SECURITY;
-
--- 3. Limpeza de Políticas Antigas (Evita erro 42710)
--- Este passo remove qualquer política com os nomes que usamos anteriormente
-DROP POLICY IF EXISTS "Usuários gerenciam suas próprias fazendas" ON public.user_data;
-DROP POLICY IF EXISTS "Gerenciamento total de dados próprios" ON public.user_data;
-DROP POLICY IF EXISTS "Usuários acessam apenas seus próprios dados" ON public.user_data;
-DROP POLICY IF EXISTS "Individual access" ON public.user_data;
-
--- 4. Criar a nova política definitiva
-CREATE POLICY "Usuários gerenciam suas próprias fazendas"
-  ON public.user_data
-  FOR ALL 
-  TO authenticated
-  USING (auth.uid() = user_id)
-  WITH CHECK (auth.uid() = user_id);
-
--- 5. Criar índice para performance
-CREATE INDEX IF NOT EXISTS idx_user_data_user_id ON public.user_data(user_id);
-`.trim();
-
-  if (!user) return <Login onLogin={setUser} />;
-
-  // Erro de tabela inexistente
-  if (dbError === 'missing_table') {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
-        <div className="bg-white max-w-2xl w-full rounded-[2.5rem] shadow-2xl overflow-hidden border-4 border-emerald-50 scale-in">
-          <div className="p-10 bg-emerald-600 text-white flex items-center gap-6">
-            <div className="p-4 bg-white/20 rounded-3xl"><Database size={48} /></div>
-            <div>
-              <h2 className="text-2xl font-black uppercase tracking-tight">Configurar Banco de Dados</h2>
-              <p className="text-emerald-100 font-bold uppercase text-[10px] tracking-widest mt-1">Siga os passos para ativar o sistema</p>
-            </div>
-          </div>
-          <div className="p-10 space-y-6">
-            <div className="bg-amber-50 border border-amber-100 p-6 rounded-3xl flex items-start gap-4">
-              <AlertTriangle className="text-amber-600 shrink-0" size={24} />
-              <p className="text-sm text-amber-800 font-medium leading-relaxed">
-                Você precisa executar o script SQL abaixo no <b>SQL Editor</b> do seu painel Supabase para criar a estrutura multi-fazendas.
-              </p>
-            </div>
-            <div className="relative group">
-              <button 
-                onClick={() => { navigator.clipboard.writeText(sqlSetupScript); alert('Script copiado com sucesso!'); }} 
-                className="absolute top-4 right-4 bg-emerald-600 text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase shadow-lg z-10 hover:bg-emerald-700 transition-colors"
-              >
-                Copiar SQL
-              </button>
-              <div className="bg-gray-900 rounded-3xl p-8 pt-14 overflow-hidden">
-                <pre className="text-emerald-400 font-mono text-xs overflow-x-auto leading-relaxed whitespace-pre-wrap">{sqlSetupScript}</pre>
-              </div>
-            </div>
-            <button onClick={() => window.location.reload()} className="w-full bg-emerald-600 text-white py-5 rounded-[2rem] font-black text-xs uppercase shadow-xl flex items-center justify-center gap-3 active:scale-95 transition-all">
-              <CheckCircle size={20} /> Já executei o SQL, recarregar sistema
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Tratamento visual para outros erros (Garante que dbError não renderize como [object Object])
-  if (dbError) {
-    return (
-      <div className="min-h-screen bg-red-50 flex items-center justify-center p-6 text-center">
-        <div className="bg-white p-10 rounded-[2.5rem] shadow-2xl max-w-md w-full border border-red-100 space-y-6">
-           <AlertTriangle size={64} className="text-red-600 mx-auto" />
-           <h3 className="text-xl font-black text-gray-800 uppercase tracking-tighter">Ops! Algo deu errado</h3>
-           <div className="bg-red-50 p-6 rounded-2xl text-red-700 text-xs font-mono break-all leading-relaxed">
-              {typeof dbError === 'string' ? dbError : JSON.stringify(dbError)}
-           </div>
-           <button onClick={() => window.location.reload()} className="w-full bg-red-600 text-white py-4 rounded-2xl font-black uppercase text-xs tracking-widest shadow-lg active:scale-95 transition-all">Tentar Novamente</button>
-        </div>
-      </div>
-    );
-  }
-
-  // Estado Inicial: Criar primeira fazenda
-  if (isLoaded && farms.length === 0) {
-    return (
-      <div className="min-h-screen bg-green-900 flex items-center justify-center p-6">
-        <div className="bg-white max-w-md w-full rounded-[2.5rem] shadow-2xl p-10 text-center space-y-6">
-           <div className="w-20 h-20 bg-green-100 text-green-600 rounded-3xl flex items-center justify-center mx-auto shadow-inner">
-             <Tractor size={40} />
-           </div>
-           <h2 className="text-2xl font-black text-gray-800 uppercase tracking-tight">Primeira Fazenda</h2>
-           <p className="text-gray-500 text-sm leading-relaxed">Para começar a gerir seu rebanho e finanças, dê um nome à sua primeira unidade produtiva.</p>
-           <form onSubmit={handleCreateFarm} className="space-y-4">
-              <input 
-                type="text" 
-                placeholder="Nome da sua Fazenda" 
-                className="w-full border border-gray-200 rounded-2xl px-6 py-4 font-bold outline-none focus:ring-2 focus:ring-green-500 bg-gray-50 text-center"
-                value={newFarmName}
-                onChange={e => setNewFarmName(e.target.value)}
-                required
-              />
-              <button type="submit" className="w-full bg-green-600 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl active:scale-95 transition-all">Começar Gestão</button>
-           </form>
-           <button onClick={handleLogout} className="text-[10px] font-black text-gray-400 hover:text-red-500 uppercase tracking-widest">Sair da Conta</button>
-        </div>
-      </div>
-    );
-  }
-
   const renderContent = () => {
     if (!activeFarm) return null;
-
     switch (currentView) {
       case 'dashboard': return <Dashboard animals={farmData.animals} transactions={farmData.transactions} inventory={farmData.inventory} healthRecords={farmData.healthRecords} onChangeView={setCurrentView} />;
       case 'animals': return (
@@ -386,6 +296,8 @@ CREATE INDEX IF NOT EXISTS idx_user_data_user_id ON public.user_data(user_id);
     }
   };
 
+  if (!user) return <Login onLogin={setUser} />;
+
   return (
     <Layout 
       currentView={currentView} 
@@ -399,6 +311,7 @@ CREATE INDEX IF NOT EXISTS idx_user_data_user_id ON public.user_data(user_id);
       farms={farms}
       activeFarmId={activeFarmId}
       onSelectFarm={handleSelectFarm}
+      onDeleteFarm={handleDeleteFarm}
       onCreateFarm={() => setIsCreatingFarm(true)}
     >
       {isSyncing && <div className="fixed bottom-4 right-4 bg-emerald-600 text-white text-[10px] font-black px-4 py-2 rounded-full shadow-lg z-50 animate-pulse">Sincronizando...</div>}
@@ -406,24 +319,17 @@ CREATE INDEX IF NOT EXISTS idx_user_data_user_id ON public.user_data(user_id);
       
       {isCreatingFarm && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-           <div className="bg-white w-full max-w-md rounded-[2.5rem] p-10 shadow-2xl space-y-6 animate-in zoom-in">
-              <div className="flex justify-between items-center">
-                 <h3 className="text-xl font-black text-gray-800 uppercase tracking-tight">Nova Fazenda</h3>
-                 <button onClick={() => setIsCreatingFarm(false)} className="hover:bg-gray-100 p-2 rounded-full transition-colors"><X /></button>
+           <div className="bg-white w-full max-w-md rounded-[2.5rem] p-10 shadow-2xl space-y-6 animate-in zoom-in duration-300">
+              <div className="flex justify-between items-center border-b border-gray-50 pb-4">
+                 <h3 className="text-xl font-black text-gray-800 uppercase tracking-tight">Nova Unidade</h3>
+                 <button onClick={() => setIsCreatingFarm(false)} className="p-2 hover:bg-gray-100 rounded-full"><X /></button>
               </div>
               <form onSubmit={handleCreateFarm} className="space-y-4">
                  <div className="space-y-1">
                     <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Nome da Fazenda</label>
-                    <input 
-                      type="text" 
-                      className="w-full border border-gray-100 rounded-2xl px-6 py-4 font-bold bg-gray-50 focus:bg-white outline-none transition-all"
-                      value={newFarmName}
-                      onChange={e => setNewFarmName(e.target.value)}
-                      required
-                      autoFocus
-                    />
+                    <input type="text" className="w-full border border-gray-100 rounded-2xl px-6 py-4 font-bold bg-gray-50 focus:bg-white focus:ring-2 focus:ring-emerald-500 outline-none transition-all" value={newFarmName} onChange={e => setNewFarmName(e.target.value)} required autoFocus />
                  </div>
-                 <button type="submit" className="w-full bg-emerald-600 text-white py-5 rounded-2xl font-black uppercase text-xs tracking-widest shadow-xl active:scale-95 transition-all">Criar e Acessar</button>
+                 <button type="submit" className="w-full bg-emerald-600 text-white py-5 rounded-2xl font-black uppercase text-xs tracking-widest shadow-xl active:scale-95 transition-all">Cadastrar e Abrir</button>
               </form>
            </div>
         </div>

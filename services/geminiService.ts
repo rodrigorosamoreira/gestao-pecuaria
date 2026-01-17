@@ -2,20 +2,19 @@
 import { GoogleGenAI } from "@google/genai";
 import { Animal, Transaction, InventoryItem, Lot } from "../types";
 
-// Always use the API key exclusively from process.env.API_KEY and initialize with named parameter
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
+// Analisa o status da fazenda com base nos dados do rebanho, estoque e lotes.
 export const analyzeFarmStatus = async (
     animals: Animal[], 
     transactions: Transaction[], 
     inventory: InventoryItem[] = [], 
     lots: Lot[] = []
 ): Promise<string> => {
-  // Assume process.env.API_KEY is available and configured per guidelines
   try {
     const animalSummary = animals.map(a => 
       `- ${a.earTag} (${a.breed}): ${a.weightKg}kg, GMD ult. pesagem: ${a.history[a.history.length-1]?.gmd?.toFixed(3) || 'N/A'}`
-    ).slice(0, 30).join('\n'); // Limit to avoid token limit
+    ).slice(0, 30).join('\n');
 
     const stockSummary = inventory.map(i => 
       `- ${i.name}: ${i.quantity} ${i.unit} (Mín: ${i.minQuantity})`
@@ -30,22 +29,12 @@ export const analyzeFarmStatus = async (
       2. REBANHO (Amostra):
       ${animalSummary}
       
-      3. FINANCEIRO:
-      Receita vs Despesa recente... (considere dados gerais)
-
-      Gere um relatório focado em:
-      - Alertas urgentes de estoque.
-      - Animais com baixo desempenho (GMD).
-      - Sugestões de manejo sanitário e nutricional.
+      Gere um relatório focado em alertas e sugestões de manejo.
     `;
 
-    // Using gemini-3-pro-preview for complex reasoning tasks as per guidelines
     const response = await ai.models.generateContent({
       model: 'gemini-3-pro-preview',
-      contents: prompt,
-      config: {
-        thinkingConfig: { thinkingBudget: 0 } 
-      }
+      contents: prompt
     });
 
     return response.text || "Sem análise disponível.";
@@ -55,9 +44,9 @@ export const analyzeFarmStatus = async (
   }
 };
 
+// Fornece conselhos rápidos e técnicos para perguntas do produtor.
 export const getQuickAdvice = async (question: string): Promise<string> => {
   try {
-    // Using gemini-3-flash-preview for basic text tasks
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
       contents: `Responda de forma curta e técnica para um pecuarista: ${question}`
@@ -68,33 +57,44 @@ export const getQuickAdvice = async (question: string): Promise<string> => {
   }
 };
 
+// Analisa a formulação de ração e fornece observações técnicas.
 export const analyzeFeedFormula = async (ingredients: { name: string; percent: number }[]): Promise<string> => {
   const ingredientsList = ingredients.map(i => `- ${i.name}: ${i.percent}%`).join('\n');
-
-  const prompt = `
-    Atue como um Nutricionista de Ruminantes (Zootecnista). Analise a seguinte formulação de ração/suplemento para gado de corte:
-
-    Ingredientes:
-    ${ingredientsList}
-
-    Por favor, forneça uma estimativa técnica contendo:
-    1. **Composição Nutricional Estimada** (Matéria Seca, Proteína Bruta (PB), Energia (NDT)).
-    2. **Categoria Animal Recomendada** (Ex: Recria, Terminação, Creep, etc.).
-    3. **Estimativa de GMD (Ganho Médio Diário)** esperado para esta dieta (considerando um pasto de qualidade média como base).
-    4. **Observações/Correções**: Se a soma não for 100% ou se houver desbalanceamento grave (ex: excesso de ureia, falta de fibra, relação Ca:P), alerte.
-    
-    Seja direto e use formatação Markdown.
-  `;
-
+  const prompt = `Analise a seguinte formulação de ração: \n${ingredientsList}\nForneça composição estimada e observações técnicas.`;
   try {
-    // Using gemini-3-pro-preview for complex reasoning and mathematical estimates
     const response = await ai.models.generateContent({
       model: 'gemini-3-pro-preview',
       contents: prompt
     });
     return response.text || "Não foi possível analisar a mistura.";
   } catch (e) {
-    console.error(e);
     return "Erro ao processar análise nutricional.";
+  }
+};
+
+/**
+ * Busca dados de mercado atualizados (Boi Gordo, Milho, Soja) no Brasil usando Google Search.
+ * Essencial para o componente MarketMonitor.
+ */
+export const fetchMarketData = async (): Promise<{ text: string; sources: any[] }> => {
+  try {
+    const response = await ai.models.generateContent({
+      model: 'gemini-3-flash-preview',
+      contents: 'Forneça um relatório atualizado sobre as cotações do Boi Gordo, Milho e Soja no Brasil, mencionando Scot Consultoria e CEPEA. Use formatação Markdown.',
+      config: {
+        tools: [{ googleSearch: {} }],
+      },
+    });
+
+    const text = response.text || "Não foi possível obter dados de mercado no momento.";
+    const sources = response.candidates?.[0]?.groundingMetadata?.groundingChunks || [];
+
+    return { text, sources };
+  } catch (error) {
+    console.error("Erro ao buscar dados de mercado via Gemini:", error);
+    return { 
+      text: "Erro ao conectar com o serviço de monitoramento de mercado. Tente novamente mais tarde.", 
+      sources: [] 
+    };
   }
 };

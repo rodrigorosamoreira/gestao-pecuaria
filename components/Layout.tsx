@@ -13,7 +13,6 @@ import {
   HeartPulse,
   Bell,
   AlertTriangle,
-  Info,
   CheckCircle2,
   CheckSquare,
   Instagram,
@@ -21,7 +20,8 @@ import {
   Zap,
   ChevronDown,
   Tractor,
-  Plus
+  Plus,
+  Trash2
 } from 'lucide-react';
 import { User, Animal, InventoryItem, HealthRecord, HealthSeverity, Task, Farm } from '../types';
 
@@ -38,6 +38,7 @@ interface LayoutProps {
   farms?: Farm[];
   activeFarmId?: string | null;
   onSelectFarm?: (id: string) => void;
+  onDeleteFarm?: (id: string) => void;
   onCreateFarm?: () => void;
 }
 
@@ -54,6 +55,7 @@ const Layout: React.FC<LayoutProps> = ({
   farms = [],
   activeFarmId = null,
   onSelectFarm,
+  onDeleteFarm,
   onCreateFarm
 }) => {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
@@ -145,18 +147,17 @@ const Layout: React.FC<LayoutProps> = ({
             </button>
           </div>
 
-          {/* Farm Switcher */}
           <div className="relative">
             <button 
               onClick={() => setIsFarmMenuOpen(!isFarmMenuOpen)}
-              className="w-full bg-green-800 hover:bg-green-700 p-4 rounded-2xl flex items-center justify-between transition-all group border border-green-700"
+              className="w-full bg-green-800 hover:bg-green-700 p-4 rounded-2xl flex items-center justify-between transition-all group border border-green-700 shadow-lg active:scale-95"
             >
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-lg bg-green-600 flex items-center justify-center text-white">
                   <Tractor size={16} />
                 </div>
                 <div className="text-left overflow-hidden">
-                   <p className="text-[9px] font-black text-green-400 uppercase tracking-widest">Fazenda Ativa</p>
+                   <p className="text-[9px] font-black text-green-400 uppercase tracking-widest">Unidade Selecionada</p>
                    <p className="text-sm font-bold truncate">{activeFarm?.name || 'Selecionar...'}</p>
                 </div>
               </div>
@@ -167,26 +168,43 @@ const Layout: React.FC<LayoutProps> = ({
               <>
                 <div className="fixed inset-0 z-[40]" onClick={() => setIsFarmMenuOpen(false)}></div>
                 <div className="absolute top-full left-0 w-full mt-2 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden z-[50] animate-in slide-in-from-top-2">
-                   <div className="p-2 max-h-60 overflow-y-auto">
-                      {farms.map(farm => (
-                        <button 
-                          key={farm.id}
-                          onClick={() => {
-                            onSelectFarm?.(farm.id);
-                            setIsFarmMenuOpen(false);
-                          }}
-                          className={`w-full p-4 rounded-xl text-left transition-colors flex items-center justify-between ${activeFarmId === farm.id ? 'bg-green-50 text-green-700' : 'text-gray-700 hover:bg-gray-50'}`}
-                        >
-                          <span className="font-bold text-sm truncate">{farm.name}</span>
-                          {activeFarmId === farm.id && <CheckCircle2 size={16} />}
-                        </button>
-                      ))}
+                   <div className="p-2 max-h-60 overflow-y-auto custom-scrollbar">
+                      {farms.length > 0 ? (
+                        farms.map(farm => (
+                          <div key={farm.id} className="group flex items-center pr-2 border-b border-gray-50 last:border-0">
+                            <button 
+                              onClick={() => {
+                                onSelectFarm?.(farm.id);
+                                setIsFarmMenuOpen(false);
+                              }}
+                              className={`flex-1 p-4 rounded-xl text-left transition-colors flex items-center justify-between ${activeFarmId === farm.id ? 'bg-green-50 text-green-700' : 'text-gray-700 hover:bg-gray-50'}`}
+                            >
+                              <span className="font-bold text-sm truncate">{farm.name}</span>
+                              {activeFarmId === farm.id && <CheckCircle2 size={16} />}
+                            </button>
+                            
+                            <button 
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                onDeleteFarm?.(farm.id);
+                              }}
+                              className="p-3 text-gray-300 hover:text-white hover:bg-red-600 rounded-xl transition-all shadow-sm active:scale-90"
+                              title="Excluir Permanentemente"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
+                        ))
+                      ) : (
+                        <p className="p-4 text-xs text-gray-400 text-center font-bold">Nenhuma unidade cadastrada.</p>
+                      )}
                    </div>
                    <button 
                     onClick={() => { onCreateFarm?.(); setIsFarmMenuOpen(false); }}
                     className="w-full p-4 bg-gray-50 border-t border-gray-100 text-green-600 font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-green-600 hover:text-white transition-all"
                    >
-                     <Plus size={14} /> Adicionar Fazenda
+                     <Plus size={14} /> Nova Unidade
                    </button>
                 </div>
               </>
@@ -230,7 +248,7 @@ const Layout: React.FC<LayoutProps> = ({
             className="flex items-center space-x-3 text-green-300 hover:text-red-400 px-4 py-2 w-full transition-colors font-medium text-sm"
           >
             <LogOut size={20} />
-            <span>Sair do Sistema</span>
+            <span>Sair da Conta</span>
           </button>
         </div>
       </aside>
@@ -244,7 +262,7 @@ const Layout: React.FC<LayoutProps> = ({
             <h1 className="text-xl font-black text-gray-800 uppercase tracking-tighter hidden md:block">
               {navItems.find(i => i.id === currentView)?.label || 'Painel'}
               <span className="mx-3 text-gray-300 font-light">|</span>
-              <span className="text-sm font-bold text-green-600 bg-green-50 px-3 py-1 rounded-full">{activeFarm?.name}</span>
+              <span className="text-sm font-bold text-green-600 bg-green-50 px-3 py-1 rounded-full uppercase tracking-widest">{activeFarm?.name}</span>
             </h1>
 
             <div className="flex items-center space-x-6">
@@ -311,7 +329,7 @@ const Layout: React.FC<LayoutProps> = ({
               <div className="flex items-center space-x-4">
                 <div className="hidden sm:block text-right">
                   <p className="text-sm font-bold text-gray-900">{user.name}</p>
-                  <p className="text-xs text-gray-500 uppercase font-semibold">Admin Fazenda</p>
+                  <p className="text-xs text-gray-500 uppercase font-semibold">Proprietário</p>
                 </div>
                 <div className="h-10 w-10 rounded-full bg-green-600 border-2 border-green-100 flex items-center justify-center text-white font-bold shadow-sm overflow-hidden">
                   {user.photo ? <img src={user.photo} className="w-full h-full object-cover" alt="User" /> : user.name.substring(0, 2).toUpperCase()}
