@@ -23,7 +23,7 @@ export interface User {
   name: string;
   email: string;
   photo?: string;
-  provider: 'google' | 'email';
+  provider: 'google' | 'email' | 'guest';
 }
 
 export enum HealthSeverity {
@@ -127,4 +127,5 @@ export interface Farm {
   name: string;
   data: FarmData;
   updated_at: string;
+  created_at?: string;
 }

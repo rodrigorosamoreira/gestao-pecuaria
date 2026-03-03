@@ -76,6 +76,9 @@ const ToolsCalculator: React.FC<ToolsCalculatorProps> = ({ onSaveDailyCost, lots
   const [avgLotWeight, setAvgLotWeight] = useState<number>(330);
   const [numAnimals, setNumAnimals] = useState<number>(50);
   const [pvPercent, setPvPercent] = useState<number>(0.1); 
+  
+  // --- Estados da Calculadora de Mistura ---
+  const [calcInput, setCalcInput] = useState<{ id: string | 'total', value: number }>({ id: 'total', value: 100 });
 
   const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => e.currentTarget.select();
 
@@ -87,6 +90,25 @@ const ToolsCalculator: React.FC<ToolsCalculatorProps> = ({ onSaveDailyCost, lots
   const totalDailyCostSupp = totalBatchConsumption * costPerKgSupplement;
   const totalMonthlyCostSupp = totalDailyCostSupp * 30;
   const totalMonthlyConsumptionKg = totalBatchConsumption * 30;
+
+  // --- Funções Calculadora de Mistura ---
+  const getWeight = (ingId: string) => {
+    const ing = ingredients.find(i => i.id === ingId);
+    if (!ing || totalPercent === 0) return 0;
+    if (calcInput.id === 'total') return calcInput.value * (ing.percent / totalPercent);
+    if (calcInput.id === ingId) return calcInput.value;
+    const sourceIng = ingredients.find(i => i.id === calcInput.id);
+    if (!sourceIng || sourceIng.percent === 0) return 0;
+    const total = calcInput.value / (sourceIng.percent / totalPercent);
+    return total * (ing.percent / totalPercent);
+  };
+
+  const getTotalWeight = () => {
+    if (calcInput.id === 'total') return calcInput.value;
+    const sourceIng = ingredients.find(i => i.id === calcInput.id);
+    if (!sourceIng || sourceIng.percent === 0) return 0;
+    return calcInput.value / (sourceIng.percent / totalPercent);
+  };
 
   // --- Cálculos Valor Diário ---
   const totalMonthlyFinance = rentCost + suppCostMonthly + extraCostMonthly;
@@ -302,6 +324,66 @@ const ToolsCalculator: React.FC<ToolsCalculatorProps> = ({ onSaveDailyCost, lots
                              <p className={`text-2xl font-black ${totalPercent === 100 ? 'text-emerald-600' : 'text-red-600'}`}>{totalPercent}%</p>
                         </div>
                     </div>
+                  </div>
+              </div>
+
+              {/* Calculadora de Proporções */}
+              <div className="bg-white rounded-[2rem] shadow-sm border border-gray-100 overflow-hidden">
+                  <div className="p-4 bg-emerald-50 border-b border-emerald-100 flex justify-between items-center">
+                      <h3 className="text-sm font-black text-emerald-800 uppercase tracking-widest flex items-center gap-2">
+                          <Calculator size={18} /> Calculadora de Proporções (Misturador)
+                      </h3>
+                  </div>
+                  <div className="p-8 space-y-6">
+                      <p className="text-xs text-gray-500 font-medium italic">
+                          Insira o peso desejado em qualquer campo para recalcular os demais mantendo as proporções.
+                      </p>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {ingredients.map(ing => (
+                              <div key={`calc-${ing.id}`} className="flex items-center gap-4 p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                                  <div className="flex-1">
+                                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest truncate max-w-[120px]">{ing.name || 'Ingrediente'}</p>
+                                      <p className="text-xs font-bold text-emerald-600">{ing.percent}%</p>
+                                  </div>
+                                  <div className="w-32 relative">
+                                      <input 
+                                          type="number" 
+                                          className={`w-full border rounded-xl px-4 py-2 font-bold text-right outline-none transition-all ${calcInput.id === ing.id ? 'border-emerald-500 ring-2 ring-emerald-200 bg-white' : 'border-gray-200 bg-gray-100/50'}`}
+                                          value={calcInput.id === ing.id ? calcInput.value : Number(getWeight(ing.id).toFixed(2))}
+                                          onChange={(e) => setCalcInput({ id: ing.id, value: Number(e.target.value) })}
+                                          onFocus={handleFocus}
+                                      />
+                                      <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] font-bold text-gray-400 pointer-events-none">kg</span>
+                                  </div>
+                              </div>
+                          ))}
+                      </div>
+
+                      <div className="pt-6 border-t border-gray-100 flex flex-col md:flex-row justify-between items-center gap-6">
+                          <div className="flex items-center gap-3">
+                              <div className="p-3 bg-emerald-600 text-white rounded-2xl shadow-lg shadow-emerald-100">
+                                  <Weight size={24} />
+                              </div>
+                              <div>
+                                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Peso Total da Batida</p>
+                                  <p className="text-2xl font-black text-gray-800 tracking-tighter">
+                                      {getTotalWeight().toLocaleString('pt-BR', { minimumFractionDigits: 2 })} <span className="text-sm opacity-50">kg</span>
+                                  </p>
+                              </div>
+                          </div>
+                          <div className="w-full md:w-48 relative">
+                              <label className="text-[10px] font-black text-emerald-600 uppercase tracking-widest block mb-1 ml-1">Ajustar Total</label>
+                              <input 
+                                  type="number" 
+                                  className={`w-full border rounded-xl px-4 py-3 font-black text-right outline-none transition-all ${calcInput.id === 'total' ? 'border-emerald-500 ring-2 ring-emerald-200 bg-white' : 'border-gray-200 bg-gray-100/50'}`}
+                                  value={calcInput.id === 'total' ? calcInput.value : Number(getTotalWeight().toFixed(2))}
+                                  onChange={(e) => setCalcInput({ id: 'total', value: Number(e.target.value) })}
+                                  onFocus={handleFocus}
+                              />
+                              <span className="absolute right-3 bottom-3 text-[10px] font-bold text-gray-400 pointer-events-none">kg</span>
+                          </div>
+                      </div>
                   </div>
               </div>
            </div>

@@ -32,6 +32,7 @@ const App: React.FC = () => {
   const [isSyncing, setIsSyncing] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
   const [dbError, setDbError] = useState<string | null>(null);
+  const [showWelcome, setShowWelcome] = useState(false);
   
   const [farms, setFarms] = useState<Farm[]>([]);
   const [activeFarmId, setActiveFarmId] = useState<string | null>(null);
@@ -117,6 +118,15 @@ const App: React.FC = () => {
       fetchFarms();
     }
   }, [user]);
+
+  useEffect(() => {
+    if (user && isLoaded) {
+      const hasSeen = localStorage.getItem(`welcome_seen_${user.id}`);
+      if (!hasSeen) {
+        setShowWelcome(true);
+      }
+    }
+  }, [user, isLoaded]);
 
   useEffect(() => {
     if (user && isLoaded && !dbError && activeFarmId && activeFarm) {
@@ -228,6 +238,13 @@ const App: React.FC = () => {
     if (user) localStorage.setItem(`activeFarm_${user.id}`, id);
   };
 
+  const closeWelcome = () => {
+    if (user) {
+      localStorage.setItem(`welcome_seen_${user.id}`, 'true');
+    }
+    setShowWelcome(false);
+  };
+
   const handleLogout = async () => {
     await supabase.auth.signOut();
     setUser(null);
@@ -317,6 +334,57 @@ const App: React.FC = () => {
       {isSyncing && <div className="fixed bottom-4 right-4 bg-emerald-600 text-white text-[10px] font-black px-4 py-2 rounded-full shadow-lg z-50 animate-pulse">Sincronizando...</div>}
       {!isLoaded && <div className="fixed inset-0 bg-white/50 backdrop-blur-sm z-50 flex items-center justify-center font-black uppercase tracking-widest text-xs">Acessando Banco...</div>}
       
+      {showWelcome && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-white w-full max-w-2xl rounded-[2.5rem] p-10 shadow-2xl space-y-6 animate-in zoom-in duration-300 overflow-y-auto max-h-[90vh]">
+            <div className="flex justify-between items-center border-b border-gray-50 pb-4">
+              <h3 className="text-2xl font-black text-emerald-700 uppercase tracking-tight">Bem-vindo!</h3>
+              <button onClick={closeWelcome} className="p-2 hover:bg-gray-100 rounded-full"><X /></button>
+            </div>
+            
+            <div className="space-y-6 text-gray-700">
+              <p className="text-lg font-bold leading-relaxed">
+                Seja bem-vindo ao APP Gestão Pecuária! <br/>
+                Aqui, sua gestão e sua pecuária saem do amadorismo e alcançam um novo nível de organização e controle.
+              </p>
+              
+              <div className="space-y-4">
+                <p className="font-black text-xs uppercase tracking-widest text-emerald-600">Para começar:</p>
+                
+                <div className="grid gap-4">
+                  {[
+                    { step: "1", text: 'Crie sua(s) fazenda(s) clicando em "Unidade selecionada", no canto superior esquerdo.' },
+                    { step: "2", text: 'Cadastre seus lotes em "Gestão de Lotes".' },
+                    { step: "3", text: 'Defina o valor da diária dos seus lotes em "Valor da Diária".' },
+                    { step: "4", text: 'Cadastre e gerencie seus animais e o financeiro de forma prática e organizada.' },
+                    { step: "5", text: 'Bom proveito!' }
+                  ].map((item) => (
+                    <div key={item.step} className="flex items-start gap-4 p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                      <span className="flex-shrink-0 w-8 h-8 bg-emerald-600 text-white rounded-full flex items-center justify-center font-black text-sm">{item.step}</span>
+                      <p className="font-semibold text-sm leading-tight pt-1">{item.text}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="pt-6 border-t border-gray-50">
+                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Dicas, reclamações ou sugestões:</p>
+                <a href="https://instagram.com.br/vivendoapecuaria" target="_blank" rel="noopener noreferrer" className="text-emerald-600 font-black hover:underline flex items-center gap-2">
+                  instagram.com.br/vivendoapecuaria
+                </a>
+              </div>
+            </div>
+
+            <button 
+              onClick={closeWelcome}
+              className="w-full bg-emerald-600 text-white py-5 rounded-2xl font-black uppercase text-xs tracking-widest shadow-xl active:scale-95 transition-all mt-4"
+            >
+              Entendi, vamos começar!
+            </button>
+          </div>
+        </div>
+      )}
+
       {isCreatingFarm && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
            <div className="bg-white w-full max-w-md rounded-[2.5rem] p-10 shadow-2xl space-y-6 animate-in zoom-in duration-300">
