@@ -349,12 +349,12 @@ const ToolsCalculator: React.FC<ToolsCalculatorProps> = ({ onSaveDailyCost, lots
                                   <div className="w-32 relative">
                                       <input 
                                           type="number" 
-                                          className={`w-full border rounded-xl px-4 py-2 font-bold text-right outline-none transition-all ${calcInput.id === ing.id ? 'border-emerald-500 ring-2 ring-emerald-200 bg-white' : 'border-gray-200 bg-gray-100/50'}`}
+                                          className={`w-full border rounded-xl pl-4 pr-10 py-2 font-bold text-right outline-none transition-all ${calcInput.id === ing.id ? 'border-emerald-500 ring-2 ring-emerald-200 bg-white' : 'border-gray-200 bg-gray-100/50'}`}
                                           value={calcInput.id === ing.id ? calcInput.value : Number(getWeight(ing.id).toFixed(2))}
                                           onChange={(e) => setCalcInput({ id: ing.id, value: Number(e.target.value) })}
                                           onFocus={handleFocus}
                                       />
-                                      <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] font-bold text-gray-400 pointer-events-none">kg</span>
+                                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-bold text-gray-400 pointer-events-none">kg</span>
                                   </div>
                               </div>
                           ))}
@@ -376,12 +376,12 @@ const ToolsCalculator: React.FC<ToolsCalculatorProps> = ({ onSaveDailyCost, lots
                               <label className="text-[10px] font-black text-emerald-600 uppercase tracking-widest block mb-1 ml-1">Ajustar Total</label>
                               <input 
                                   type="number" 
-                                  className={`w-full border rounded-xl px-4 py-3 font-black text-right outline-none transition-all ${calcInput.id === 'total' ? 'border-emerald-500 ring-2 ring-emerald-200 bg-white' : 'border-gray-200 bg-gray-100/50'}`}
+                                  className={`w-full border rounded-xl pl-4 pr-10 py-3 font-black text-right outline-none transition-all ${calcInput.id === 'total' ? 'border-emerald-500 ring-2 ring-emerald-200 bg-white' : 'border-gray-200 bg-gray-100/50'}`}
                                   value={calcInput.id === 'total' ? calcInput.value : Number(getTotalWeight().toFixed(2))}
                                   onChange={(e) => setCalcInput({ id: 'total', value: Number(e.target.value) })}
                                   onFocus={handleFocus}
                               />
-                              <span className="absolute right-3 bottom-3 text-[10px] font-bold text-gray-400 pointer-events-none">kg</span>
+                              <span className="absolute right-3 bottom-4 text-[10px] font-bold text-gray-400 pointer-events-none">kg</span>
                           </div>
                       </div>
                   </div>

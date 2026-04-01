@@ -211,6 +211,19 @@ const AnimalManager: React.FC<AnimalManagerProps> = ({
     </tr>
   );
 
+  const activeAnimals = animals.filter(a => a.status === AnimalStatus.ACTIVE);
+  const totalActive = activeAnimals.length;
+  const males = activeAnimals.filter(a => a.gender === AnimalGender.MALE).length;
+  const females = activeAnimals.filter(a => a.gender === AnimalGender.FEMALE).length;
+  const avgWeightKg = activeAnimals.length > 0 
+    ? activeAnimals.reduce((acc, a) => acc + a.weightKg, 0) / activeAnimals.length 
+    : 0;
+  
+  const animalsWithGmd = activeAnimals.filter(a => a.history && a.history.length > 0);
+  const avgGmd = animalsWithGmd.length > 0
+    ? animalsWithGmd.reduce((acc, a) => acc + (a.history[a.history.length - 1].gmd || 0), 0) / animalsWithGmd.length
+    : 0;
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -221,6 +234,55 @@ const AnimalManager: React.FC<AnimalManagerProps> = ({
         <div className="flex items-center gap-3">
           <button onClick={() => setIsBatchModalOpen(true)} className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-2xl flex items-center gap-2 shadow-xl shadow-blue-100 transition-all font-black text-xs uppercase tracking-widest"><Layers size={18} /> Cadastrar Lote</button>
           <button onClick={() => { setCurrentAnimal({ entryDate: getTodayString(), breed: 'Nelore', gender: AnimalGender.MALE, status: AnimalStatus.ACTIVE, purchaseValue: 0, notes: '' }); setIndWeightValue(0); setIsModalIndividualOpen(true); }} className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-2xl flex items-center gap-2 shadow-xl shadow-emerald-100 transition-all font-black text-xs uppercase tracking-widest"><Plus size={18} /> Cadastrar Animal</button>
+        </div>
+      </div>
+
+      {/* Resumo do Rebanho */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="bg-white p-5 rounded-3xl shadow-sm border border-gray-100 flex items-center gap-4">
+          <div className="p-3 bg-blue-50 text-blue-600 rounded-2xl">
+            <Users size={20} />
+          </div>
+          <div>
+            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Total Ativo</p>
+            <h4 className="text-xl font-black text-gray-800">{totalActive} <span className="text-[10px] text-gray-400">cab.</span></h4>
+          </div>
+        </div>
+        <div className="bg-white p-5 rounded-3xl shadow-sm border border-gray-100 flex items-center gap-4">
+          <div className="p-3 bg-purple-50 text-purple-600 rounded-2xl">
+            <TrendingUp size={20} />
+          </div>
+          <div>
+            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Peso Médio</p>
+            <h4 className="text-xl font-black text-gray-800">{(avgWeightKg / 30).toFixed(1)} <span className="text-[10px] text-gray-400">@</span></h4>
+          </div>
+        </div>
+        <div className="bg-white p-5 rounded-3xl shadow-sm border border-gray-100 flex items-center gap-4">
+          <div className="p-3 bg-emerald-50 text-emerald-600 rounded-2xl">
+            <TrendingUp size={20} />
+          </div>
+          <div>
+            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">GMD Médio</p>
+            <h4 className="text-xl font-black text-emerald-600">{avgGmd.toFixed(3)} <span className="text-[10px] text-gray-400">kg/dia</span></h4>
+          </div>
+        </div>
+        <div className="bg-white p-5 rounded-3xl shadow-sm border border-gray-100 flex items-center gap-4">
+          <div className="p-3 bg-orange-50 text-orange-600 rounded-2xl">
+            <Info size={20} />
+          </div>
+          <div className="flex-1">
+            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Composição</p>
+            <div className="flex gap-3 mt-0.5">
+              <div className="flex items-center gap-1">
+                <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
+                <span className="text-xs font-black text-gray-700">{males}M</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <div className="w-1.5 h-1.5 rounded-full bg-pink-500"></div>
+                <span className="text-xs font-black text-gray-700">{females}F</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 

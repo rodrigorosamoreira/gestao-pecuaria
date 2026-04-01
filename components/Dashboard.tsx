@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Animal, Transaction, AnimalStatus, TransactionType, InventoryItem, HealthRecord, HealthSeverity } from '../types';
+import { Animal, Transaction, AnimalStatus, TransactionType, InventoryItem, HealthRecord, HealthSeverity, AnimalGender } from '../types';
 import { 
   TrendingUp, 
   Users, 
@@ -46,6 +46,12 @@ const Dashboard: React.FC<DashboardProps> = ({ animals, transactions, inventory,
   const activeAnimals = animals.filter(a => a.status === AnimalStatus.ACTIVE);
   const totalAnimals = activeAnimals.length;
   
+  const males = activeAnimals.filter(a => a.gender === AnimalGender.MALE).length;
+  const females = activeAnimals.filter(a => a.gender === AnimalGender.FEMALE).length;
+  const avgWeightKg = activeAnimals.length > 0 
+    ? activeAnimals.reduce((acc, a) => acc + a.weightKg, 0) / activeAnimals.length 
+    : 0;
+
   const animalsWithHistory = activeAnimals.filter(a => a.history?.length > 0);
   const avgGmd = animalsWithHistory.length > 0 
     ? animalsWithHistory.reduce((acc, a) => acc + (a.history[a.history.length-1].gmd || 0), 0) / animalsWithHistory.length 
@@ -184,6 +190,57 @@ const Dashboard: React.FC<DashboardProps> = ({ animals, transactions, inventory,
             </div>
             <div className={`p-4 rounded-2xl ${totalBalance >= 0 ? 'bg-blue-50 text-blue-600' : 'bg-red-50 text-red-600'}`}>
               <Wallet size={24} />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Resumo Detalhado do Rebanho */}
+      <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-lg font-black text-gray-800 flex items-center gap-2">
+            <Users size={20} className="text-blue-600" /> Resumo Detalhado do Rebanho
+          </h3>
+          <button 
+            onClick={() => onChangeView?.('animals')}
+            className="text-[10px] font-black text-blue-600 uppercase tracking-widest hover:underline"
+          >
+            Ver Rebanho Completo
+          </button>
+        </div>
+        
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
+          <div className="space-y-1">
+            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Total Ativo</p>
+            <p className="text-2xl font-black text-gray-800">{totalAnimals} <span className="text-xs text-gray-400">cab.</span></p>
+          </div>
+          
+          <div className="space-y-1">
+            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Peso Médio</p>
+            <p className="text-2xl font-black text-gray-800">{(avgWeightKg / 30).toFixed(1)} <span className="text-xs text-gray-400">@</span></p>
+            <p className="text-[10px] text-gray-400 font-bold">{avgWeightKg.toFixed(1)} kg</p>
+          </div>
+
+          <div className="space-y-1">
+            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">GMD Médio</p>
+            <p className="text-2xl font-black text-emerald-600">{avgGmd.toFixed(3)} <span className="text-xs text-gray-400">kg/dia</span></p>
+          </div>
+
+          <div className="space-y-1">
+            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Machos</p>
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+              <p className="text-2xl font-black text-gray-800">{males}</p>
+              <p className="text-[10px] text-gray-400 font-bold">({totalAnimals > 0 ? ((males/totalAnimals)*100).toFixed(0) : 0}%)</p>
+            </div>
+          </div>
+
+          <div className="space-y-1">
+            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Fêmeas</p>
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-pink-500"></div>
+              <p className="text-2xl font-black text-gray-800">{females}</p>
+              <p className="text-[10px] text-gray-400 font-bold">({totalAnimals > 0 ? ((females/totalAnimals)*100).toFixed(0) : 0}%)</p>
             </div>
           </div>
         </div>
