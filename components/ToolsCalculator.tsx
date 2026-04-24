@@ -22,22 +22,16 @@ import {
   Activity,
   Clock
 } from 'lucide-react';
-import { Lot, AnimalStatus } from '../types';
+import { Lot, AnimalStatus, CalculatorConfig, Ingredient } from '../types';
 
 interface ToolsCalculatorProps {
-    onSaveDailyCost?: (cost: number, lotId?: string) => void;
+    onSaveDailyCost?: (cost: number, lotId?: string, config?: CalculatorConfig) => void;
     lots?: Lot[];
     initialTab?: 'prediction' | 'diet' | 'daily_value';
+    initialConfig?: CalculatorConfig;
 }
 
-interface Ingredient {
-    id: string;
-    name: string;
-    percent: number;
-    priceKg: number;
-}
-
-const ToolsCalculator: React.FC<ToolsCalculatorProps> = ({ onSaveDailyCost, lots = [], initialTab = 'prediction' }) => {
+const ToolsCalculator: React.FC<ToolsCalculatorProps> = ({ onSaveDailyCost, lots = [], initialTab = 'prediction', initialConfig }) => {
   const [activeTab, setActiveTab] = useState<'prediction' | 'diet' | 'daily_value'>(initialTab);
 
   useEffect(() => {
@@ -57,7 +51,7 @@ const ToolsCalculator: React.FC<ToolsCalculatorProps> = ({ onSaveDailyCost, lots
   const [predGmd, setPredGmd] = useState<number>(1.15);
   const [predDays, setPredDays] = useState<number>(180);
 
-  // --- Estados do Valor Diário ---
+  // --- Estados do Valor Diário / Suplementação (Persistíveis) ---
   const [rentCost, setRentCost] = useState<number>(3000);
   const [suppCostMonthly, setSuppCostMonthly] = useState<number>(2000); 
   const [extraCostMonthly, setExtraCostMonthly] = useState<number>(500);
@@ -66,7 +60,6 @@ const ToolsCalculator: React.FC<ToolsCalculatorProps> = ({ onSaveDailyCost, lots
   const [targetLotId, setTargetLotId] = useState<string>(''); 
   const [showSaveSuccess, setShowSaveSuccess] = useState(false);
 
-  // --- Estados da Suplementação ---
   const [ingredients, setIngredients] = useState<Ingredient[]>([
     { id: '1', name: 'Farelo de Milho', percent: 65, priceKg: 1.00 },
     { id: '2', name: 'Farelo de Soja', percent: 21, priceKg: 3.00 },
@@ -76,7 +69,33 @@ const ToolsCalculator: React.FC<ToolsCalculatorProps> = ({ onSaveDailyCost, lots
   const [avgLotWeight, setAvgLotWeight] = useState<number>(330);
   const [numAnimals, setNumAnimals] = useState<number>(50);
   const [pvPercent, setPvPercent] = useState<number>(0.1); 
-  
+
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Carregar configurações salvas apenas ao mudar o lote alvo ou no mount inicial
+  useEffect(() => {
+    const configToLoad = targetLotId 
+      ? lots.find(l => l.id === targetLotId)?.calculatorConfig 
+      : initialConfig;
+
+    if (configToLoad) {
+      setRentCost(configToLoad.rentCost || 0);
+      setSuppCostMonthly(configToLoad.suppCostMonthly || 0);
+      setExtraCostMonthly(configToLoad.extraCostMonthly || 0);
+      setTotalAnimalsDaily(configToLoad.totalAnimalsDaily || 50);
+      setGmdDailyVal(configToLoad.gmdDailyVal || 0);
+      setIngredients(configToLoad.ingredients || [
+        { id: '1', name: 'Farelo de Milho', percent: 65, priceKg: 1.00 },
+        { id: '2', name: 'Farelo de Soja', percent: 21, priceKg: 3.00 },
+        { id: '3', name: 'Núcleo', percent: 11, priceKg: 5.00 },
+        { id: '4', name: 'Ureia', percent: 3, priceKg: 7.00 },
+      ]);
+      setAvgLotWeight(configToLoad.avgLotWeight || 0);
+      setNumAnimals(configToLoad.numAnimals || 50);
+      setPvPercent(configToLoad.pvPercent || 0);
+    }
+  }, [targetLotId]); // Removido lots e initialConfig para evitar sobrescrever edições em curso
+
   // --- Estados da Calculadora de Mistura ---
   const [calcInput, setCalcInput] = useState<{ id: string | 'total', value: number }>({ id: 'total', value: 100 });
 
@@ -153,22 +172,58 @@ const ToolsCalculator: React.FC<ToolsCalculatorProps> = ({ onSaveDailyCost, lots
 
   const handleSaveDailyConfig = () => {
     if (onSaveDailyCost) {
-      onSaveDailyCost(dailyCostPerAnimal, targetLotId || undefined);
+      setIsSaving(true);
+      const safeDailyCost = isNaN(dailyCostPerAnimal) ? 0 : dailyCostPerAnimal;
+      
+      const config: CalculatorConfig = {
+        rentCost: Number(rentCost) || 0,
+        suppCostMonthly: Number(suppCostMonthly) || 0,
+        extraCostMonthly: Number(extraCostMonthly) || 0,
+        totalAnimalsDaily: Number(totalAnimalsDaily) || 1,
+        gmdDailyVal: Number(gmdDailyVal) || 0,
+        ingredients,
+        avgLotWeight: Number(avgLotWeight) || 0,
+        numAnimals: Number(numAnimals) || 1,
+        pvPercent: Number(pvPercent) || 0
+      };
+      
+      onSaveDailyCost(safeDailyCost, targetLotId || undefined, config);
       setShowSaveSuccess(true);
-      setTimeout(() => setShowSaveSuccess(false), 3000);
+      setTimeout(() => {
+        setIsSaving(false);
+        setShowSaveSuccess(false);
+      }, 3000);
     }
   };
 
   const handleSaveSupplementation = () => {
     if (totalPercent > 100) return;
+    setIsSaving(true);
+    
     setSuppCostMonthly(totalMonthlyCostSupp);
     setTotalAnimalsDaily(numAnimals);
     const individualDailyCost = consumptionPerAnimalKg * costPerKgSupplement;
+    const safeDailyCost = isNaN(individualDailyCost) ? 0 : individualDailyCost;
+
     if (onSaveDailyCost) {
-      onSaveDailyCost(individualDailyCost, targetLotId || undefined);
+      const config: CalculatorConfig = {
+        rentCost: Number(rentCost) || 0,
+        suppCostMonthly: totalMonthlyCostSupp,
+        extraCostMonthly: Number(extraCostMonthly) || 0,
+        totalAnimalsDaily: numAnimals,
+        gmdDailyVal: Number(gmdDailyVal) || 0,
+        ingredients,
+        avgLotWeight: Number(avgLotWeight) || 0,
+        numAnimals: Number(numAnimals) || 1,
+        pvPercent: Number(pvPercent) || 0
+      };
+      onSaveDailyCost(safeDailyCost, targetLotId || undefined, config);
     }
     setShowSaveSuccess(true);
-    setTimeout(() => setShowSaveSuccess(false), 3000);
+    setTimeout(() => {
+      setIsSaving(false);
+      setShowSaveSuccess(false);
+    }, 3000);
   };
 
   return (
@@ -241,9 +296,28 @@ const ToolsCalculator: React.FC<ToolsCalculatorProps> = ({ onSaveDailyCost, lots
                     </select>
                   </div>
 
-                  <button onClick={handleSaveDailyConfig} className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-4 rounded-xl font-black text-sm uppercase tracking-[0.2em] transition-all shadow-xl shadow-emerald-100 flex items-center justify-center gap-3">
-                    <Save size={20} /> Salvar Configuração
+                  <button 
+                    type="button"
+                    onClick={handleSaveDailyConfig} 
+                    disabled={isSaving}
+                    className={`w-full ${isSaving ? 'bg-gray-400' : 'bg-emerald-600 hover:bg-emerald-700'} text-white py-4 rounded-xl font-black text-sm uppercase tracking-[0.2em] transition-all shadow-xl shadow-emerald-100 flex items-center justify-center gap-3`}
+                  >
+                    {isSaving ? (
+                      <>
+                        <Clock className="animate-spin" size={20} /> Salvando...
+                      </>
+                    ) : (
+                      <>
+                        <Save size={20} /> Salvar Configuração
+                      </>
+                    )}
                   </button>
+                  {showSaveSuccess && (
+                    <div className="bg-emerald-100 text-emerald-700 p-3 rounded-xl flex items-center justify-center gap-2 animate-in fade-in zoom-in duration-300">
+                      <CheckCircle size={18} />
+                      <span className="text-xs font-black uppercase tracking-widest">Configuração Salva com Sucesso!</span>
+                    </div>
+                  )}
                </div>
             </div>
           </div>
@@ -386,6 +460,66 @@ const ToolsCalculator: React.FC<ToolsCalculatorProps> = ({ onSaveDailyCost, lots
                       </div>
                   </div>
               </div>
+
+              {/* Calculadora de Proporções */}
+              <div className="bg-white rounded-[2rem] shadow-sm border border-gray-100 overflow-hidden">
+                  <div className="p-4 bg-emerald-50 border-b border-emerald-100 flex justify-between items-center">
+                      <h3 className="text-sm font-black text-emerald-800 uppercase tracking-widest flex items-center gap-2">
+                          <Calculator size={18} /> Calculadora de Proporções (Misturador)
+                      </h3>
+                  </div>
+                  <div className="p-8 space-y-6">
+                      <p className="text-xs text-gray-500 font-medium italic">
+                          Insira o peso desejado em qualquer campo para recalcular os demais mantendo as proporções.
+                      </p>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {ingredients.map(ing => (
+                              <div key={`calc-${ing.id}`} className="flex items-center gap-4 p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                                  <div className="flex-1">
+                                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest truncate max-w-[120px]">{ing.name || 'Ingrediente'}</p>
+                                      <p className="text-xs font-bold text-emerald-600">{ing.percent}%</p>
+                                  </div>
+                                  <div className="w-32 relative">
+                                      <input 
+                                          type="number" 
+                                          className={`w-full border rounded-xl pl-4 pr-10 py-2 font-bold text-right outline-none transition-all ${calcInput.id === ing.id ? 'border-emerald-500 ring-2 ring-emerald-200 bg-white' : 'border-gray-200 bg-gray-100/50'}`}
+                                          value={calcInput.id === ing.id ? calcInput.value : Number(getWeight(ing.id).toFixed(2))}
+                                          onChange={(e) => setCalcInput({ id: ing.id, value: Number(e.target.value) })}
+                                          onFocus={handleFocus}
+                                      />
+                                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-bold text-gray-400 pointer-events-none">kg</span>
+                                  </div>
+                              </div>
+                          ))}
+                      </div>
+
+                      <div className="pt-6 border-t border-gray-100 flex flex-col md:flex-row justify-between items-center gap-6">
+                          <div className="flex items-center gap-3">
+                              <div className="p-3 bg-emerald-600 text-white rounded-2xl shadow-lg shadow-emerald-100">
+                                  <Weight size={24} />
+                              </div>
+                              <div>
+                                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Peso Total da Batida</p>
+                                  <p className="text-2xl font-black text-gray-800 tracking-tighter">
+                                      {getTotalWeight().toLocaleString('pt-BR', { minimumFractionDigits: 2 })} <span className="text-sm opacity-50">kg</span>
+                                  </p>
+                              </div>
+                          </div>
+                          <div className="w-full md:w-48 relative">
+                              <label className="text-[10px] font-black text-emerald-600 uppercase tracking-widest block mb-1 ml-1">Ajustar Total</label>
+                              <input 
+                                  type="number" 
+                                  className={`w-full border rounded-xl pl-4 pr-10 py-3 font-black text-right outline-none transition-all ${calcInput.id === 'total' ? 'border-emerald-500 ring-2 ring-emerald-200 bg-white' : 'border-gray-200 bg-gray-100/50'}`}
+                                  value={calcInput.id === 'total' ? calcInput.value : Number(getTotalWeight().toFixed(2))}
+                                  onChange={(e) => setCalcInput({ id: 'total', value: Number(e.target.value) })}
+                                  onFocus={handleFocus}
+                              />
+                              <span className="absolute right-3 bottom-4 text-[10px] font-bold text-gray-400 pointer-events-none">kg</span>
+                          </div>
+                      </div>
+                  </div>
+              </div>
            </div>
            <div className="lg:col-span-4 space-y-6">
               <div className="bg-white rounded-[2.5rem] p-8 shadow-sm border border-gray-100 space-y-8 flex flex-col h-full">
@@ -445,10 +579,28 @@ const ToolsCalculator: React.FC<ToolsCalculatorProps> = ({ onSaveDailyCost, lots
                     </select>
                  </div>
 
-                 <button onClick={handleSaveSupplementation} disabled={totalPercent > 100} className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-5 rounded-[2rem] font-black text-[11px] uppercase tracking-[0.2em] transition-all shadow-xl disabled:opacity-50 flex items-center justify-center gap-3">
-                    <Save size={20} /> Salvar Configuração
+                 <button 
+                    type="button"
+                    onClick={handleSaveSupplementation} 
+                    disabled={totalPercent > 100 || isSaving} 
+                    className={`w-full ${isSaving ? 'bg-gray-400' : 'bg-emerald-600 hover:bg-emerald-700'} text-white py-5 rounded-[2rem] font-black text-[11px] uppercase tracking-[0.2em] transition-all shadow-xl disabled:opacity-50 flex items-center justify-center gap-3`}
+                  >
+                    {isSaving ? (
+                      <>
+                        <Clock className="animate-spin" size={20} /> Salvando...
+                      </>
+                    ) : (
+                      <>
+                        <Save size={20} /> Salvar Configuração
+                      </>
+                    )}
                  </button>
-                 {showSaveSuccess && <div className="text-emerald-600 font-bold text-center animate-bounce text-xs uppercase tracking-widest">Configuração Salva!</div>}
+                 {showSaveSuccess && (
+                    <div className="bg-emerald-100 text-emerald-700 p-3 rounded-xl flex items-center justify-center gap-2 animate-in fade-in zoom-in duration-300">
+                      <CheckCircle size={18} />
+                      <span className="text-xs font-black uppercase tracking-widest">Configuração Salva com Sucesso!</span>
+                    </div>
+                  )}
               </div>
            </div>
         </div>

@@ -47,7 +47,8 @@ const App: React.FC = () => {
     lots: [],
     healthRecords: [],
     tasks: [],
-    globalDailyCost: 0
+    globalDailyCost: 0,
+    calculatorConfig: undefined
   };
 
   useEffect(() => {
@@ -171,7 +172,8 @@ const App: React.FC = () => {
             lots: [],
             healthRecords: [],
             tasks: [],
-            globalDailyCost: 0
+            globalDailyCost: 0,
+            calculatorConfig: undefined
           }
         })
         .select()
@@ -264,7 +266,39 @@ const App: React.FC = () => {
           onAddBatch={(ans, cost) => updateActiveFarmData(d => ({ ...d, animals: [...d.animals, ...ans], transactions: cost > 0 ? [...d.transactions, { id: `bt-${Date.now()}`, date: ans[0].entryDate || new Date().toISOString().split('T')[0], description: `Lote: ${ans.length} cab.`, amount: cost, type: TransactionType.EXPENSE, category: 'Compra Animais' }] : d.transactions }))}
           onUpdateAnimal={a => updateActiveFarmData(d => ({ ...d, animals: d.animals.map(old => old.id === a.id ? a : old) }))} 
           onDeleteAnimal={id => updateActiveFarmData(d => ({ ...d, animals: d.animals.filter(a => a.id !== id), healthRecords: d.healthRecords.filter(r => r.animalId !== id) }))}
-          onSellAnimal={(id, date, val, w) => updateActiveFarmData(d => ({ ...d, animals: d.animals.map(a => a.id === id ? { ...a, status: AnimalStatus.SOLD, weightKg: w } : a), transactions: [...d.transactions, { id: `s-${Date.now()}`, date, description: 'Venda Individual', amount: val, type: TransactionType.INCOME, category: 'Vendas' }] }))}
+          onSellAnimal={(id, date, val, w) => updateActiveFarmData(d => {
+            const animal = d.animals.find(a => a.id === id);
+            if (!animal) return d;
+            const lot = d.lots.find(l => l.id === animal.lotId);
+            const daily = lot?.dailyCost || d.globalDailyCost;
+            const days = Math.max(0, Math.ceil((new Date(date).getTime() - new Date(animal.entryDate || date).getTime()) / (1000 * 3600 * 24)));
+            const stayCost = days * daily;
+            const purchaseValue = animal.purchaseValue || 0;
+            const profit = val - purchaseValue - stayCost;
+            return { 
+              ...d, 
+              animals: d.animals.map(a => a.id === id ? { ...a, status: AnimalStatus.SOLD, weightKg: w } : a), 
+              transactions: [
+                ...d.transactions, 
+                { 
+                  id: `s-${Date.now()}`, 
+                  date, 
+                  description: `Venda: ${animal.earTag} (Lucro: R$ ${profit.toLocaleString('pt-BR', { minimumFractionDigits: 2 })})`, 
+                  amount: val, 
+                  type: TransactionType.INCOME, 
+                  category: 'Vendas' 
+                },
+                {
+                  id: `sc-${Date.now()}`,
+                  date,
+                  description: `Custo Estadia: ${animal.earTag} (${days} dias)`,
+                  amount: stayCost,
+                  type: TransactionType.EXPENSE,
+                  category: 'Produção'
+                }
+              ] 
+            };
+          })}
           onAnimalDeath={(id, date, cause) => updateActiveFarmData(d => ({ ...d, animals: d.animals.map(a => a.id === id ? { ...a, status: AnimalStatus.DEAD, deathDate: date, deathCause: cause } : a) }))}
           onSellLot={(lotId, date, avgW, mode, val) => {
             const lotAns = farmData.animals.filter(a => a.lotId === lotId && a.status === AnimalStatus.ACTIVE);
@@ -278,12 +312,13 @@ const App: React.FC = () => {
               totalStay += (days * daily);
             });
             const rev = mode === 'head' ? lotAns.length * val : lotAns.length * (avgW / 30) * val;
+            const profit = rev - totalBuy - totalStay;
             updateActiveFarmData(d => ({
               ...d,
               animals: d.animals.map(a => a.lotId === lotId && a.status === AnimalStatus.ACTIVE ? { ...a, status: AnimalStatus.SOLD, weightKg: avgW } : a),
               transactions: [
                 ...d.transactions,
-                { id: `ls-${Date.now()}`, date, description: `Venda Lote: ${lot?.name} (${lotAns.length} cab.)`, amount: rev, type: TransactionType.INCOME, category: 'Vendas' },
+                { id: `ls-${Date.now()}`, date, description: `Venda Lote: ${lot?.name} (Lucro: R$ ${profit.toLocaleString('pt-BR', { minimumFractionDigits: 2 })})`, amount: rev, type: TransactionType.INCOME, category: 'Vendas' },
                 { id: `lm-${Date.now()}`, date, description: `Custo Estadia Lote: ${lot?.name}`, amount: totalStay, type: TransactionType.EXPENSE, category: 'Produção' }
               ]
             }));
@@ -302,11 +337,19 @@ const App: React.FC = () => {
         return (
           <ToolsCalculator 
             initialTab={currentView === 'suplementacao' ? 'diet' : currentView === 'valor_diario' ? 'daily_value' : 'prediction'} 
-            onSaveDailyCost={(cost, lId) => lId 
-              ? updateActiveFarmData(d => ({ ...d, lots: d.lots.map(l => l.id === lId ? { ...l, dailyCost: cost } : l) }))
-              : updateActiveFarmData(d => ({ ...d, globalDailyCost: cost }))
+            onSaveDailyCost={(cost, lId, config) => lId 
+              ? updateActiveFarmData(d => ({ 
+                  ...d, 
+                  lots: d.lots.map(l => l.id === lId ? { ...l, dailyCost: cost, calculatorConfig: config } : l) 
+                }))
+              : updateActiveFarmData(d => ({ 
+                  ...d, 
+                  globalDailyCost: cost,
+                  calculatorConfig: config
+                }))
             } 
             lots={farmData.lots} 
+            initialConfig={farmData.calculatorConfig}
           />
         );
       default: return <Dashboard animals={farmData.animals} transactions={farmData.transactions} inventory={farmData.inventory} healthRecords={farmData.healthRecords} onChangeView={setCurrentView} />;

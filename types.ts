@@ -85,6 +85,7 @@ export interface Lot {
   name: string;
   description?: string;
   dailyCost?: number; 
+  calculatorConfig?: CalculatorConfig;
 }
 
 export interface InventoryItem {
@@ -111,6 +112,25 @@ export interface Transaction {
   category: string;
 }
 
+export interface Ingredient {
+  id: string;
+  name: string;
+  percent: number;
+  priceKg: number;
+}
+
+export interface CalculatorConfig {
+  rentCost: number;
+  suppCostMonthly: number;
+  extraCostMonthly: number;
+  totalAnimalsDaily: number;
+  gmdDailyVal: number;
+  ingredients: Ingredient[];
+  avgLotWeight: number;
+  numAnimals: number;
+  pvPercent: number;
+}
+
 export interface FarmData {
   animals: Animal[];
   transactions: Transaction[];
@@ -119,6 +139,7 @@ export interface FarmData {
   healthRecords: HealthRecord[];
   tasks: Task[];
   globalDailyCost: number;
+  calculatorConfig?: CalculatorConfig;
 }
 
 export interface Farm {

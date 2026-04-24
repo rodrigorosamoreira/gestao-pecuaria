@@ -246,6 +246,57 @@ const Dashboard: React.FC<DashboardProps> = ({ animals, transactions, inventory,
         </div>
       </div>
 
+      {/* Resumo Detalhado do Rebanho */}
+      <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-lg font-black text-gray-800 flex items-center gap-2">
+            <Users size={20} className="text-blue-600" /> Resumo Detalhado do Rebanho
+          </h3>
+          <button 
+            onClick={() => onChangeView?.('animals')}
+            className="text-[10px] font-black text-blue-600 uppercase tracking-widest hover:underline"
+          >
+            Ver Rebanho Completo
+          </button>
+        </div>
+        
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
+          <div className="space-y-1">
+            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Total Ativo</p>
+            <p className="text-2xl font-black text-gray-800">{totalAnimals} <span className="text-xs text-gray-400">cab.</span></p>
+          </div>
+          
+          <div className="space-y-1">
+            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Peso Médio</p>
+            <p className="text-2xl font-black text-gray-800">{(avgWeightKg / 30).toFixed(1)} <span className="text-xs text-gray-400">@</span></p>
+            <p className="text-[10px] text-gray-400 font-bold">{avgWeightKg.toFixed(1)} kg</p>
+          </div>
+
+          <div className="space-y-1">
+            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">GMD Médio</p>
+            <p className="text-2xl font-black text-emerald-600">{avgGmd.toFixed(3)} <span className="text-xs text-gray-400">kg/dia</span></p>
+          </div>
+
+          <div className="space-y-1">
+            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Machos</p>
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+              <p className="text-2xl font-black text-gray-800">{males}</p>
+              <p className="text-[10px] text-gray-400 font-bold">({totalAnimals > 0 ? ((males/totalAnimals)*100).toFixed(0) : 0}%)</p>
+            </div>
+          </div>
+
+          <div className="space-y-1">
+            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Fêmeas</p>
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-pink-500"></div>
+              <p className="text-2xl font-black text-gray-800">{females}</p>
+              <p className="text-[10px] text-gray-400 font-bold">({totalAnimals > 0 ? ((females/totalAnimals)*100).toFixed(0) : 0}%)</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Gráfico de Fluxo de Caixa */}
         <div className="lg:col-span-8 bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
