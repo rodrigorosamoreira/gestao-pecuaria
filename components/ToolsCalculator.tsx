@@ -643,12 +643,14 @@ const ToolsCalculator: React.FC<ToolsCalculatorProps> = ({ onSaveDailyCost, lots
                     {/* Manejo Técnico */}
                     <div className="space-y-6">
                         <h4 className="text-[10px] font-black text-orange-600 uppercase tracking-[0.2em] border-b border-gray-50 pb-2">Manejo Técnico</h4>
-                        <div className="space-y-1">
+                        <div className="space-y-1 relative">
                             <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block ml-1">GMD (kg/dia)</label>
+                            {predTargetMode === 'gmd' && <span className="absolute right-4 top-10 text-[9px] font-black text-blue-600 uppercase">Calculando...</span>}
                             <input type="number" step="0.01" onFocus={handleFocus} className={`w-full border rounded-xl px-4 py-3 font-bold outline-none transition-all ${predTargetMode === 'gmd' ? 'bg-blue-50 border-blue-200 text-blue-700' : 'border-gray-200 bg-gray-50/50 focus:bg-white focus:ring-2 focus:ring-orange-500'}`} value={predTargetMode === 'gmd' ? calculatedGmd.toFixed(3) : predGmd} onChange={e => setPredGmd(Number(e.target.value))} readOnly={predTargetMode === 'gmd'} />
                         </div>
-                        <div className="space-y-1">
+                        <div className="space-y-1 relative">
                             <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block ml-1">Duração (Dias)</label>
+                            {predTargetMode === 'days' && <span className="absolute right-4 top-10 text-[9px] font-black text-blue-600 uppercase">Calculando...</span>}
                             <input type="number" onFocus={handleFocus} className={`w-full border rounded-xl px-4 py-3 font-bold outline-none transition-all ${predTargetMode === 'days' ? 'bg-blue-50 border-blue-200 text-blue-700' : 'border-gray-200 bg-gray-50/50 focus:bg-white focus:ring-2 focus:ring-orange-500'}`} value={predTargetMode === 'days' ? Math.round(calculatedDays) : predDays} onChange={e => setPredDays(Number(e.target.value))} readOnly={predTargetMode === 'days'} />
                         </div>
                         <div className="grid grid-cols-2 gap-3">
@@ -666,9 +668,9 @@ const ToolsCalculator: React.FC<ToolsCalculatorProps> = ({ onSaveDailyCost, lots
                     {/* Mercado Saída */}
                     <div className="space-y-6">
                         <h4 className="text-[10px] font-black text-emerald-600 uppercase tracking-[0.2em] border-b border-gray-50 pb-2">Mercado Saída</h4>
-                        <div className="space-y-1 relative group">
+                        <div className="space-y-1 relative">
                             <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block ml-1">Peso Final (kg)</label>
-                            <span className="absolute right-4 top-10 text-[9px] font-black text-blue-600 uppercase">Calculando...</span>
+                            {predTargetMode === 'final_weight' && <span className="absolute right-4 top-10 text-[9px] font-black text-blue-600 uppercase">Calculando...</span>}
                             <input type="number" onFocus={handleFocus} className={`w-full border rounded-xl px-4 py-3 font-black outline-none transition-all ${predTargetMode === 'final_weight' ? 'bg-blue-50 border-blue-200 text-blue-700' : 'border-gray-200 bg-gray-50/50 focus:bg-white focus:ring-2 focus:ring-emerald-500'}`} value={predTargetMode === 'final_weight' ? calculatedFinalWeight.toFixed(1) : predExitWeight} onChange={e => setPredExitWeight(Number(e.target.value))} readOnly={predTargetMode === 'final_weight'} />
                         </div>
                         <div className="space-y-1">
