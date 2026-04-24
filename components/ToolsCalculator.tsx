@@ -243,9 +243,11 @@ const ToolsCalculator: React.FC<ToolsCalculatorProps> = ({ onSaveDailyCost, lots
         </div>
         
         <div className="flex bg-gray-200 rounded-2xl p-1 shadow-inner border border-gray-300">
-          <button onClick={() => setActiveTab('daily_value')} className={`px-4 py-2 rounded-xl text-xs font-black transition-all uppercase tracking-widest ${activeTab === 'daily_value' ? 'bg-white shadow-md text-emerald-700' : 'text-gray-500 hover:text-gray-700'}`}>Valor Diário</button>
-          <button onClick={() => setActiveTab('diet')} className={`px-4 py-2 rounded-xl text-xs font-black transition-all uppercase tracking-widest ${activeTab === 'diet' ? 'bg-white shadow-md text-emerald-700' : 'text-gray-500 hover:text-gray-700'}`}>Suplementação</button>
-          <button onClick={() => setActiveTab('prediction')} className={`px-4 py-2 rounded-xl text-xs font-black transition-all uppercase tracking-widest ${activeTab === 'prediction' ? 'bg-white shadow-md text-emerald-700' : 'text-gray-500 hover:text-gray-700'}`}>Simulador</button>
+          <div className="px-4 py-2 text-[10px] font-black text-emerald-700 uppercase tracking-widest bg-white rounded-xl shadow-sm">
+            {activeTab === 'daily_value' && 'Painel de Custos'}
+            {activeTab === 'diet' && 'Painel Nutricional'}
+            {activeTab === 'prediction' && 'Calculadora de Ciclo'}
+          </div>
         </div>
       </div>
 
@@ -423,12 +425,12 @@ const ToolsCalculator: React.FC<ToolsCalculatorProps> = ({ onSaveDailyCost, lots
                                   <div className="w-32 relative">
                                       <input 
                                           type="number" 
-                                          className={`w-full border rounded-xl pl-4 pr-10 py-2 font-bold text-right outline-none transition-all ${calcInput.id === ing.id ? 'border-emerald-500 ring-2 ring-emerald-200 bg-white' : 'border-gray-200 bg-gray-100/50'}`}
+                                          className={`w-full border rounded-xl pl-4 pr-12 py-2 font-bold text-right outline-none transition-all ${calcInput.id === ing.id ? 'border-emerald-500 ring-2 ring-emerald-200 bg-white' : 'border-gray-200 bg-gray-100/50'}`}
                                           value={calcInput.id === ing.id ? calcInput.value : Number(getWeight(ing.id).toFixed(2))}
                                           onChange={(e) => setCalcInput({ id: ing.id, value: Number(e.target.value) })}
                                           onFocus={handleFocus}
                                       />
-                                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-bold text-gray-400 pointer-events-none">kg</span>
+                                      <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-bold text-gray-400 pointer-events-none">kg</span>
                                   </div>
                               </div>
                           ))}
@@ -450,72 +452,12 @@ const ToolsCalculator: React.FC<ToolsCalculatorProps> = ({ onSaveDailyCost, lots
                               <label className="text-[10px] font-black text-emerald-600 uppercase tracking-widest block mb-1 ml-1">Ajustar Total</label>
                               <input 
                                   type="number" 
-                                  className={`w-full border rounded-xl pl-4 pr-10 py-3 font-black text-right outline-none transition-all ${calcInput.id === 'total' ? 'border-emerald-500 ring-2 ring-emerald-200 bg-white' : 'border-gray-200 bg-gray-100/50'}`}
+                                  className={`w-full border rounded-xl pl-4 pr-12 py-3 font-black text-right outline-none transition-all ${calcInput.id === 'total' ? 'border-emerald-500 ring-2 ring-emerald-200 bg-white' : 'border-gray-200 bg-gray-100/50'}`}
                                   value={calcInput.id === 'total' ? calcInput.value : Number(getTotalWeight().toFixed(2))}
                                   onChange={(e) => setCalcInput({ id: 'total', value: Number(e.target.value) })}
                                   onFocus={handleFocus}
                               />
-                              <span className="absolute right-3 bottom-4 text-[10px] font-bold text-gray-400 pointer-events-none">kg</span>
-                          </div>
-                      </div>
-                  </div>
-              </div>
-
-              {/* Calculadora de Proporções */}
-              <div className="bg-white rounded-[2rem] shadow-sm border border-gray-100 overflow-hidden">
-                  <div className="p-4 bg-emerald-50 border-b border-emerald-100 flex justify-between items-center">
-                      <h3 className="text-sm font-black text-emerald-800 uppercase tracking-widest flex items-center gap-2">
-                          <Calculator size={18} /> Calculadora de Proporções (Misturador)
-                      </h3>
-                  </div>
-                  <div className="p-8 space-y-6">
-                      <p className="text-xs text-gray-500 font-medium italic">
-                          Insira o peso desejado em qualquer campo para recalcular os demais mantendo as proporções.
-                      </p>
-                      
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          {ingredients.map(ing => (
-                              <div key={`calc-${ing.id}`} className="flex items-center gap-4 p-4 bg-gray-50 rounded-2xl border border-gray-100">
-                                  <div className="flex-1">
-                                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest truncate max-w-[120px]">{ing.name || 'Ingrediente'}</p>
-                                      <p className="text-xs font-bold text-emerald-600">{ing.percent}%</p>
-                                  </div>
-                                  <div className="w-32 relative">
-                                      <input 
-                                          type="number" 
-                                          className={`w-full border rounded-xl pl-4 pr-10 py-2 font-bold text-right outline-none transition-all ${calcInput.id === ing.id ? 'border-emerald-500 ring-2 ring-emerald-200 bg-white' : 'border-gray-200 bg-gray-100/50'}`}
-                                          value={calcInput.id === ing.id ? calcInput.value : Number(getWeight(ing.id).toFixed(2))}
-                                          onChange={(e) => setCalcInput({ id: ing.id, value: Number(e.target.value) })}
-                                          onFocus={handleFocus}
-                                      />
-                                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-bold text-gray-400 pointer-events-none">kg</span>
-                                  </div>
-                              </div>
-                          ))}
-                      </div>
-
-                      <div className="pt-6 border-t border-gray-100 flex flex-col md:flex-row justify-between items-center gap-6">
-                          <div className="flex items-center gap-3">
-                              <div className="p-3 bg-emerald-600 text-white rounded-2xl shadow-lg shadow-emerald-100">
-                                  <Weight size={24} />
-                              </div>
-                              <div>
-                                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Peso Total da Batida</p>
-                                  <p className="text-2xl font-black text-gray-800 tracking-tighter">
-                                      {getTotalWeight().toLocaleString('pt-BR', { minimumFractionDigits: 2 })} <span className="text-sm opacity-50">kg</span>
-                                  </p>
-                              </div>
-                          </div>
-                          <div className="w-full md:w-48 relative">
-                              <label className="text-[10px] font-black text-emerald-600 uppercase tracking-widest block mb-1 ml-1">Ajustar Total</label>
-                              <input 
-                                  type="number" 
-                                  className={`w-full border rounded-xl pl-4 pr-10 py-3 font-black text-right outline-none transition-all ${calcInput.id === 'total' ? 'border-emerald-500 ring-2 ring-emerald-200 bg-white' : 'border-gray-200 bg-gray-100/50'}`}
-                                  value={calcInput.id === 'total' ? calcInput.value : Number(getTotalWeight().toFixed(2))}
-                                  onChange={(e) => setCalcInput({ id: 'total', value: Number(e.target.value) })}
-                                  onFocus={handleFocus}
-                              />
-                              <span className="absolute right-3 bottom-4 text-[10px] font-bold text-gray-400 pointer-events-none">kg</span>
+                              <span className="absolute right-4 bottom-4 text-[10px] font-bold text-gray-400 pointer-events-none">kg</span>
                           </div>
                       </div>
                   </div>
@@ -616,9 +558,9 @@ const ToolsCalculator: React.FC<ToolsCalculatorProps> = ({ onSaveDailyCost, lots
                         <Activity className="text-emerald-600" size={24} /> Variáveis de Entrada
                     </h3>
                     <div className="flex bg-gray-100 rounded-lg p-1 border border-gray-200 shadow-inner">
-                        <button onClick={() => setPredTargetMode('final_weight')} className={`px-4 py-1.5 text-[10px] font-black rounded-md transition-all uppercase tracking-widest ${predTargetMode === 'final_weight' ? 'bg-emerald-600 text-white shadow-md' : 'text-gray-400 hover:text-gray-600'}`}>OBJ: PESO</button>
-                        <button onClick={() => setPredTargetMode('gmd')} className={`px-4 py-1.5 text-[10px] font-black rounded-md transition-all uppercase tracking-widest ${predTargetMode === 'gmd' ? 'bg-emerald-600 text-white shadow-md' : 'text-gray-400 hover:text-gray-600'}`}>OBJ: GMD</button>
-                        <button onClick={() => setPredTargetMode('days')} className={`px-4 py-1.5 text-[10px] font-black rounded-md transition-all uppercase tracking-widest ${predTargetMode === 'days' ? 'bg-emerald-600 text-white shadow-md' : 'text-gray-400 hover:text-gray-600'}`}>OBJ: DIAS</button>
+                        <button onClick={() => setPredTargetMode('final_weight')} className={`px-4 py-1.5 text-[10px] font-black rounded-md transition-all uppercase tracking-widest ${predTargetMode === 'final_weight' ? 'bg-blue-600 text-white shadow-md' : 'text-gray-400 hover:text-gray-600'}`}>OBJ: PESO</button>
+                        <button onClick={() => setPredTargetMode('gmd')} className={`px-4 py-1.5 text-[10px] font-black rounded-md transition-all uppercase tracking-widest ${predTargetMode === 'gmd' ? 'bg-blue-600 text-white shadow-md' : 'text-gray-400 hover:text-gray-600'}`}>OBJ: GMD</button>
+                        <button onClick={() => setPredTargetMode('days')} className={`px-4 py-1.5 text-[10px] font-black rounded-md transition-all uppercase tracking-widest ${predTargetMode === 'days' ? 'bg-blue-600 text-white shadow-md' : 'text-gray-400 hover:text-gray-600'}`}>OBJ: DIAS</button>
                     </div>
                 </div>
 
