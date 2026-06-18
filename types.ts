@@ -133,6 +133,16 @@ export interface CalculatorConfig {
   mineralPriceTotal?: number;
   mineralBagWeight?: number;
   mineralConsumptionGrams?: number;
+  predQty?: number;
+  predEntryWeight?: number;
+  predBuyPrice?: number;
+  predTargetMode?: 'final_weight' | 'gmd' | 'days';
+  predExitWeight?: number;
+  predCarcassYield?: number;
+  predSellPrice?: number;
+  predDailyRate?: number;
+  predGmd?: number;
+  predDays?: number;
 }
 
 export interface FarmData {

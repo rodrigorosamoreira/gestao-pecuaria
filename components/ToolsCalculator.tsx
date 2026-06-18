@@ -102,6 +102,18 @@ const ToolsCalculator: React.FC<ToolsCalculatorProps> = ({ onSaveDailyCost, lots
       setMineralPriceTotal(configToLoad.mineralPriceTotal ?? 120);
       setMineralBagWeight(configToLoad.mineralBagWeight ?? 30);
       setMineralConsumptionGrams(configToLoad.mineralConsumptionGrams ?? 100);
+
+      // Carregar campos do simulador de lucro
+      if (configToLoad.predQty !== undefined) setPredQty(configToLoad.predQty);
+      if (configToLoad.predEntryWeight !== undefined) setPredEntryWeight(configToLoad.predEntryWeight);
+      if (configToLoad.predBuyPrice !== undefined) setPredBuyPrice(configToLoad.predBuyPrice);
+      if (configToLoad.predTargetMode !== undefined) setPredTargetMode(configToLoad.predTargetMode);
+      if (configToLoad.predExitWeight !== undefined) setPredExitWeight(configToLoad.predExitWeight);
+      if (configToLoad.predCarcassYield !== undefined) setPredCarcassYield(configToLoad.predCarcassYield);
+      if (configToLoad.predSellPrice !== undefined) setPredSellPrice(configToLoad.predSellPrice);
+      if (configToLoad.predDailyRate !== undefined) setPredDailyRate(configToLoad.predDailyRate);
+      if (configToLoad.predGmd !== undefined) setPredGmd(configToLoad.predGmd);
+      if (configToLoad.predDays !== undefined) setPredDays(configToLoad.predDays);
     }
   }, [targetLotId]); // Removido lots e initialConfig para evitar sobrescrever edições em curso
 
@@ -201,7 +213,17 @@ const ToolsCalculator: React.FC<ToolsCalculatorProps> = ({ onSaveDailyCost, lots
         isMineralSalt,
         mineralPriceTotal,
         mineralBagWeight,
-        mineralConsumptionGrams
+        mineralConsumptionGrams,
+        predQty: Number(predQty) || 50,
+        predEntryWeight: Number(predEntryWeight) || 330,
+        predBuyPrice: Number(predBuyPrice) || 250,
+        predTargetMode,
+        predExitWeight: Number(predExitWeight) || 537,
+        predCarcassYield: Number(predCarcassYield) || 52,
+        predSellPrice: Number(predSellPrice) || 240,
+        predDailyRate: Number(predDailyRate) || 8.532,
+        predGmd: Number(predGmd) || 1.15,
+        predDays: Number(predDays) || 180,
       };
       
       onSaveDailyCost(safeDailyCost, targetLotId || undefined, config);
@@ -236,7 +258,57 @@ const ToolsCalculator: React.FC<ToolsCalculatorProps> = ({ onSaveDailyCost, lots
         isMineralSalt,
         mineralPriceTotal,
         mineralBagWeight,
-        mineralConsumptionGrams
+        mineralConsumptionGrams,
+        predQty: Number(predQty) || 50,
+        predEntryWeight: Number(predEntryWeight) || 330,
+        predBuyPrice: Number(predBuyPrice) || 250,
+        predTargetMode,
+        predExitWeight: Number(predExitWeight) || 537,
+        predCarcassYield: Number(predCarcassYield) || 52,
+        predSellPrice: Number(predSellPrice) || 240,
+        predDailyRate: Number(predDailyRate) || 8.532,
+        predGmd: Number(predGmd) || 1.15,
+        predDays: Number(predDays) || 180,
+      };
+      onSaveDailyCost(safeDailyCost, targetLotId || undefined, config);
+    }
+    setShowSaveSuccess(true);
+    setTimeout(() => {
+      setIsSaving(false);
+      setShowSaveSuccess(false);
+    }, 3000);
+  };
+
+  const handleSavePrediction = () => {
+    setIsSaving(true);
+    if (onSaveDailyCost) {
+      // Use the current simulator daily rate as the daily cost
+      const safeDailyCost = Number(predDailyRate) || 0;
+
+      const config: CalculatorConfig = {
+        rentCost: Number(rentCost) || 0,
+        suppCostMonthly: Number(suppCostMonthly) || 0,
+        extraCostMonthly: Number(extraCostMonthly) || 0,
+        totalAnimalsDaily: Number(totalAnimalsDaily) || 1,
+        gmdDailyVal: Number(gmdDailyVal) || 0,
+        ingredients,
+        avgLotWeight: Number(avgLotWeight) || 0,
+        numAnimals: Number(numAnimals) || 1,
+        pvPercent: Number(pvPercent) || 0,
+        isMineralSalt,
+        mineralPriceTotal,
+        mineralBagWeight,
+        mineralConsumptionGrams,
+        predQty: Number(predQty) || 50,
+        predEntryWeight: Number(predEntryWeight) || 330,
+        predBuyPrice: Number(predBuyPrice) || 250,
+        predTargetMode,
+        predExitWeight: Number(predExitWeight) || 537,
+        predCarcassYield: Number(predCarcassYield) || 52,
+        predSellPrice: Number(predSellPrice) || 240,
+        predDailyRate,
+        predGmd: Number(predGmd) || 1.15,
+        predDays: Number(predDays) || 180,
       };
       onSaveDailyCost(safeDailyCost, targetLotId || undefined, config);
     }
@@ -789,6 +861,34 @@ const ToolsCalculator: React.FC<ToolsCalculatorProps> = ({ onSaveDailyCost, lots
                     <p className="text-4xl font-black tracking-tighter">{(predTargetMode === 'gmd' ? calculatedGmd : predGmd).toFixed(3)}</p>
                     <p className="text-[10px] font-bold uppercase tracking-widest mt-1 opacity-60">kg/dia</p>
                 </div>
+            </div>
+
+            {/* Action Bar/Save Button */}
+            <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4">
+              <span className="text-[11px] text-gray-500 font-medium max-w-sm">
+                Os dados inseridos no simulador ficarão salvos e mantidos até você editá-los novamente.
+              </span>
+              <div className="flex items-center gap-3 w-full sm:w-auto">
+                <button
+                  type="button"
+                  onClick={handleSavePrediction}
+                  disabled={isSaving}
+                  className={`w-full sm:w-auto flex items-center justify-center gap-2 ${isSaving ? 'bg-gray-450' : 'bg-emerald-600 hover:bg-emerald-700'} text-white px-6 py-3.5 rounded-xl text-xs font-black uppercase tracking-wider shadow-md hover:shadow-lg active:scale-95 transition-all cursor-pointer`}
+                >
+                  {isSaving ? (
+                    'Salvando...'
+                  ) : (
+                    <>
+                      <Save size={14} /> Salvar Simulação
+                    </>
+                  )}
+                </button>
+                {showSaveSuccess && (
+                  <div className="bg-emerald-100 text-emerald-700 font-black px-4 py-3 rounded-xl flex items-center gap-1.5 text-[11px] uppercase tracking-wider animate-in fade-in zoom-in-95 duration-300">
+                    <CheckCircle size={14} /> Salvo!
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
