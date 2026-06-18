@@ -46,8 +46,7 @@ const ToolsCalculator: React.FC<ToolsCalculatorProps> = ({ onSaveDailyCost, lots
   const [predExitWeight, setPredExitWeight] = useState<number>(537);
   const [predCarcassYield, setPredCarcassYield] = useState<number>(52);
   const [predSellPrice, setPredSellPrice] = useState<number>(240);
-  const [predSuppCostDaily, setPredSuppCostDaily] = useState<number>(6.732);
-  const [predOpCostDaily, setPredOpCostDaily] = useState<number>(1.80);
+  const [predDailyRate, setPredDailyRate] = useState<number>(8.532);
   const [predGmd, setPredGmd] = useState<number>(1.15);
   const [predDays, setPredDays] = useState<number>(180);
 
@@ -69,6 +68,12 @@ const ToolsCalculator: React.FC<ToolsCalculatorProps> = ({ onSaveDailyCost, lots
   const [avgLotWeight, setAvgLotWeight] = useState<number>(330);
   const [numAnimals, setNumAnimals] = useState<number>(50);
   const [pvPercent, setPvPercent] = useState<number>(0.1); 
+
+  // --- Estados do Sal Mineral ---
+  const [isMineralSalt, setIsMineralSalt] = useState<boolean>(false);
+  const [mineralPriceTotal, setMineralPriceTotal] = useState<number>(120);
+  const [mineralBagWeight, setMineralBagWeight] = useState<number>(30);
+  const [mineralConsumptionGrams, setMineralConsumptionGrams] = useState<number>(100);
 
   const [isSaving, setIsSaving] = useState(false);
 
@@ -93,6 +98,10 @@ const ToolsCalculator: React.FC<ToolsCalculatorProps> = ({ onSaveDailyCost, lots
       setAvgLotWeight(configToLoad.avgLotWeight || 0);
       setNumAnimals(configToLoad.numAnimals || 50);
       setPvPercent(configToLoad.pvPercent || 0);
+      setIsMineralSalt(configToLoad.isMineralSalt || false);
+      setMineralPriceTotal(configToLoad.mineralPriceTotal ?? 120);
+      setMineralBagWeight(configToLoad.mineralBagWeight ?? 30);
+      setMineralConsumptionGrams(configToLoad.mineralConsumptionGrams ?? 100);
     }
   }, [targetLotId]); // Removido lots e initialConfig para evitar sobrescrever edições em curso
 
@@ -103,8 +112,12 @@ const ToolsCalculator: React.FC<ToolsCalculatorProps> = ({ onSaveDailyCost, lots
 
   // --- Cálculos Suplementação ---
   const totalPercent = ingredients.reduce((acc, i) => acc + i.percent, 0);
-  const costPerKgSupplement = ingredients.reduce((acc, i) => acc + (i.percent / 100) * i.priceKg, 0);
-  const consumptionPerAnimalKg = (avgLotWeight * (pvPercent / 100));
+  const costPerKgSupplement = isMineralSalt
+    ? (mineralBagWeight > 0 ? mineralPriceTotal / mineralBagWeight : 0)
+    : ingredients.reduce((acc, i) => acc + (i.percent / 100) * i.priceKg, 0);
+  const consumptionPerAnimalKg = isMineralSalt
+    ? (mineralConsumptionGrams / 1000)
+    : (avgLotWeight * (pvPercent / 100));
   const totalBatchConsumption = consumptionPerAnimalKg * numAnimals;
   const totalDailyCostSupp = totalBatchConsumption * costPerKgSupplement;
   const totalMonthlyCostSupp = totalDailyCostSupp * 30;
@@ -148,8 +161,8 @@ const ToolsCalculator: React.FC<ToolsCalculatorProps> = ({ onSaveDailyCost, lots
     : predExitWeight;
 
   const costAnimalUnit = (predEntryWeight / 30) * predBuyPrice;
-  const costNutritionUnit = predSuppCostDaily * calculatedDays;
-  const costOperationUnit = predOpCostDaily * calculatedDays;
+  const costNutritionUnit = predDailyRate * calculatedDays;
+  const costOperationUnit = 0;
   const desembolsoTotalUnit = costAnimalUnit + costNutritionUnit + costOperationUnit;
   
   const carcassKgUnit = calculatedFinalWeight * (predCarcassYield / 100);
@@ -184,7 +197,11 @@ const ToolsCalculator: React.FC<ToolsCalculatorProps> = ({ onSaveDailyCost, lots
         ingredients,
         avgLotWeight: Number(avgLotWeight) || 0,
         numAnimals: Number(numAnimals) || 1,
-        pvPercent: Number(pvPercent) || 0
+        pvPercent: Number(pvPercent) || 0,
+        isMineralSalt,
+        mineralPriceTotal,
+        mineralBagWeight,
+        mineralConsumptionGrams
       };
       
       onSaveDailyCost(safeDailyCost, targetLotId || undefined, config);
@@ -197,7 +214,7 @@ const ToolsCalculator: React.FC<ToolsCalculatorProps> = ({ onSaveDailyCost, lots
   };
 
   const handleSaveSupplementation = () => {
-    if (totalPercent > 100) return;
+    if (!isMineralSalt && totalPercent > 100) return;
     setIsSaving(true);
     
     setSuppCostMonthly(totalMonthlyCostSupp);
@@ -215,7 +232,11 @@ const ToolsCalculator: React.FC<ToolsCalculatorProps> = ({ onSaveDailyCost, lots
         ingredients,
         avgLotWeight: Number(avgLotWeight) || 0,
         numAnimals: Number(numAnimals) || 1,
-        pvPercent: Number(pvPercent) || 0
+        pvPercent: Number(pvPercent) || 0,
+        isMineralSalt,
+        mineralPriceTotal,
+        mineralBagWeight,
+        mineralConsumptionGrams
       };
       onSaveDailyCost(safeDailyCost, targetLotId || undefined, config);
     }
@@ -338,7 +359,18 @@ const ToolsCalculator: React.FC<ToolsCalculatorProps> = ({ onSaveDailyCost, lots
                    </div>
                    <div className="bg-white p-5 rounded-3xl border border-blue-200 shadow-sm">
                       <p className="text-[10px] font-black text-blue-600 uppercase mb-1 tracking-widest">Custo Diário/Animal</p>
-                      <p className="text-3xl font-black text-blue-600 tracking-tighter">R$ {dailyCostPerAnimal.toLocaleString('pt-BR', {minimumFractionDigits: 3})}</p>
+                      <p className="text-3xl font-black text-blue-600 tracking-tighter mb-3">R$ {dailyCostPerAnimal.toLocaleString('pt-BR', {minimumFractionDigits: 3})}</p>
+                      <button
+                         type="button"
+                         onClick={() => {
+                            const cost = isNaN(dailyCostPerAnimal) || !isFinite(dailyCostPerAnimal) ? 0 : dailyCostPerAnimal;
+                            setPredDailyRate(Number(cost.toFixed(3)));
+                            setActiveTab('prediction');
+                         }}
+                         className="w-full bg-blue-600 hover:bg-blue-700 text-white font-black text-[10px] py-2.5 px-3 rounded-xl uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-sm hover:shadow-md cursor-pointer"
+                      >
+                         <Zap size={12} /> Enviar Diária p/ Simulação
+                      </button>
                    </div>
                    <div className="bg-white p-5 rounded-3xl border border-emerald-200 shadow-sm">
                       <p className="text-[10px] font-black text-emerald-600 uppercase mb-1 tracking-widest">Arroba Produzida</p>
@@ -363,105 +395,197 @@ const ToolsCalculator: React.FC<ToolsCalculatorProps> = ({ onSaveDailyCost, lots
            <div className="lg:col-span-8 space-y-6">
               <div className="bg-white rounded-[2rem] shadow-sm border border-gray-100 overflow-hidden">
                   <div className="p-4 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
-                    <h3 className="text-sm font-black text-gray-800 uppercase tracking-widest flex items-center gap-2"><PieChartIcon className="text-emerald-600" size={18} /> Composição da Mistura (100kg)</h3>
-                    {totalPercent > 100 && <div className="bg-red-600 text-white text-[10px] font-black px-3 py-1 rounded-lg animate-bounce flex items-center gap-1"><AlertCircle size={12} /> EXCESSO {totalPercent}%</div>}
+                    <h3 className="text-sm font-black text-gray-800 uppercase tracking-widest flex items-center gap-2">
+                      <PieChartIcon className="text-emerald-600" size={18} /> Composição {isMineralSalt ? 'do Sal Mineral' : 'da Mistura (100kg)'}
+                    </h3>
+                    {!isMineralSalt && totalPercent > 100 && <div className="bg-red-600 text-white text-[10px] font-black px-3 py-1 rounded-lg animate-bounce flex items-center gap-1"><AlertCircle size={12} /> EXCESSO {totalPercent}%</div>}
                   </div>
-                  <div className="p-8 space-y-4">
-                    {ingredients.map(ing => (
-                      <div key={ing.id} className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm relative group">
-                          <div className="flex justify-between items-center mb-4">
-                              <input type="text" className="bg-transparent border-none p-0 text-sm font-black text-gray-700 outline-none focus:ring-0 w-1/2" value={ing.name} onChange={e => updateIngredient(ing.id, 'name', e.target.value)} placeholder="Ingrediente..." />
-                              <button onClick={() => removeIngredient(ing.id)} className="text-red-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity"><Trash2 size={18} /></button>
-                          </div>
-                          <div className="grid grid-cols-3 gap-6">
-                              <div className="space-y-1">
-                                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Percentual (%)</label>
-                                  <input type="number" onFocus={handleFocus} className="w-full border border-gray-100 rounded-xl px-4 py-2 text-sm font-bold bg-gray-50/50" value={ing.percent || ''} onChange={e => updateIngredient(ing.id, 'percent', Number(e.target.value))} />
-                              </div>
-                              <div className="space-y-1">
-                                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Valor/Kg (R$)</label>
-                                  <input type="number" step="0.01" onFocus={handleFocus} className="w-full border border-gray-100 rounded-xl px-4 py-2 text-sm font-bold bg-gray-50/50" value={ing.priceKg || ''} onChange={e => updateIngredient(ing.id, 'priceKg', Number(e.target.value))} />
-                              </div>
-                              <div className="space-y-1">
-                                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Custo Mistura</label>
-                                  <div className="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-2 text-sm font-bold text-gray-400">R$ {((ing.percent / 100) * ing.priceKg).toFixed(2)}</div>
-                              </div>
-                          </div>
-                      </div>
-                    ))}
-                    <button onClick={handleAddIngredient} className="w-full border-2 border-dashed border-gray-200 rounded-2xl py-4 text-xs font-black text-emerald-600 hover:bg-emerald-50 transition-all flex items-center justify-center gap-2"><Plus size={18} /> Adicionar Ingrediente</button>
-                    <div className="mt-8 p-6 bg-emerald-50 rounded-3xl border border-emerald-100 flex justify-between items-center">
-                        <div>
-                            <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-1">Custo do Kg Pronto</p>
-                            <p className="text-4xl font-black text-emerald-900 tracking-tighter">R$ {costPerKgSupplement.toFixed(2)}</p>
-                        </div>
-                        <div className="text-right">
-                             <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-1">Total</p>
-                             <p className={`text-2xl font-black ${totalPercent === 100 ? 'text-emerald-600' : 'text-red-600'}`}>{totalPercent}%</p>
+                  <div className="p-8 space-y-6">
+                    {/* Seletor do Tipo de Suplemento */}
+                    <div className="bg-gray-50 p-2 rounded-2xl border border-gray-100 flex items-center justify-between gap-4">
+                        <span className="text-xs font-bold text-gray-500 pl-2">Tipo de Nutrição:</span>
+                        <div className="flex bg-gray-200 rounded-xl p-1 shadow-inner border border-gray-300">
+                            <button 
+                              onClick={() => setIsMineralSalt(false)} 
+                              className={`px-4 py-2 rounded-lg text-[10px] font-black transition-all uppercase tracking-widest ${!isMineralSalt ? 'bg-white shadow-md text-emerald-700' : 'text-gray-500 hover:text-gray-700'}`}
+                            >
+                              Mistura Customizada
+                            </button>
+                            <button 
+                              onClick={() => setIsMineralSalt(true)} 
+                              className={`px-4 py-2 rounded-lg text-[10px] font-black transition-all uppercase tracking-widest ${isMineralSalt ? 'bg-white shadow-md text-emerald-700' : 'text-gray-500 hover:text-gray-700'}`}
+                            >
+                              Sal Mineral
+                            </button>
                         </div>
                     </div>
+
+                    {isMineralSalt ? (
+                      <div className="space-y-6 pt-2">
+                        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-6">
+                            <div className="flex items-center gap-3 mb-2">
+                              <div className="p-2 bg-emerald-50 text-emerald-600 rounded-xl"><Coins size={20} /></div>
+                              <div>
+                                <h4 className="text-xs font-black text-gray-800 uppercase tracking-wider">Configuração de Custo do Sal Mineral</h4>
+                                <p className="text-[10px] text-gray-400 font-medium">Insira o valor pago e o peso da embalagem para calcular o custo/kg</p>
+                              </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                              <div className="space-y-1">
+                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest block ml-1">Valor do Saco (R$)</label>
+                                <div className="relative">
+                                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xs font-bold text-gray-400">R$</span>
+                                  <input 
+                                    type="number" 
+                                    step="0.01" 
+                                    onFocus={handleFocus} 
+                                    className="w-full border border-gray-200 rounded-xl pl-10 pr-4 py-3 text-sm font-bold bg-white outline-none focus:ring-2 focus:ring-emerald-500 transition-all" 
+                                    value={mineralPriceTotal || ''} 
+                                    onChange={e => setMineralPriceTotal(Number(e.target.value))} 
+                                  />
+                                </div>
+                              </div>
+                              <div className="space-y-1">
+                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest block ml-1">Peso do Saco (Kg)</label>
+                                <div className="relative">
+                                  <input 
+                                    type="number" 
+                                    onFocus={handleFocus} 
+                                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm font-bold bg-white outline-none focus:ring-2 focus:ring-emerald-500 transition-all" 
+                                    value={mineralBagWeight || ''} 
+                                    onChange={e => setMineralBagWeight(Number(e.target.value))} 
+                                  />
+                                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-gray-400">kg</span>
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="p-6 bg-emerald-50 rounded-3xl border border-emerald-100 flex justify-between items-center">
+                              <div>
+                                <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-1">Custo por Kg Pronto</p>
+                                <p className="text-4xl font-black text-emerald-950 tracking-tighter">
+                                  R$ {(mineralBagWeight > 0 ? (mineralPriceTotal / mineralBagWeight) : 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                </p>
+                              </div>
+                              <div className="text-right">
+                                <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-1">Status do Sal</p>
+                                <p className="text-xs font-bold text-emerald-700 bg-emerald-100 px-3 py-1.5 rounded-full inline-block">Saco Pronto</p>
+                              </div>
+                            </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="space-y-4 pt-2">
+                        {ingredients.map(ing => (
+                          <div key={ing.id} className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm relative group">
+                              <div className="flex justify-between items-center mb-4">
+                                  <input type="text" className="bg-transparent border-none p-0 text-sm font-black text-gray-700 outline-none focus:ring-0 w-1/2" value={ing.name} onChange={e => updateIngredient(ing.id, 'name', e.target.value)} placeholder="Ingrediente..." />
+                                  <button onClick={() => removeIngredient(ing.id)} className="text-red-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity"><Trash2 size={18} /></button>
+                              </div>
+                              <div className="grid grid-cols-3 gap-6">
+                                  <div className="space-y-1">
+                                      <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Percentual (%)</label>
+                                      <input type="number" onFocus={handleFocus} className="w-full border border-gray-100 rounded-xl px-4 py-2 text-sm font-bold bg-gray-50/50" value={ing.percent || ''} onChange={e => updateIngredient(ing.id, 'percent', Number(e.target.value))} />
+                                  </div>
+                                  <div className="space-y-1">
+                                      <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Valor/Kg (R$)</label>
+                                      <input type="number" step="0.01" onFocus={handleFocus} className="w-full border border-gray-100 rounded-xl px-4 py-2 text-sm font-bold bg-gray-50/50" value={ing.priceKg || ''} onChange={e => updateIngredient(ing.id, 'priceKg', Number(e.target.value))} />
+                                  </div>
+                                  <div className="space-y-1">
+                                      <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Custo Mistura</label>
+                                      <div className="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-2 text-sm font-bold text-gray-400">R$ {((ing.percent / 100) * ing.priceKg).toFixed(2)}</div>
+                                  </div>
+                              </div>
+                          </div>
+                        ))}
+                        <button onClick={handleAddIngredient} className="w-full border-2 border-dashed border-gray-200 rounded-2xl py-4 text-xs font-black text-emerald-600 hover:bg-emerald-50 transition-all flex items-center justify-center gap-2"><Plus size={18} /> Adicionar Ingrediente</button>
+                        <div className="mt-8 p-6 bg-emerald-50 rounded-3xl border border-emerald-100 flex justify-between items-center">
+                            <div>
+                                <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-1">Custo do Kg Pronto</p>
+                                <p className="text-4xl font-black text-emerald-900 tracking-tighter">R$ {costPerKgSupplement.toFixed(2)}</p>
+                            </div>
+                            <div className="text-right">
+                                 <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-1">Total</p>
+                                 <p className={`text-2xl font-black ${totalPercent === 100 ? 'text-emerald-600' : 'text-red-600'}`}>{totalPercent}%</p>
+                            </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
               </div>
 
               {/* Calculadora de Proporções */}
-              <div className="bg-white rounded-[2rem] shadow-sm border border-gray-100 overflow-hidden">
-                  <div className="p-4 bg-emerald-50 border-b border-emerald-100 flex justify-between items-center">
-                      <h3 className="text-sm font-black text-emerald-800 uppercase tracking-widest flex items-center gap-2">
-                          <Calculator size={18} /> Calculadora de Proporções (Misturador)
-                      </h3>
-                  </div>
-                  <div className="p-8 space-y-6">
-                      <p className="text-xs text-gray-500 font-medium italic">
-                          Insira o peso desejado em qualquer campo para recalcular os demais mantendo as proporções.
+              {isMineralSalt ? (
+                  <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center space-y-3">
+                      <div className="p-4 bg-emerald-50 text-emerald-600 rounded-full">
+                          <Calculator size={36} />
+                      </div>
+                      <h4 className="text-sm font-black text-gray-800 uppercase tracking-wider">Mistura Pronta p/ Uso Comercial</h4>
+                      <p className="text-xs text-gray-500 max-w-sm leading-relaxed italic">
+                          O Sal Mineral é fornecido de forma direta e pronta ao cocho. Não há necessidade de balanceamento de ingredientes ou proporções de batida adicional.
                       </p>
-                      
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          {ingredients.map(ing => (
-                              <div key={`calc-${ing.id}`} className="flex items-center gap-4 p-4 bg-gray-50 rounded-2xl border border-gray-100">
-                                  <div className="flex-1">
-                                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest truncate max-w-[120px]">{ing.name || 'Ingrediente'}</p>
-                                      <p className="text-xs font-bold text-emerald-600">{ing.percent}%</p>
-                                  </div>
-                                  <div className="w-32 relative">
-                                      <input 
-                                          type="number" 
-                                          className={`w-full border rounded-xl pl-4 pr-12 py-2 font-bold text-right outline-none transition-all ${calcInput.id === ing.id ? 'border-emerald-500 ring-2 ring-emerald-200 bg-white' : 'border-gray-200 bg-gray-100/50'}`}
-                                          value={calcInput.id === ing.id ? calcInput.value : Number(getWeight(ing.id).toFixed(2))}
-                                          onChange={(e) => setCalcInput({ id: ing.id, value: Number(e.target.value) })}
-                                          onFocus={handleFocus}
-                                      />
-                                      <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-bold text-gray-400 pointer-events-none">kg</span>
-                                  </div>
-                              </div>
-                          ))}
+                  </div>
+              ) : (
+                  <div className="bg-white rounded-[2rem] shadow-sm border border-gray-100 overflow-hidden">
+                      <div className="p-4 bg-emerald-50 border-b border-emerald-100 flex justify-between items-center">
+                          <h3 className="text-sm font-black text-emerald-800 uppercase tracking-widest flex items-center gap-2">
+                              <Calculator size={18} /> Calculadora de Proporções (Misturador)
+                          </h3>
                       </div>
-
-                      <div className="pt-6 border-t border-gray-100 flex flex-col md:flex-row justify-between items-center gap-6">
-                          <div className="flex items-center gap-3">
-                              <div className="p-3 bg-emerald-600 text-white rounded-2xl shadow-lg shadow-emerald-100">
-                                  <Weight size={24} />
-                              </div>
-                              <div>
-                                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Peso Total da Batida</p>
-                                  <p className="text-2xl font-black text-gray-800 tracking-tighter">
-                                      {getTotalWeight().toLocaleString('pt-BR', { minimumFractionDigits: 2 })} <span className="text-sm opacity-50">kg</span>
-                                  </p>
-                              </div>
+                      <div className="p-8 space-y-6">
+                          <p className="text-xs text-gray-500 font-medium italic">
+                              Insira o peso desejado em qualquer campo para recalcular os demais mantendo as proporções.
+                          </p>
+                          
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              {ingredients.map(ing => (
+                                  <div key={`calc-${ing.id}`} className="flex items-center gap-4 p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                                      <div className="flex-1">
+                                          <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest truncate max-w-[120px]">{ing.name || 'Ingrediente'}</p>
+                                          <p className="text-xs font-bold text-emerald-600">{ing.percent}%</p>
+                                      </div>
+                                      <div className="w-32 relative">
+                                          <input 
+                                              type="number" 
+                                              className={`w-full border rounded-xl pl-4 pr-12 py-2 font-bold text-right outline-none transition-all ${calcInput.id === ing.id ? 'border-emerald-500 ring-2 ring-emerald-200 bg-white' : 'border-gray-200 bg-gray-100/50'}`}
+                                              value={calcInput.id === ing.id ? calcInput.value : Number(getWeight(ing.id).toFixed(2))}
+                                              onChange={(e) => setCalcInput({ id: ing.id, value: Number(e.target.value) })}
+                                              onFocus={handleFocus}
+                                          />
+                                          <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-bold text-gray-400 pointer-events-none">kg</span>
+                                      </div>
+                                  </div>
+                              ))}
                           </div>
-                          <div className="w-full md:w-48 relative">
-                              <label className="text-[10px] font-black text-emerald-600 uppercase tracking-widest block mb-1 ml-1">Ajustar Total</label>
-                              <input 
-                                  type="number" 
-                                  className={`w-full border rounded-xl pl-4 pr-12 py-3 font-black text-right outline-none transition-all ${calcInput.id === 'total' ? 'border-emerald-500 ring-2 ring-emerald-200 bg-white' : 'border-gray-200 bg-gray-100/50'}`}
-                                  value={calcInput.id === 'total' ? calcInput.value : Number(getTotalWeight().toFixed(2))}
-                                  onChange={(e) => setCalcInput({ id: 'total', value: Number(e.target.value) })}
-                                  onFocus={handleFocus}
-                              />
-                              <span className="absolute right-4 bottom-4 text-[10px] font-bold text-gray-400 pointer-events-none">kg</span>
+
+                          <div className="pt-6 border-t border-gray-100 flex flex-col md:flex-row justify-between items-center gap-6">
+                              <div className="flex items-center gap-3">
+                                  <div className="p-3 bg-emerald-600 text-white rounded-2xl shadow-lg shadow-emerald-100">
+                                      <Weight size={24} />
+                                  </div>
+                                  <div>
+                                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Peso Total da Batida</p>
+                                      <p className="text-2xl font-black text-gray-800 tracking-tighter">
+                                          {getTotalWeight().toLocaleString('pt-BR', { minimumFractionDigits: 2 })} <span className="text-sm opacity-50">kg</span>
+                                      </p>
+                                  </div>
+                              </div>
+                              <div className="w-full md:w-48 relative">
+                                  <label className="text-[10px] font-black text-emerald-600 uppercase tracking-widest block mb-1 ml-1">Ajustar Total</label>
+                                  <input 
+                                      type="number" 
+                                      className={`w-full border rounded-xl pl-4 pr-12 py-3 font-black text-right outline-none transition-all ${calcInput.id === 'total' ? 'border-emerald-500 ring-2 ring-emerald-200 bg-white' : 'border-gray-200 bg-gray-100/50'}`}
+                                      value={calcInput.id === 'total' ? calcInput.value : Number(getTotalWeight().toFixed(2))}
+                                      onChange={(e) => setCalcInput({ id: 'total', value: Number(e.target.value) })}
+                                      onFocus={handleFocus}
+                                  />
+                                  <span className="absolute right-4 bottom-4 text-[10px] font-bold text-gray-400 pointer-events-none">kg</span>
+                              </div>
                           </div>
                       </div>
                   </div>
-              </div>
+              )}
            </div>
            <div className="lg:col-span-4 space-y-6">
               <div className="bg-white rounded-[2.5rem] p-8 shadow-sm border border-gray-100 space-y-8 flex flex-col h-full">
@@ -476,20 +600,41 @@ const ToolsCalculator: React.FC<ToolsCalculatorProps> = ({ onSaveDailyCost, lots
                        <input type="number" onFocus={handleFocus} className="w-full border border-gray-200 rounded-2xl px-5 py-3 font-bold bg-gray-50 outline-none focus:ring-2 focus:ring-blue-500 transition-all" value={numAnimals} onChange={e => setNumAnimals(Number(e.target.value))} />
                     </div>
                     <div className="space-y-1">
-                       <label className="text-[11px] font-bold text-gray-500 uppercase tracking-widest ml-1">% do Peso Vivo</label>
-                       <select className="w-full border border-gray-200 rounded-2xl px-5 py-3 font-bold bg-gray-50 cursor-pointer appearance-none outline-none focus:ring-2 focus:ring-blue-500" value={pvPercent} onChange={e => setPvPercent(Number(e.target.value))}>
-                         <option value={0.1}>0.1% do PV</option>
-                         <option value={0.2}>0.2% do PV</option>
-                         <option value={0.3}>0.3% do PV</option>
-                         <option value={0.5}>0.5% do PV</option>
-                         <option value={1.0}>1.0% do PV</option>
-                       </select>
+                       {isMineralSalt ? (
+                          <label className="text-[11px] font-bold text-gray-500 uppercase tracking-widest ml-1">Consumo p/ Cabeça (g/dia)</label>
+                       ) : (
+                          <label className="text-[11px] font-bold text-gray-500 uppercase tracking-widest ml-1">% do Peso Vivo</label>
+                       )}
+                       {isMineralSalt ? (
+                          <div className="relative">
+                             <input 
+                                type="number" 
+                                onFocus={handleFocus} 
+                                className="w-full border border-gray-200 rounded-2xl pl-5 pr-12 py-3 font-bold bg-gray-50 outline-none focus:ring-2 focus:ring-blue-500 transition-all" 
+                                value={mineralConsumptionGrams || ''} 
+                                onChange={e => setMineralConsumptionGrams(Number(e.target.value))} 
+                             />
+                             <span className="absolute right-5 top-1/2 -translate-y-1/2 text-sm font-bold text-gray-400">g</span>
+                          </div>
+                       ) : (
+                          <select className="w-full border border-gray-200 rounded-2xl px-5 py-3 font-bold bg-gray-50 cursor-pointer appearance-none outline-none focus:ring-2 focus:ring-blue-500" value={pvPercent} onChange={e => setPvPercent(Number(e.target.value))}>
+                            <option value={0.1}>0.1% do PV</option>
+                            <option value={0.2}>0.2% do PV</option>
+                            <option value={0.3}>0.3% do PV</option>
+                            <option value={0.5}>0.5% do PV</option>
+                            <option value={1.0}>1.0% do PV</option>
+                          </select>
+                       )}
                     </div>
                  </div>
                  <div className="space-y-4 flex-1">
                     <div className="bg-blue-50/50 p-5 rounded-3xl border border-blue-100 flex flex-col">
                         <p className="text-[10px] font-black text-blue-600 uppercase mb-1 tracking-widest">Consumo/Animal</p>
-                        <p className="text-3xl font-black text-blue-900 tracking-tighter">{consumptionPerAnimalKg.toFixed(2)} <span className="text-sm font-bold opacity-60">kg/dia</span></p>
+                        <p className="text-3xl font-black text-blue-900 tracking-tighter">
+                            {isMineralSalt ? (mineralConsumptionGrams / 1000).toFixed(3) : consumptionPerAnimalKg.toFixed(2)} 
+                            <span className="text-sm font-bold opacity-60"> kg/dia</span>
+                            {isMineralSalt && <span className="text-xs font-semibold text-blue-500 block mt-1">({mineralConsumptionGrams} g/dia)</span>}
+                        </p>
                     </div>
                     <div className="bg-blue-50/50 p-5 rounded-3xl border border-blue-100 flex flex-col">
                         <p className="text-[10px] font-black text-blue-600 uppercase mb-1 tracking-widest">Consumo Total do Lote</p>
@@ -524,7 +669,7 @@ const ToolsCalculator: React.FC<ToolsCalculatorProps> = ({ onSaveDailyCost, lots
                  <button 
                     type="button"
                     onClick={handleSaveSupplementation} 
-                    disabled={totalPercent > 100 || isSaving} 
+                    disabled={(!isMineralSalt && totalPercent > 100) || isSaving} 
                     className={`w-full ${isSaving ? 'bg-gray-400' : 'bg-emerald-600 hover:bg-emerald-700'} text-white py-5 rounded-[2rem] font-black text-[11px] uppercase tracking-[0.2em] transition-all shadow-xl disabled:opacity-50 flex items-center justify-center gap-3`}
                   >
                     {isSaving ? (
@@ -595,14 +740,14 @@ const ToolsCalculator: React.FC<ToolsCalculatorProps> = ({ onSaveDailyCost, lots
                             {predTargetMode === 'days' && <span className="absolute right-4 top-10 text-[9px] font-black text-blue-600 uppercase">Calculando...</span>}
                             <input type="number" onFocus={handleFocus} className={`w-full border rounded-xl px-4 py-3 font-bold outline-none transition-all ${predTargetMode === 'days' ? 'bg-blue-50 border-blue-200 text-blue-700' : 'border-gray-200 bg-gray-50/50 focus:bg-white focus:ring-2 focus:ring-orange-500'}`} value={predTargetMode === 'days' ? Math.round(calculatedDays) : predDays} onChange={e => setPredDays(Number(e.target.value))} readOnly={predTargetMode === 'days'} />
                         </div>
-                        <div className="grid grid-cols-2 gap-3">
+                        <div className="grid grid-cols-1 gap-3">
                             <div className="space-y-1">
-                                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block ml-1">Ração R$/dia</label>
-                                <input type="number" step="0.01" onFocus={handleFocus} className="w-full border border-gray-200 rounded-xl px-4 py-3 font-bold text-gray-800 bg-gray-50/50 focus:bg-white focus:ring-2 focus:ring-orange-500 outline-none transition-all" value={predSuppCostDaily} onChange={e => setPredSuppCostDaily(Number(e.target.value))} />
+                                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block ml-1">Valor da Diária (R$/dia)</label>
+                                <input type="number" step="0.01" onFocus={handleFocus} className="w-full border border-gray-200 rounded-xl px-4 py-3 font-bold text-gray-800 bg-gray-50/50 focus:bg-white focus:ring-2 focus:ring-orange-500 outline-none transition-all" value={predDailyRate} onChange={e => setPredDailyRate(Number(e.target.value))} />
                             </div>
                             <div className="space-y-1">
-                                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block ml-1">Oper. R$/dia</label>
-                                <input type="number" step="0.1" onFocus={handleFocus} className="w-full border border-gray-200 rounded-xl px-4 py-3 font-bold text-gray-800 bg-gray-50/50 focus:bg-white focus:ring-2 focus:ring-orange-500 outline-none transition-all" value={predOpCostDaily} onChange={e => setPredOpCostDaily(Number(e.target.value))} />
+                                <label className="hidden">Oper. R$/dia</label>
+                                <input type="hidden" value={0} />
                             </div>
                         </div>
                     </div>
@@ -686,12 +831,12 @@ const ToolsCalculator: React.FC<ToolsCalculatorProps> = ({ onSaveDailyCost, lots
                             <span className="font-bold text-blue-400">R$ {(costAnimalUnit * predQty).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
                         </div>
                         <div className="flex justify-between items-center text-sm">
-                            <span className="text-gray-400 font-medium">Nutrição (Ração):</span>
+                            <span className="text-gray-400 font-medium">Valor da Diária:</span>
                             <span className="font-bold text-red-400">R$ {(costNutritionUnit * predQty).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
                         </div>
                         <div className="flex justify-between items-center text-sm">
-                            <span className="text-gray-400 font-medium">Operacional (Fixo):</span>
-                            <span className="font-bold text-red-400">R$ {(costOperationUnit * predQty).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                            <span className="text-gray-400 font-medium hidden">Operacional (Fixo):</span>
+                            <span className="font-bold text-red-400 hidden">R$ {(costOperationUnit * predQty).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
                         </div>
                     </div>
                   </div>

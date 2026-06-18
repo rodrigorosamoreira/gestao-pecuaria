@@ -129,6 +129,10 @@ export interface CalculatorConfig {
   avgLotWeight: number;
   numAnimals: number;
   pvPercent: number;
+  isMineralSalt?: boolean;
+  mineralPriceTotal?: number;
+  mineralBagWeight?: number;
+  mineralConsumptionGrams?: number;
 }
 
 export interface FarmData {
