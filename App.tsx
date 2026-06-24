@@ -25,6 +25,7 @@ import {
   Farm
 } from './types';
 import { Database, Copy, CheckCircle, AlertTriangle, Tractor, X, Loader2 } from 'lucide-react';
+import { Analytics } from '@vercel/analytics/react';
 
 const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -447,6 +448,7 @@ const App: React.FC = () => {
       )}
 
       {renderContent()}
+      <Analytics />
     </Layout>
   );
 };
