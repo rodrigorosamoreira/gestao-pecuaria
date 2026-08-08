@@ -28,6 +28,40 @@ const getGenAIClient = () => {
   });
 };
 
+// Helper de chamada Gemini com fallback de modelos e retentativa automática em caso de alta demanda (503/429)
+async function generateContentWithFallback(ai: GoogleGenAI, params: { contents: any; config?: any }) {
+  const modelsToTry = ['gemini-3.6-flash', 'gemini-2.5-flash', 'gemini-1.5-flash'];
+  let lastError: any = null;
+
+  for (const modelName of modelsToTry) {
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      try {
+        const response = await ai.models.generateContent({
+          model: modelName,
+          contents: params.contents,
+          config: params.config,
+        });
+        return response;
+      } catch (err: any) {
+        lastError = err;
+        const errStr = JSON.stringify(err) || String(err);
+        const isTransient = errStr.includes('503') || errStr.includes('429') || errStr.includes('UNAVAILABLE') || errStr.includes('high demand');
+        
+        console.warn(`Tentativa ${attempt} com modelo ${modelName} falhou:`, err?.message || errStr);
+        if (isTransient && attempt === 1) {
+          // Aguarda 1.5s antes de tentar novamente o mesmo modelo
+          await new Promise((resolve) => setTimeout(resolve, 1500));
+        } else {
+          // Se falhou 2x ou não for transitório, tenta o próximo modelo no loop
+          break;
+        }
+      }
+    }
+  }
+
+  throw lastError || new Error('Não foi possível se comunicar com os modelos da IA após várias tentativas.');
+}
+
 // Endpoint da IA Especialista em Pecuária - Análise Completa
 app.post('/api/ai/analyze-farm', async (req, res) => {
   try {
@@ -129,8 +163,7 @@ Responda EXCLUSIVAMENTE em formato Markdown bem estruturado utilizando os títul
 4. Estratégia de precificação e gestão de margem por cabeça.]
 `;
 
-    const response = await ai.models.generateContent({
-      model: 'gemini-3.6-flash',
+    const response = await generateContentWithFallback(ai, {
       contents: prompt,
       config: {
         temperature: 0.7,
@@ -160,8 +193,7 @@ Sempre que pertinente, apresente números, cálculos de arroba (@), custo diári
     const contextText = farmContext ? `CONTEXTO DA FAZENDA:\n${JSON.stringify(farmContext, null, 2)}\n\n` : '';
     const fullPrompt = `${contextText}PERGUNTA DO PECUARISTA: ${question}`;
 
-    const response = await ai.models.generateContent({
-      model: 'gemini-3.6-flash',
+    const response = await generateContentWithFallback(ai, {
       contents: fullPrompt,
       config: {
         systemInstruction,

@@ -100,11 +100,12 @@ export const LivestockAgent: React.FC<LivestockAgentProps> = ({
         })
       });
 
+      const data = await response.json().catch(() => ({}));
+
       if (!response.ok) {
-        throw new Error('Falha ao conectar com o serviço de IA no servidor.');
+        throw new Error(data.error || `Erro HTTP ${response.status} ao conectar com o serviço de IA.`);
       }
 
-      const data = await response.json();
       if (data.error) {
         throw new Error(data.error);
       }

@@ -2,7 +2,36 @@
 import { GoogleGenAI } from "@google/genai";
 import { Animal, Transaction, InventoryItem, Lot } from "../types";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
+
+async function generateWithFallback(params: { contents: any; config?: any }) {
+  const modelsToTry = ['gemini-3.6-flash', 'gemini-2.5-flash', 'gemini-1.5-flash'];
+  let lastError: any = null;
+
+  for (const modelName of modelsToTry) {
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      try {
+        const response = await ai.models.generateContent({
+          model: modelName,
+          contents: params.contents,
+          config: params.config,
+        });
+        return response;
+      } catch (err: any) {
+        lastError = err;
+        const errStr = JSON.stringify(err) || String(err);
+        const isTransient = errStr.includes('503') || errStr.includes('429') || errStr.includes('UNAVAILABLE') || errStr.includes('high demand');
+        if (isTransient && attempt === 1) {
+          await new Promise((resolve) => setTimeout(resolve, 1500));
+        } else {
+          break;
+        }
+      }
+    }
+  }
+
+  throw lastError || new Error('Ocorreu um erro no serviço de IA.');
+}
 
 // Analisa o status da fazenda com base nos dados do rebanho, estoque e lotes.
 export const analyzeFarmStatus = async (
@@ -32,8 +61,7 @@ export const analyzeFarmStatus = async (
       Gere um relatório focado em alertas e sugestões de manejo.
     `;
 
-    const response = await ai.models.generateContent({
-      model: 'gemini-3-pro-preview',
+    const response = await generateWithFallback({
       contents: prompt
     });
 
@@ -47,8 +75,7 @@ export const analyzeFarmStatus = async (
 // Fornece conselhos rápidos e técnicos para perguntas do produtor.
 export const getQuickAdvice = async (question: string): Promise<string> => {
   try {
-    const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
+    const response = await generateWithFallback({
       contents: `Responda de forma curta e técnica para um pecuarista: ${question}`
     });
     return response.text || "Sem resposta.";
@@ -62,8 +89,7 @@ export const analyzeFeedFormula = async (ingredients: { name: string; percent: n
   const ingredientsList = ingredients.map(i => `- ${i.name}: ${i.percent}%`).join('\n');
   const prompt = `Analise a seguinte formulação de ração: \n${ingredientsList}\nForneça composição estimada e observações técnicas.`;
   try {
-    const response = await ai.models.generateContent({
-      model: 'gemini-3-pro-preview',
+    const response = await generateWithFallback({
       contents: prompt
     });
     return response.text || "Não foi possível analisar a mistura.";
@@ -78,8 +104,7 @@ export const analyzeFeedFormula = async (ingredients: { name: string; percent: n
  */
 export const fetchMarketData = async (): Promise<{ text: string; sources: any[] }> => {
   try {
-    const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
+    const response = await generateWithFallback({
       contents: 'Forneça um relatório atualizado sobre as cotações do Boi Gordo, Milho e Soja no Brasil, mencionando Scot Consultoria e CEPEA. Use formatação Markdown.',
       config: {
         tools: [{ googleSearch: {} }],
