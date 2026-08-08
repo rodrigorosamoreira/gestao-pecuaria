@@ -14,7 +14,10 @@ import {
   BarChart3,
   Calendar,
   ChevronRight,
-  HeartPulse
+  HeartPulse,
+  Brain,
+  Sparkles,
+  ArrowRight
 } from 'lucide-react';
 import { 
   BarChart, 
@@ -138,7 +141,33 @@ const Dashboard: React.FC<DashboardProps> = ({ animals, transactions, inventory,
 
   return (
     <div className="space-y-6 pb-10">
-            <div className="space-y-6">
+      {/* Agente IA Especialista Callout Banner */}
+      <div className="bg-gradient-to-r from-emerald-900 via-green-800 to-teal-900 rounded-[2.5rem] p-6 md:p-8 text-white shadow-lg flex flex-col md:flex-row items-center justify-between gap-6 relative overflow-hidden">
+        <div className="absolute top-0 right-0 -mr-12 -mt-12 w-64 h-64 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none"></div>
+        <div className="flex items-center gap-4 relative z-10">
+          <div className="w-14 h-14 rounded-2xl bg-emerald-500/20 border border-emerald-400/30 flex items-center justify-center shrink-0 text-emerald-300">
+            <Brain size={32} className="animate-pulse" />
+          </div>
+          <div className="space-y-1">
+            <div className="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-emerald-300 bg-emerald-500/20 px-2.5 py-0.5 rounded-full border border-emerald-400/20">
+              <Sparkles size={12} /> Diagnóstico Inteligente
+            </div>
+            <h3 className="text-xl font-black uppercase tracking-tight">Agente IA Especialista em Pecuária</h3>
+            <p className="text-xs text-emerald-100/90 font-medium max-w-xl">
+              Análise completa dos seus animais, lotes, estoque e finanças com plano de ação estratégico para maximizar sua lucratividade.
+            </p>
+          </div>
+        </div>
+
+        <button
+          onClick={() => onChangeView?.('ai_agent')}
+          className="w-full md:w-auto bg-white hover:bg-emerald-50 text-emerald-950 px-6 py-3.5 rounded-2xl font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-md hover:shadow-lg active:scale-95 transition-all shrink-0 cursor-pointer"
+        >
+          Ver Diagnóstico da Fazenda <ArrowRight size={16} />
+        </button>
+      </div>
+
+      <div className="space-y-6">
                 <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
                     <div className="flex items-center justify-between mb-6">
                         <h3 className="text-lg font-black text-gray-800 flex items-center gap-2">

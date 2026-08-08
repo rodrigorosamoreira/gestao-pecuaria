@@ -21,7 +21,9 @@ import {
   ChevronDown,
   Tractor,
   Plus,
-  Trash2
+  Trash2,
+  Brain,
+  Sparkles
 } from 'lucide-react';
 import { User, Animal, InventoryItem, HealthRecord, HealthSeverity, Task, Farm } from '../types';
 
@@ -107,6 +109,7 @@ const Layout: React.FC<LayoutProps> = ({
 
   const navItems = [
     { id: 'dashboard', label: 'Painel Geral', icon: <LayoutDashboard size={20} /> },
+    { id: 'ai_agent', label: 'Especialista IA', icon: <Brain size={20} /> },
     { id: 'animals', label: 'Rebanho (Animais)', icon: <Beef size={20} /> },
     { id: 'tasks', label: 'Gestão de Tarefas', icon: <CheckSquare size={20} /> },
     { id: 'health', label: 'Saúde e Manejo', icon: <HeartPulse size={20} /> },

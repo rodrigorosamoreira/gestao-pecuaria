@@ -10,6 +10,7 @@ import LotManager from './components/LotManager';
 import ToolsCalculator from './components/ToolsCalculator';
 import HealthManager from './components/HealthManager';
 import TaskManager from './components/TaskManager';
+import LivestockAgent from './components/LivestockAgent';
 import { supabase } from './lib/supabase';
 import { 
   Animal, 
@@ -327,6 +328,21 @@ const App: React.FC = () => {
         />
       );
       case 'health': return <HealthManager animals={farmData.animals} healthRecords={farmData.healthRecords} onAddRecord={r => updateActiveFarmData(d => ({ ...d, healthRecords: [...d.healthRecords, r] }))} onUpdateRecord={r => updateActiveFarmData(d => ({ ...d, healthRecords: d.healthRecords.map(old => old.id === r.id ? r : old) }))} />;
+      case 'ai_agent':
+        return (
+          <LivestockAgent
+            farmName={activeFarm?.name || 'Minha Fazenda'}
+            animals={farmData.animals}
+            lots={farmData.lots}
+            inventory={farmData.inventory}
+            transactions={farmData.transactions}
+            healthRecords={farmData.healthRecords}
+            tasks={farmData.tasks}
+            calculatorConfig={farmData.calculatorConfig}
+            globalDailyCost={farmData.globalDailyCost}
+            onChangeView={setCurrentView}
+          />
+        );
       case 'tasks': return <TaskManager tasks={farmData.tasks} onAddTask={t => updateActiveFarmData(d => ({ ...d, tasks: [...d.tasks, t] }))} onUpdateTask={t => updateActiveFarmData(d => ({ ...d, tasks: d.tasks.map(old => old.id === t.id ? t : old) }))} onDeleteTask={id => updateActiveFarmData(d => ({ ...d, tasks: d.tasks.filter(t => t.id !== id) }))} />;
       case 'lots': return <LotManager lots={farmData.lots} animals={farmData.animals} onAddLot={l => updateActiveFarmData(d => ({ ...d, lots: [...d.lots, l] }))} onUpdateLot={l => updateActiveFarmData(d => ({ ...d, lots: d.lots.map(old => old.id === l.id ? l : old) }))} onSellLot={(id, date, total) => alert('Utilize a venda por lote no Rebanho para cálculo de lucro')} />;
       case 'inventory': return <InventoryManager inventory={farmData.inventory} onAddStock={i => updateActiveFarmData(d => ({ ...d, inventory: [...d.inventory, i] }))} onUpdateStock={i => updateActiveFarmData(d => ({ ...d, inventory: d.inventory.map(old => old.id === i.id ? i : old) }))} />;
