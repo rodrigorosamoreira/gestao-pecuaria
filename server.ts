@@ -250,6 +250,59 @@ Sempre que pertinente, apresente números, cálculos de arroba (@), custo diári
   }
 });
 
+// Endpoint de Conselho Rápido
+app.post('/api/ai/quick-advice', async (req, res) => {
+  try {
+    const { question } = req.body;
+    const ai = getGenAIClient();
+    const response = await generateContentWithFallback(ai, {
+      contents: `Responda de forma curta, pragmática e técnica para um pecuarista: ${question}`,
+    });
+    res.json({ text: response.text || 'Sem resposta no momento.' });
+  } catch (error: any) {
+    console.error('Erro em quick-advice:', error);
+    res.json({ text: '⚠️ O serviço de IA está temporariamente indisponível. Tente novamente em instantes.' });
+  }
+});
+
+// Endpoint de Análise de Ração / Nutrição
+app.post('/api/ai/feed-formula', async (req, res) => {
+  try {
+    const { ingredients } = req.body;
+    const ingredientsList = (ingredients || []).map((i: any) => `- ${i.name}: ${i.percent}%`).join('\n');
+    const prompt = `Analise a seguinte formulação de ração: \n${ingredientsList}\nForneça composição estimada e observações técnicas.`;
+    const ai = getGenAIClient();
+    const response = await generateContentWithFallback(ai, { contents: prompt });
+    res.json({ text: response.text || 'Não foi possível analisar a mistura.' });
+  } catch (error: any) {
+    console.error('Erro em feed-formula:', error);
+    res.json({ text: '⚠️ Não foi possível processar a análise nutricional no momento.' });
+  }
+});
+
+// Endpoint de Monitor de Mercado (Scot Consultoria e CEPEA)
+app.get('/api/ai/market-data', async (req, res) => {
+  try {
+    const ai = getGenAIClient();
+    const response = await generateContentWithFallback(ai, {
+      contents: 'Forneça um relatório atualizado sobre as cotações do Boi Gordo, Milho e Soja no Brasil, mencionando Scot Consultoria e CEPEA. Use formatação Markdown.',
+      config: {
+        tools: [{ googleSearch: {} }],
+      },
+    });
+
+    const text = response.text || 'Não foi possível obter dados de mercado no momento.';
+    const sources = response.candidates?.[0]?.groundingMetadata?.groundingChunks || [];
+    res.json({ text, sources });
+  } catch (error: any) {
+    console.error('Erro em market-data:', error);
+    res.json({
+      text: '⚠️ O serviço de cotação de mercado está enfrentando alta demanda. Atualize em alguns momentos para consultar os valores da Scot Consultoria e CEPEA.',
+      sources: [],
+    });
+  }
+});
+
 // Configuração do Vite ou Arquivos Estáticos em Produção
 async function startServer() {
   if (process.env.NODE_ENV !== 'production') {

@@ -1,37 +1,4 @@
-
-import { GoogleGenAI } from "@google/genai";
 import { Animal, Transaction, InventoryItem, Lot } from "../types";
-
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
-
-async function generateWithFallback(params: { contents: any; config?: any }) {
-  const modelsToTry = ['gemini-3.6-flash', 'gemini-1.5-flash'];
-  let lastError: any = null;
-
-  for (const modelName of modelsToTry) {
-    for (let attempt = 1; attempt <= 3; attempt++) {
-      try {
-        const response = await ai.models.generateContent({
-          model: modelName,
-          contents: params.contents,
-          config: params.config,
-        });
-        return response;
-      } catch (err: any) {
-        lastError = err;
-        const errStr = JSON.stringify(err) || String(err);
-        const isTransient = errStr.includes('503') || errStr.includes('429') || errStr.includes('UNAVAILABLE') || errStr.includes('high demand');
-        if (isTransient && attempt < 3) {
-          await new Promise((resolve) => setTimeout(resolve, attempt * 1000));
-        } else {
-          break;
-        }
-      }
-    }
-  }
-
-  throw lastError || new Error('Ocorreu um erro no serviço de IA.');
-}
 
 // Analisa o status da fazenda com base nos dados do rebanho, estoque e lotes.
 export const analyzeFarmStatus = async (
@@ -41,60 +8,57 @@ export const analyzeFarmStatus = async (
     lots: Lot[] = []
 ): Promise<string> => {
   try {
-    const animalSummary = animals.map(a => 
-      `- ${a.earTag} (${a.breed}): ${a.weightKg}kg, GMD ult. pesagem: ${a.history[a.history.length-1]?.gmd?.toFixed(3) || 'N/A'}`
-    ).slice(0, 30).join('\n');
-
-    const stockSummary = inventory.map(i => 
-      `- ${i.name}: ${i.quantity} ${i.unit} (Mín: ${i.minQuantity})`
-    ).join('\n');
-
-    const prompt = `
-      Atue como um gerente de fazenda experiente. Analise os dados:
-      
-      1. ESTOQUE:
-      ${stockSummary}
-      
-      2. REBANHO (Amostra):
-      ${animalSummary}
-      
-      Gere um relatório focado em alertas e sugestões de manejo.
-    `;
-
-    const response = await generateWithFallback({
-      contents: prompt
+    const response = await fetch('/api/ai/analyze-farm', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ animals, transactions, inventory, lots })
     });
-
-    return response.text || "Sem análise disponível.";
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+    const data = await response.json();
+    return data.analysis || "Sem análise disponível.";
   } catch (error) {
-    console.error(error);
-    return "Erro ao consultar IA.";
+    console.error("Erro em analyzeFarmStatus:", error);
+    return "⚠️ Erro ao comunicar com o servidor de IA. Tente novamente em alguns momentos.";
   }
 };
 
 // Fornece conselhos rápidos e técnicos para perguntas do produtor.
 export const getQuickAdvice = async (question: string): Promise<string> => {
   try {
-    const response = await generateWithFallback({
-      contents: `Responda de forma curta e técnica para um pecuarista: ${question}`
+    const response = await fetch('/api/ai/quick-advice', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ question })
     });
-    return response.text || "Sem resposta.";
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+    const data = await response.json();
+    return data.text || "Sem resposta.";
   } catch (e) {
-    return "Erro no serviço de IA.";
+    console.error("Erro em getQuickAdvice:", e);
+    return "⚠️ Serviço de IA temporariamente indisponível.";
   }
 };
 
 // Analisa a formulação de ração e fornece observações técnicas.
 export const analyzeFeedFormula = async (ingredients: { name: string; percent: number }[]): Promise<string> => {
-  const ingredientsList = ingredients.map(i => `- ${i.name}: ${i.percent}%`).join('\n');
-  const prompt = `Analise a seguinte formulação de ração: \n${ingredientsList}\nForneça composição estimada e observações técnicas.`;
   try {
-    const response = await generateWithFallback({
-      contents: prompt
+    const response = await fetch('/api/ai/feed-formula', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ingredients })
     });
-    return response.text || "Não foi possível analisar a mistura.";
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+    const data = await response.json();
+    return data.text || "Não foi possível analisar a mistura.";
   } catch (e) {
-    return "Erro ao processar análise nutricional.";
+    console.error("Erro em analyzeFeedFormula:", e);
+    return "⚠️ Erro ao processar análise nutricional.";
   }
 };
 
@@ -104,21 +68,19 @@ export const analyzeFeedFormula = async (ingredients: { name: string; percent: n
  */
 export const fetchMarketData = async (): Promise<{ text: string; sources: any[] }> => {
   try {
-    const response = await generateWithFallback({
-      contents: 'Forneça um relatório atualizado sobre as cotações do Boi Gordo, Milho e Soja no Brasil, mencionando Scot Consultoria e CEPEA. Use formatação Markdown.',
-      config: {
-        tools: [{ googleSearch: {} }],
-      },
-    });
-
-    const text = response.text || "Não foi possível obter dados de mercado no momento.";
-    const sources = response.candidates?.[0]?.groundingMetadata?.groundingChunks || [];
-
-    return { text, sources };
+    const response = await fetch('/api/ai/market-data');
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+    const data = await response.json();
+    return {
+      text: data.text || "Não foi possível obter dados de mercado no momento.",
+      sources: data.sources || []
+    };
   } catch (error) {
-    console.error("Erro ao buscar dados de mercado via Gemini:", error);
+    console.error("Erro ao buscar dados de mercado via API:", error);
     return { 
-      text: "Erro ao conectar com o serviço de monitoramento de mercado. Tente novamente mais tarde.", 
+      text: "⚠️ Erro ao conectar com o serviço de monitoramento de mercado. Tente novamente em alguns instantes.", 
       sources: [] 
     };
   }
