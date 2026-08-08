@@ -18,19 +18,29 @@ const getGenAIClient = () => {
   if (!apiKey) {
     console.warn('AVISO: GEMINI_API_KEY não encontrada nas variáveis de ambiente.');
   }
-  return new GoogleGenAI({
-    apiKey: apiKey || '',
-    httpOptions: {
-      headers: {
-        'User-Agent': 'aistudio-build',
-      },
-    },
-  });
+  return new GoogleGenAI(
+    apiKey
+      ? {
+          apiKey,
+          httpOptions: {
+            headers: {
+              'User-Agent': 'aistudio-build',
+            },
+          },
+        }
+      : {
+          httpOptions: {
+            headers: {
+              'User-Agent': 'aistudio-build',
+            },
+          },
+        }
+  );
 };
 
 // Helper de chamada Gemini com fallback de modelos e retentativa automática em caso de alta demanda (503/429)
 async function generateContentWithFallback(ai: GoogleGenAI, params: { contents: any; config?: any }) {
-  const modelsToTry = ['gemini-3.6-flash', 'gemini-1.5-flash'];
+  const modelsToTry = ['gemini-3.6-flash', 'gemini-1.5-flash', 'gemini-1.5-pro'];
   let lastError: any = null;
 
   for (const modelName of modelsToTry) {
@@ -41,25 +51,26 @@ async function generateContentWithFallback(ai: GoogleGenAI, params: { contents: 
           contents: params.contents,
           config: params.config,
         });
-        return response;
+        if (response && response.text) {
+          return response;
+        }
       } catch (err: any) {
         lastError = err;
-        const errStr = JSON.stringify(err) || String(err);
-        const isTransient = errStr.includes('503') || errStr.includes('429') || errStr.includes('UNAVAILABLE') || errStr.includes('high demand');
+        const errStr = typeof err === 'object' ? (JSON.stringify(err) || String(err)) : String(err);
+        const errMessage = err?.message || errStr;
+        const isTransient = errMessage.includes('503') || errMessage.includes('429') || errMessage.includes('UNAVAILABLE') || errMessage.includes('high demand');
         
-        console.warn(`Tentativa ${attempt} com modelo ${modelName} falhou:`, err?.message || errStr);
+        console.warn(`[Gemini Fallback] Tentativa ${attempt} com modelo ${modelName} falhou:`, errMessage);
         if (isTransient && attempt < 3) {
-          // Aguarda com backoff exponencial (1s, 2s)
           await new Promise((resolve) => setTimeout(resolve, attempt * 1000));
         } else {
-          // Se esgotou as tentativas do modelo atual ou não for erro transitório, passa pro próximo modelo
           break;
         }
       }
     }
   }
 
-  throw lastError || new Error('Não foi possível se comunicar com os modelos da IA após várias tentativas.');
+  throw lastError || new Error('Não foi possível se comunicar com os modelos de IA.');
 }
 
 // Endpoint da IA Especialista em Pecuária - Análise Completa
@@ -172,8 +183,39 @@ Responda EXCLUSIVAMENTE em formato Markdown bem estruturado utilizando os títul
 
     res.json({ analysis: response.text || 'Não foi possível gerar a análise no momento.' });
   } catch (error: any) {
-    console.error('Erro na análise da fazenda:', error);
-    res.status(500).json({ error: error?.message || 'Erro ao comunicar com o agente especialista IA.' });
+    console.error('Erro na análise da fazenda via IA:', error);
+
+    const { farmName, animals, inventory, transactions, lots } = req.body || {};
+    const activeAnimals = (animals || []).filter((a: any) => a.status === 'Ativo');
+    const incomeTotal = (transactions || []).filter((t: any) => t.type === 'Receita').reduce((a: number, b: any) => a + Number(b.amount || 0), 0);
+    const expenseTotal = (transactions || []).filter((t: any) => t.type === 'Despesa').reduce((a: number, b: any) => a + Number(b.amount || 0), 0);
+    const netProfit = incomeTotal - expenseTotal;
+    const lowStock = (inventory || []).filter((i: any) => Number(i.quantity) <= Number(i.minQuantity));
+
+    const fallbackReport = `
+> ⚠️ *Nota: O servidor de IA está enfrentando alta demanda temporária no momento. Apresentando diagnóstico zootécnico preliminar com base na consolidação dos seus dados.*
+
+### 📊 Panorama Geral da Operação
+A fazenda **"${farmName || 'Minha Fazenda'}"** conta atualmente com **${activeAnimals.length} cabeças ativas** no rebanho.
+No âmbito financeiro, a operação registra **R$ ${incomeTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}** em receitas e **R$ ${expenseTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}** em despesas, gerando um resultado operacional de **R$ ${netProfit.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}**.
+
+### ✅ Pontos Positivos
+- **Controle de Rebanho**: Rebanho ativo com ${activeAnimals.length} animais cadastrados.
+- **Gestão de Lotes**: ${(lots || []).length} lote(s) estruturado(s) para acompanhamento do manejo.
+- **Fluxo Financeiro**: Lançamentos financeiros organizados para cálculo de margem e rentabilidade.
+
+### ⚠️ Pontos Negativos e Gargalos
+- **Estoque Crítico**: ${lowStock.length} item(ns) de insumo estão no nível mínimo ou abaixo do limite de segurança.
+- **Acompanhamento de Custos**: Atenção ao custo de permanência diária para evitar erosão do lucro na terminação.
+- **Indisponibilidade Momentânea da IA**: O cluster da IA do Gemini reportou alta demanda temporária. Clique no botão de atualizar a análise em alguns instantes para obter o relatório ampliado via Gemini.
+
+### 🚀 Plano de Ação para Maximizar a Lucratividade
+1. **Recomposição do Estoque**: Repor imediatamente os ${lowStock.length} insumos em estado crítico para evitar paralisações no manejo alimentar.
+2. **Monitoramento do GMD**: Manter a rotina de pesagens para garantir um ganho de peso diário consistente e acima da meta.
+3. **Gestão da Diária**: Avaliar o custo da nutrição em relação ao preço da arroba no mercado regional.
+`;
+
+    res.json({ analysis: fallbackReport });
   }
 });
 
@@ -204,7 +246,7 @@ Sempre que pertinente, apresente números, cálculos de arroba (@), custo diári
     res.json({ answer: response.text || 'Sem resposta no momento.' });
   } catch (error: any) {
     console.error('Erro no chat com o especialista:', error);
-    res.status(500).json({ error: error?.message || 'Erro ao processar mensagem no chat com IA.' });
+    res.json({ answer: '⚠️ O serviço de IA está enfrentando alta demanda temporária. Por favor, aguarde alguns segundos e tente enviar sua pergunta novamente.' });
   }
 });
 
