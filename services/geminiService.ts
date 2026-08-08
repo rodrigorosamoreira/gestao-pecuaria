@@ -5,11 +5,11 @@ import { Animal, Transaction, InventoryItem, Lot } from "../types";
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
 
 async function generateWithFallback(params: { contents: any; config?: any }) {
-  const modelsToTry = ['gemini-3.6-flash', 'gemini-2.5-flash', 'gemini-1.5-flash'];
+  const modelsToTry = ['gemini-3.6-flash', 'gemini-1.5-flash'];
   let lastError: any = null;
 
   for (const modelName of modelsToTry) {
-    for (let attempt = 1; attempt <= 2; attempt++) {
+    for (let attempt = 1; attempt <= 3; attempt++) {
       try {
         const response = await ai.models.generateContent({
           model: modelName,
@@ -21,8 +21,8 @@ async function generateWithFallback(params: { contents: any; config?: any }) {
         lastError = err;
         const errStr = JSON.stringify(err) || String(err);
         const isTransient = errStr.includes('503') || errStr.includes('429') || errStr.includes('UNAVAILABLE') || errStr.includes('high demand');
-        if (isTransient && attempt === 1) {
-          await new Promise((resolve) => setTimeout(resolve, 1500));
+        if (isTransient && attempt < 3) {
+          await new Promise((resolve) => setTimeout(resolve, attempt * 1000));
         } else {
           break;
         }

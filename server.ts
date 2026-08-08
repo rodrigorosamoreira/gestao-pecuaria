@@ -30,11 +30,11 @@ const getGenAIClient = () => {
 
 // Helper de chamada Gemini com fallback de modelos e retentativa automática em caso de alta demanda (503/429)
 async function generateContentWithFallback(ai: GoogleGenAI, params: { contents: any; config?: any }) {
-  const modelsToTry = ['gemini-3.6-flash', 'gemini-2.5-flash', 'gemini-1.5-flash'];
+  const modelsToTry = ['gemini-3.6-flash', 'gemini-1.5-flash'];
   let lastError: any = null;
 
   for (const modelName of modelsToTry) {
-    for (let attempt = 1; attempt <= 2; attempt++) {
+    for (let attempt = 1; attempt <= 3; attempt++) {
       try {
         const response = await ai.models.generateContent({
           model: modelName,
@@ -48,11 +48,11 @@ async function generateContentWithFallback(ai: GoogleGenAI, params: { contents: 
         const isTransient = errStr.includes('503') || errStr.includes('429') || errStr.includes('UNAVAILABLE') || errStr.includes('high demand');
         
         console.warn(`Tentativa ${attempt} com modelo ${modelName} falhou:`, err?.message || errStr);
-        if (isTransient && attempt === 1) {
-          // Aguarda 1.5s antes de tentar novamente o mesmo modelo
-          await new Promise((resolve) => setTimeout(resolve, 1500));
+        if (isTransient && attempt < 3) {
+          // Aguarda com backoff exponencial (1s, 2s)
+          await new Promise((resolve) => setTimeout(resolve, attempt * 1000));
         } else {
-          // Se falhou 2x ou não for transitório, tenta o próximo modelo no loop
+          // Se esgotou as tentativas do modelo atual ou não for erro transitório, passa pro próximo modelo
           break;
         }
       }
