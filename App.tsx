@@ -10,6 +10,7 @@ import LotManager from './components/LotManager';
 import ToolsCalculator from './components/ToolsCalculator';
 import HealthManager from './components/HealthManager';
 import TaskManager from './components/TaskManager';
+import ResetPasswordModal from './components/ResetPasswordModal';
 import { supabase } from './lib/supabase';
 import { 
   Animal, 
@@ -38,6 +39,7 @@ const App: React.FC = () => {
   const [activeFarmId, setActiveFarmId] = useState<string | null>(null);
   const [isCreatingFarm, setIsCreatingFarm] = useState(false);
   const [newFarmName, setNewFarmName] = useState('');
+  const [isResetPasswordOpen, setIsResetPasswordOpen] = useState(false);
 
   const activeFarm = farms.find(f => f.id === activeFarmId);
   const farmData = activeFarm?.data || {
@@ -52,6 +54,10 @@ const App: React.FC = () => {
   };
 
   useEffect(() => {
+    if (window.location.hash && window.location.hash.includes('type=recovery')) {
+      setIsResetPasswordOpen(true);
+    }
+
     supabase.auth.getSession().then(({ data: { session }, error }) => {
       if (error) {
         console.warn('Erro ao obter sessão do Supabase, limpando tokens inválidos:', error);
@@ -71,7 +77,11 @@ const App: React.FC = () => {
       supabase.auth.signOut().catch(() => {});
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'PASSWORD_RECOVERY') {
+        setIsResetPasswordOpen(true);
+      }
+
       if (session) {
         setUser({
           id: session.user.id,
@@ -364,7 +374,17 @@ const App: React.FC = () => {
     }
   };
 
-  if (!user) return <Login onLogin={setUser} />;
+  if (!user) {
+    return (
+      <>
+        <Login onLogin={setUser} />
+        <ResetPasswordModal 
+          isOpen={isResetPasswordOpen} 
+          onClose={() => setIsResetPasswordOpen(false)} 
+        />
+      </>
+    );
+  }
 
   return (
     <Layout 
@@ -381,7 +401,12 @@ const App: React.FC = () => {
       onSelectFarm={handleSelectFarm}
       onDeleteFarm={handleDeleteFarm}
       onCreateFarm={() => setIsCreatingFarm(true)}
+      onOpenResetPassword={() => setIsResetPasswordOpen(true)}
     >
+      <ResetPasswordModal 
+        isOpen={isResetPasswordOpen} 
+        onClose={() => setIsResetPasswordOpen(false)} 
+      />
       {isSyncing && <div className="fixed bottom-4 right-4 bg-emerald-600 text-white text-[10px] font-black px-4 py-2 rounded-full shadow-lg z-50 animate-pulse">Sincronizando...</div>}
       {!isLoaded && <div className="fixed inset-0 bg-white/50 backdrop-blur-sm z-50 flex items-center justify-center font-black uppercase tracking-widest text-xs">Acessando Banco...</div>}
       

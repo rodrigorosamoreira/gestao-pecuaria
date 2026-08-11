@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Beef, Mail, Lock, ArrowRight, Loader2, UserPlus, User as UserIcon, ArrowLeft } from 'lucide-react';
+import { Beef, Mail, Lock, ArrowRight, Loader2, UserPlus, User as UserIcon, ArrowLeft, KeyRound, CheckCircle2 } from 'lucide-react';
 import { User } from '../types';
 import { supabase } from '../lib/supabase';
 
@@ -10,7 +10,7 @@ interface LoginProps {
 
 const Login: React.FC<LoginProps> = ({ onLogin }) => {
   const [isLoading, setIsLoading] = useState(false);
-  const [mode, setMode] = useState<'login' | 'register'>('login');
+  const [mode, setMode] = useState<'login' | 'register' | 'forgot'>('login');
   
   // Form States
   const [email, setEmail] = useState('');
@@ -18,14 +18,28 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
   const [name, setName] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
+  const [forgotSuccessMessage, setForgotSuccessMessage] = useState('');
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setForgotSuccessMessage('');
     setIsLoading(true);
 
     try {
-      if (mode === 'register') {
+      if (mode === 'forgot') {
+        if (!email) {
+          throw new Error('Informe o seu e-mail para continuar.');
+        }
+
+        const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: window.location.origin
+        });
+
+        if (resetError) throw resetError;
+
+        setForgotSuccessMessage('E-mail de recuperação enviado com sucesso! Verifique a sua caixa de entrada e a pasta de spam para redefinir sua senha.');
+      } else if (mode === 'register') {
         if (password !== confirmPassword) {
           throw new Error('As senhas não coincidem');
         }
@@ -78,10 +92,14 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
             <Beef size={40} />
           </div>
           <h1 className="text-3xl font-bold text-gray-800 tracking-tight">
-            {mode === 'login' ? 'Gestão Pecuária' : 'Criar Conta'}
+            {mode === 'login' ? 'Gestão Pecuária' : mode === 'register' ? 'Criar Conta' : 'Recuperar Senha'}
           </h1>
           <p className="text-gray-500 mt-2 text-sm">
-            {mode === 'login' ? 'O futuro da sua fazenda começa aqui' : 'Junte-se à revolução da gestão pecuária'}
+            {mode === 'login' 
+              ? 'O futuro da sua fazenda começa aqui' 
+              : mode === 'register' 
+              ? 'Junte-se à revolução da gestão pecuária' 
+              : 'Enviaremos um link de redefinição para o seu e-mail'}
           </p>
         </div>
 
@@ -89,6 +107,16 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
           {error && (
             <div className="mb-4 p-3 bg-red-50 border border-red-100 text-red-600 text-sm rounded-xl font-medium">
               {error}
+            </div>
+          )}
+
+          {forgotSuccessMessage && (
+            <div className="mb-6 p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm rounded-2xl font-medium flex gap-3 items-start">
+              <CheckCircle2 className="text-emerald-600 shrink-0 mt-0.5" size={20} />
+              <div>
+                <p className="font-bold">E-mail Enviado!</p>
+                <p className="text-xs text-emerald-700 mt-1 leading-relaxed">{forgotSuccessMessage}</p>
+              </div>
             </div>
           )}
 
@@ -126,24 +154,21 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                 </div>
               </div>
 
-              <div className={mode === 'register' ? 'grid grid-cols-2 gap-3' : 'space-y-1'}>
-                <div className="space-y-1">
-                  <label className="text-xs font-bold text-gray-500 uppercase ml-1">Senha</label>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                    <input 
-                      type="password" 
-                      required
-                      className="w-full border border-gray-200 rounded-xl pl-10 pr-4 py-3 focus:ring-2 focus:ring-green-500 outline-none bg-gray-50 focus:bg-white transition-all"
-                      placeholder="••••••••"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                    />
-                  </div>
-                </div>
-                {mode === 'register' && (
+              {mode !== 'forgot' && (
+                <div className={mode === 'register' ? 'grid grid-cols-2 gap-3' : 'space-y-1'}>
                   <div className="space-y-1">
-                    <label className="text-xs font-bold text-gray-500 uppercase ml-1">Confirmar</label>
+                    <div className="flex justify-between items-center">
+                      <label className="text-xs font-bold text-gray-500 uppercase ml-1">Senha</label>
+                      {mode === 'login' && (
+                        <button
+                          type="button"
+                          onClick={() => { setMode('forgot'); setError(''); setForgotSuccessMessage(''); }}
+                          className="text-xs text-green-700 font-semibold hover:underline"
+                        >
+                          Esqueci minha senha
+                        </button>
+                      )}
+                    </div>
                     <div className="relative">
                       <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                       <input 
@@ -151,13 +176,29 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                         required
                         className="w-full border border-gray-200 rounded-xl pl-10 pr-4 py-3 focus:ring-2 focus:ring-green-500 outline-none bg-gray-50 focus:bg-white transition-all"
                         placeholder="••••••••"
-                        value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
                       />
                     </div>
                   </div>
-                )}
-              </div>
+                  {mode === 'register' && (
+                    <div className="space-y-1">
+                      <label className="text-xs font-bold text-gray-500 uppercase ml-1">Confirmar</label>
+                      <div className="relative">
+                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                        <input 
+                          type="password" 
+                          required
+                          className="w-full border border-gray-200 rounded-xl pl-10 pr-4 py-3 focus:ring-2 focus:ring-green-500 outline-none bg-gray-50 focus:bg-white transition-all"
+                          placeholder="••••••••"
+                          value={confirmPassword}
+                          onChange={(e) => setConfirmPassword(e.target.value)}
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
 
               <button 
                 type="submit"
@@ -168,23 +209,38 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                   <Loader2 className="animate-spin" size={20} />
                 ) : (
                   <>
-                    {mode === 'login' ? 'Acessar Painel' : 'Criar Minha Conta'} <ArrowRight size={20} />
+                    {mode === 'login' ? (
+                      <>Acessar Painel <ArrowRight size={20} /></>
+                    ) : mode === 'register' ? (
+                      <>Criar Minha Conta <ArrowRight size={20} /></>
+                    ) : (
+                      <>Enviar E-mail de Recuperação <KeyRound size={18} /></>
+                    )}
                   </>
                 )}
               </button>
             </form>
 
-            <div className="text-center mt-6">
-              <button 
-                onClick={() => { setMode(mode === 'login' ? 'register' : 'login'); setError(''); }}
-                className="text-sm text-green-700 font-semibold hover:text-green-800 transition-colors flex items-center justify-center gap-1 mx-auto"
-              >
-                {mode === 'login' ? (
-                  <><UserPlus size={16} /> Não tem uma conta? Cadastre-se</>
-                ) : (
-                  <><ArrowLeft size={16} /> Já possui conta? Voltar ao Login</>
-                )}
-              </button>
+            <div className="text-center mt-6 space-y-2">
+              {mode === 'forgot' ? (
+                <button 
+                  onClick={() => { setMode('login'); setError(''); setForgotSuccessMessage(''); }}
+                  className="text-sm text-green-700 font-semibold hover:text-green-800 transition-colors flex items-center justify-center gap-1 mx-auto"
+                >
+                  <ArrowLeft size={16} /> Voltar ao Login
+                </button>
+              ) : (
+                <button 
+                  onClick={() => { setMode(mode === 'login' ? 'register' : 'login'); setError(''); setForgotSuccessMessage(''); }}
+                  className="text-sm text-green-700 font-semibold hover:text-green-800 transition-colors flex items-center justify-center gap-1 mx-auto"
+                >
+                  {mode === 'login' ? (
+                    <><UserPlus size={16} /> Não tem uma conta? Cadastre-se</>
+                  ) : (
+                    <><ArrowLeft size={16} /> Já possui conta? Voltar ao Login</>
+                  )}
+                </button>
+              )}
             </div>
           </div>
 

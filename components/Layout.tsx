@@ -21,7 +21,8 @@ import {
   ChevronDown,
   Tractor,
   Plus,
-  Trash2
+  Trash2,
+  KeyRound
 } from 'lucide-react';
 import { User, Animal, InventoryItem, HealthRecord, HealthSeverity, Task, Farm } from '../types';
 
@@ -40,6 +41,7 @@ interface LayoutProps {
   onSelectFarm?: (id: string) => void;
   onDeleteFarm?: (id: string) => void;
   onCreateFarm?: () => void;
+  onOpenResetPassword?: () => void;
 }
 
 const Layout: React.FC<LayoutProps> = ({ 
@@ -56,7 +58,8 @@ const Layout: React.FC<LayoutProps> = ({
   activeFarmId = null,
   onSelectFarm,
   onDeleteFarm,
-  onCreateFarm
+  onCreateFarm,
+  onOpenResetPassword
 }) => {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
@@ -243,6 +246,15 @@ const Layout: React.FC<LayoutProps> = ({
             <Instagram size={20} className="group-hover:scale-110 transition-transform" />
             <span>@vivendoapecuaria</span>
           </a>
+          {onOpenResetPassword && (
+            <button 
+              onClick={onOpenResetPassword}
+              className="flex items-center space-x-3 text-green-200 hover:text-white px-4 py-2 w-full transition-colors font-medium text-sm"
+            >
+              <KeyRound size={20} />
+              <span>Alterar Senha</span>
+            </button>
+          )}
           <button 
             onClick={onLogout}
             className="flex items-center space-x-3 text-green-300 hover:text-red-400 px-4 py-2 w-full transition-colors font-medium text-sm"
