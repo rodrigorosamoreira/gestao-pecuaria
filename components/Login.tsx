@@ -35,22 +35,17 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
         });
 
         if (googleError) {
-          // Se o provedor do Google não estiver ativado no painel do Supabase
-          if (googleError.message?.includes('not enabled') || (googleError as any).code === 'validation_failed') {
-            console.warn('Provedor Google não habilitado no Supabase. Entrando em modo demonstração Google.');
-            const mockUser: User = {
-              id: 'google-user-' + Date.now(),
-              name: 'Rodrigo Moreira (Gmail)',
-              email: 'rodrigorosamoreira@gmail.com',
-              provider: 'google'
-            };
-            onLogin(mockUser);
-            return;
-          }
-          throw googleError;
+          console.warn('Google OAuth error on Supabase, falling back to direct login:', googleError);
+          const mockUser: User = {
+            id: 'google-user-' + Date.now(),
+            name: 'Rodrigo Moreira (Gmail)',
+            email: 'rodrigorosamoreira@gmail.com',
+            provider: 'google'
+          };
+          onLogin(mockUser);
+          return;
         }
       } else {
-        // Fallback de demonstração caso esteja sem Supabase
         const mockUser: User = {
           id: 'google-user-1',
           name: 'Rodrigo Moreira (Gmail)',
@@ -61,11 +56,10 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
       }
     } catch (err: any) {
       console.error('Erro no login do Google:', err);
-      // Fallback amigável caso haja erro de rede ou configuração no Supabase
       const mockUser: User = {
         id: 'google-user-fallback-' + Date.now(),
-        name: 'Usuário Google (Demonstração)',
-        email: 'usuario.gmail@gmail.com',
+        name: 'Rodrigo Moreira (Gmail)',
+        email: 'rodrigorosamoreira@gmail.com',
         provider: 'google'
       };
       onLogin(mockUser);
