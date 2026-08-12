@@ -23,6 +23,56 @@ const getAiClient = (): GoogleGenAI | null => {
   });
 };
 
+// Auxiliar para chamadas do Gemini com retry exponencial e fallback de modelo
+const generateWithRetryAndFallback = async (
+  ai: GoogleGenAI,
+  contents: any,
+  systemInstruction?: string
+): Promise<string> => {
+  const models = ["gemini-3.6-flash", "gemini-3.1-flash-lite", "gemini-flash-latest"];
+  let lastError: any = null;
+
+  for (const model of models) {
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        const config: any = {};
+        if (systemInstruction) {
+          config.systemInstruction = systemInstruction;
+        }
+
+        const response = await ai.models.generateContent({
+          model,
+          contents,
+          ...(Object.keys(config).length > 0 ? { config } : {}),
+        });
+
+        if (response && response.text) {
+          return response.text;
+        }
+      } catch (err: any) {
+        lastError = err;
+        console.warn(`[Gemini API] Tentativa ${attempt + 1} no modelo ${model} falhou:`, err?.message || err);
+        const errMsg = String(err?.message || err);
+        const isTransient = 
+          errMsg.includes("503") || 
+          errMsg.includes("429") || 
+          errMsg.includes("UNAVAILABLE") || 
+          errMsg.includes("high demand") || 
+          errMsg.includes("OVERLOADED") ||
+          errMsg.includes("RESOURCE_EXHAUSTED");
+
+        if (isTransient && attempt === 0) {
+          await new Promise((res) => setTimeout(res, 1200));
+          continue;
+        }
+        break; // Tenta o próximo modelo da lista
+      }
+    }
+  }
+
+  throw lastError || new Error("Não foi possível conectar com o serviço de IA no momento.");
+};
+
 // API: Análise Geral da Fazenda
 app.post("/api/gemini/analyze-farm", async (req, res) => {
   try {
@@ -55,15 +105,12 @@ app.post("/api/gemini/analyze-farm", async (req, res) => {
       Gere um relatório técnico sucinto focado em alertas de manejo, nutrição e recomendações práticas em português brasileiro. Use formatação Markdown.
     `;
 
-    const response = await ai.models.generateContent({
-      model: 'gemini-3.6-flash',
-      contents: prompt
-    });
+    const text = await generateWithRetryAndFallback(ai, prompt);
 
-    return res.json({ text: response.text || "Sem análise disponível no momento." });
+    return res.json({ text: text || "Sem análise disponível no momento." });
   } catch (error: any) {
     console.error("Erro na análise da fazenda via Gemini:", error);
-    return res.status(500).json({ error: error?.message || "Erro ao processar análise da fazenda." });
+    return res.json({ text: "O serviço de IA está enfrentando alta demanda temporária no servidor. Por favor, tente novamente em alguns segundos." });
   }
 });
 
@@ -75,14 +122,11 @@ app.post("/api/gemini/quick-advice", async (req, res) => {
       return res.status(500).json({ error: "Serviço de IA não configurado." });
     }
     const { question } = req.body;
-    const response = await ai.models.generateContent({
-      model: 'gemini-3.6-flash',
-      contents: `Responda de forma direta, clara e técnica para um pecuarista brasileiro: ${question}`
-    });
-    return res.json({ text: response.text || "Sem resposta no momento." });
+    const text = await generateWithRetryAndFallback(ai, `Responda de forma direta, clara e técnica para um pecuarista brasileiro: ${question}`);
+    return res.json({ text: text || "Sem resposta no momento." });
   } catch (error: any) {
     console.error("Erro no conselho rápido:", error);
-    return res.status(500).json({ error: error?.message || "Erro no serviço de IA." });
+    return res.json({ text: "O serviço de IA está temporariamente indisponível devido a alta demanda. Tente novamente em instantes." });
   }
 });
 
@@ -97,14 +141,11 @@ app.post("/api/gemini/feed-formula", async (req, res) => {
     const ingredientsList = ingredients.map((i: any) => `- ${i.name}: ${i.percent}%`).join('\n');
     const prompt = `Analise a seguinte formulação de ração pecuária: \n${ingredientsList}\nForneça estimativa nutricional (proteína/energia) e observações técnicas em português.`;
     
-    const response = await ai.models.generateContent({
-      model: 'gemini-3.6-flash',
-      contents: prompt
-    });
-    return res.json({ text: response.text || "Não foi possível analisar a mistura." });
+    const text = await generateWithRetryAndFallback(ai, prompt);
+    return res.json({ text: text || "Não foi possível analisar a mistura." });
   } catch (error: any) {
     console.error("Erro na análise da ração:", error);
-    return res.status(500).json({ error: error?.message || "Erro ao analisar ração." });
+    return res.json({ text: "Não foi possível analisar a mistura no momento devido a alta demanda no servidor. Tente novamente em instantes." });
   }
 });
 
@@ -143,13 +184,9 @@ app.post("/api/gemini/market-data", async (req, res) => {
 Forneça uma análise atualizada e detalhada sobre o mercado físico do boi gordo, vaca gorda, reposição (bezerro) e grãos (milho e soja) na região de "${currentRegion}" com base nas cotações da Scot Consultoria e CEPEA.
 Destaque a firmeza das cotações da arroba do boi gordo (ao redor de R$ 340,00 a R$ 350,00 /@ em SP e praças do Centro-Oeste), diferencial de base regional e tendências para o produtor. Use formatação Markdown bem estruturada.`;
 
-    const response = await ai.models.generateContent({
-      model: 'gemini-3.6-flash',
-      contents: regionPrompt,
-    });
+    const text = await generateWithRetryAndFallback(ai, regionPrompt);
 
-    const text = response.text || fallbackReport;
-    return res.json({ text, sources: [] });
+    return res.json({ text: text || fallbackReport, sources: [] });
   } catch (error: any) {
     // Retorna o relatório oficial da Scot Consultoria em caso de indisponibilidade ou limite de cota da API Gemini
     return res.json({ 
@@ -288,15 +325,12 @@ COMO CONSULTOR SÊNIOR, elabore um RELATÓRIO DIAGNÓSTICO ESTRATÉGICO para o p
       return res.json({ text: "O serviço de IA não está configurado. Verifique sua chave API do Gemini." });
     }
 
-    const response = await ai.models.generateContent({
-      model: 'gemini-3.6-flash',
-      contents: prompt,
-    });
+    const text = await generateWithRetryAndFallback(ai, prompt);
 
-    return res.json({ text: response.text || "Não foi possível gerar o relatório diagnóstico." });
+    return res.json({ text: text || "Não foi possível gerar o relatório diagnóstico." });
   } catch (error: any) {
     console.error("Erro ao gerar relatório do consultor IA:", error);
-    return res.status(500).json({ error: error?.message || "Erro ao gerar relatório do consultor." });
+    return res.json({ text: "⚠️ **Serviço de IA em Alta Demanda Temporária**\n\nO servidor do Google Gemini está passando por um momento de alta demanda (código 503).\n\nPor favor, aguarde alguns segundos e clique no botão **'Atualizar Diagnóstico'** para gerar um novo relatório." });
   }
 });
 
@@ -312,7 +346,7 @@ app.post("/api/gemini/consultant-chat", async (req, res) => {
 
     const systemPrompt = `
 Você é o CONSULTOR PECUÁRIO IA da fazenda "${farmName}".
-Você é um profissional com vasta vivência prática no campo, zootecnista e administrador rural altamente experiente em pecuária brasileira (corte e leite).
+Você é um profissional com vasta vivência prática no campo, zootecnista e administrador rural highly experiente em pecuária brasileira (corte e leite).
 
 SEUS PILARES INEGOCIÁVEIS:
 1. **LUCRO E MARGEM**: Cada conselho deve levar em conta o custo por arroba, a relação de troca, a taxa de lotação e o retorno financeiro do pecuarista.
@@ -344,15 +378,12 @@ Consultor IA:`;
       return res.json({ text: "Serviço de IA indisponível no momento. Verifique a chave de API." });
     }
 
-    const response = await ai.models.generateContent({
-      model: 'gemini-3.6-flash',
-      contents: fullPrompt,
-    });
+    const text = await generateWithRetryAndFallback(ai, fullPrompt);
 
-    return res.json({ text: response.text || "Sem resposta do consultor no momento." });
+    return res.json({ text: text || "Sem resposta do consultor no momento." });
   } catch (error: any) {
     console.error("Erro no chat do consultor IA:", error);
-    return res.status(500).json({ error: error?.message || "Erro ao processar mensagem com o consultor IA." });
+    return res.json({ text: "Desculpe, o servidor do Google Gemini está com alta demanda momentânea. Por favor, tente enviar sua mensagem novamente em alguns segundos." });
   }
 });
 

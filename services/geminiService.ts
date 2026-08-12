@@ -16,6 +16,9 @@ export const analyzeFarmStatus = async (
 
     const data = await response.json();
     if (!response.ok) {
+      if (typeof data.error === 'string' && (data.error.includes("503") || data.error.includes("UNAVAILABLE") || data.error.includes("high demand") || data.error.includes("ApiError"))) {
+        return "O serviço de IA está com alta demanda no momento. Por favor, tente novamente em alguns instantes.";
+      }
       return data.error || "Não foi possível gerar a análise no momento.";
     }
 
@@ -37,6 +40,9 @@ export const getQuickAdvice = async (question: string): Promise<string> => {
 
     const data = await response.json();
     if (!response.ok) {
+      if (typeof data.error === 'string' && (data.error.includes("503") || data.error.includes("UNAVAILABLE") || data.error.includes("ApiError"))) {
+        return "Serviço de IA com alta demanda no momento. Tente novamente em instantes.";
+      }
       return data.error || "Serviço de IA indisponível.";
     }
 
@@ -58,6 +64,9 @@ export const analyzeFeedFormula = async (ingredients: { name: string; percent: n
 
     const data = await response.json();
     if (!response.ok) {
+      if (typeof data.error === 'string' && (data.error.includes("503") || data.error.includes("UNAVAILABLE") || data.error.includes("ApiError"))) {
+        return "O serviço de IA está enfrentando alta demanda temporária. Tente novamente em instantes.";
+      }
       return data.error || "Não foi possível analisar a mistura.";
     }
 
@@ -107,13 +116,16 @@ export const fetchConsultantReport = async (farmData: any, farmName?: string): P
 
     const data = await response.json();
     if (!response.ok) {
+      if (typeof data.error === 'string' && (data.error.includes("503") || data.error.includes("UNAVAILABLE") || data.error.includes("high demand") || data.error.includes("ApiError"))) {
+        return "⚠️ **Serviço de IA com Alta Demanda Temporária**\n\nO servidor do Google Gemini está passando por uma oscilação momentânea de alta demanda (código 503).\n\nPor favor, aguarde alguns segundos e clique no botão **'Atualizar Diagnóstico'** para tentar novamente.";
+      }
       return data.error || "Não foi possível gerar o relatório diagnóstico do consultor no momento.";
     }
 
     return data.text || "Relatório indisponível.";
   } catch (error) {
     console.error("Erro ao buscar relatório do consultor IA:", error);
-    return "Erro de conexão ao servidor de IA. Tente novamente mais tarde.";
+    return "Erro de conexão ao servidor de IA. Tente novamente em instantes.";
   }
 };
 
@@ -135,6 +147,9 @@ export const sendConsultantChatMessage = async (
 
     const data = await response.json();
     if (!response.ok) {
+      if (typeof data.error === 'string' && (data.error.includes("503") || data.error.includes("UNAVAILABLE") || data.error.includes("high demand") || data.error.includes("ApiError"))) {
+        return "Desculpe, o servidor do Google Gemini está enfrentando uma alta demanda momentânea. Por favor, tente enviar sua mensagem novamente em alguns segundos.";
+      }
       return data.error || "Não foi possível obter resposta do consultor.";
     }
 
