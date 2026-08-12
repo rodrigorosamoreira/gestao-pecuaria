@@ -225,61 +225,74 @@ const AnimalManager: React.FC<AnimalManagerProps> = ({
     : 0;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 font-sans">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-black text-gray-800 tracking-tighter uppercase">Gestão de Rebanho</h2>
-          <p className="text-gray-500 text-sm italic">Organize seus animais em lotes e acompanhe o desempenho</p>
+          <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight">Gestão do Rebanho</h2>
+          <p className="text-slate-500 text-xs">Acompanhamento individual, controle de lotes, pesagens e movimentações</p>
         </div>
-        <div className="flex items-center gap-3">
-          <button onClick={() => setIsBatchModalOpen(true)} className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-2xl flex items-center gap-2 shadow-xl shadow-blue-100 transition-all font-black text-xs uppercase tracking-widest"><Layers size={18} /> Cadastrar Lote</button>
-          <button onClick={() => { setCurrentAnimal({ entryDate: getTodayString(), breed: 'Nelore', gender: AnimalGender.MALE, status: AnimalStatus.ACTIVE, purchaseValue: 0, notes: '' }); setIndWeightValue(0); setIsModalIndividualOpen(true); }} className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-2xl flex items-center gap-2 shadow-xl shadow-emerald-100 transition-all font-black text-xs uppercase tracking-widest"><Plus size={18} /> Cadastrar Animal</button>
+        <div className="flex items-center gap-2.5">
+          <button 
+            onClick={() => setIsBatchModalOpen(true)} 
+            className="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2.5 rounded-xl flex items-center gap-2 transition-all font-bold text-xs cursor-pointer border border-slate-800"
+          >
+            <Layers size={16} /> Cadastrar Lote
+          </button>
+          <button 
+            onClick={() => { setCurrentAnimal({ entryDate: getTodayString(), breed: 'Nelore', gender: AnimalGender.MALE, status: AnimalStatus.ACTIVE, purchaseValue: 0, notes: '' }); setIndWeightValue(0); setIsModalIndividualOpen(true); }} 
+            className="bg-emerald-700 hover:bg-emerald-800 text-white px-4.5 py-2.5 rounded-xl flex items-center gap-2 transition-all font-bold text-xs cursor-pointer shadow-xs border border-emerald-800"
+          >
+            <Plus size={16} /> Novo Animal
+          </button>
         </div>
       </div>
 
       {/* Resumo do Rebanho */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-white p-5 rounded-3xl shadow-sm border border-gray-100 flex items-center gap-4">
-          <div className="p-3 bg-blue-50 text-blue-600 rounded-2xl">
-            <Users size={20} />
+        <div className="agro-card p-4.5 flex items-center gap-3.5">
+          <div className="p-2.5 bg-slate-100 text-slate-700 rounded-xl border border-slate-200/60">
+            <Users size={18} />
           </div>
           <div>
-            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Total Ativo</p>
-            <h4 className="text-xl font-black text-gray-800">{totalActive} <span className="text-[10px] text-gray-400">cab.</span></h4>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Ativo</p>
+            <h4 className="text-xl font-black text-slate-900 font-nums">{totalActive} <span className="text-xs font-normal text-slate-400">cab.</span></h4>
           </div>
         </div>
-        <div className="bg-white p-5 rounded-3xl shadow-sm border border-gray-100 flex items-center gap-4">
-          <div className="p-3 bg-purple-50 text-purple-600 rounded-2xl">
-            <TrendingUp size={20} />
+
+        <div className="agro-card p-4.5 flex items-center gap-3.5">
+          <div className="p-2.5 bg-slate-100 text-slate-700 rounded-xl border border-slate-200/60">
+            <TrendingUp size={18} />
           </div>
           <div>
-            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Peso Médio</p>
-            <h4 className="text-xl font-black text-gray-800">{(avgWeightKg / 30).toFixed(1)} <span className="text-[10px] text-gray-400">@</span></h4>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Peso Médio</p>
+            <h4 className="text-xl font-black text-slate-900 font-nums">{(avgWeightKg / 30).toFixed(1)} <span className="text-xs font-normal text-slate-400">@</span></h4>
           </div>
         </div>
-        <div className="bg-white p-5 rounded-3xl shadow-sm border border-gray-100 flex items-center gap-4">
-          <div className="p-3 bg-emerald-50 text-emerald-600 rounded-2xl">
-            <TrendingUp size={20} />
+
+        <div className="agro-card p-4.5 flex items-center gap-3.5">
+          <div className="p-2.5 bg-emerald-50 text-emerald-700 rounded-xl border border-emerald-100">
+            <TrendingUp size={18} />
           </div>
           <div>
-            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">GMD Médio</p>
-            <h4 className="text-xl font-black text-emerald-600">{avgGmd.toFixed(3)} <span className="text-[10px] text-gray-400">kg/dia</span></h4>
+            <p className="text-[10px] font-bold text-emerald-700 uppercase tracking-wider">GMD Médio</p>
+            <h4 className="text-xl font-black text-emerald-700 font-nums">{avgGmd.toFixed(3)} <span className="text-xs font-normal text-emerald-600">kg/dia</span></h4>
           </div>
         </div>
-        <div className="bg-white p-5 rounded-3xl shadow-sm border border-gray-100 flex items-center gap-4">
-          <div className="p-3 bg-orange-50 text-orange-600 rounded-2xl">
-            <Info size={20} />
+
+        <div className="agro-card p-4.5 flex items-center gap-3.5">
+          <div className="p-2.5 bg-slate-100 text-slate-700 rounded-xl border border-slate-200/60">
+            <Info size={18} />
           </div>
           <div className="flex-1">
-            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Composição</p>
-            <div className="flex gap-3 mt-0.5">
-              <div className="flex items-center gap-1">
-                <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
-                <span className="text-xs font-black text-gray-700">{males}M</span>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Composição</p>
+            <div className="flex gap-3 mt-1">
+              <div className="flex items-center gap-1.5">
+                <div className="w-2 h-2 rounded-full bg-sky-500"></div>
+                <span className="text-xs font-bold text-slate-800 font-nums">{males} Machos</span>
               </div>
-              <div className="flex items-center gap-1">
-                <div className="w-1.5 h-1.5 rounded-full bg-pink-500"></div>
-                <span className="text-xs font-black text-gray-700">{females}F</span>
+              <div className="flex items-center gap-1.5">
+                <div className="w-2 h-2 rounded-full bg-rose-400"></div>
+                <span className="text-xs font-bold text-slate-800 font-nums">{females} Fêmeas</span>
               </div>
             </div>
           </div>
@@ -287,14 +300,24 @@ const AnimalManager: React.FC<AnimalManagerProps> = ({
       </div>
 
       {/* Filtros */}
-      <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex flex-col md:flex-row gap-4">
+      <div className="agro-card p-4 flex flex-col md:flex-row gap-3">
         <div className="relative flex-1">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-          <input type="text" placeholder="Buscar por brinco, raça ou lote..." className="w-full pl-12 pr-4 py-3 border border-gray-100 rounded-2xl outline-none focus:ring-2 focus:ring-emerald-500 bg-gray-50 focus:bg-white transition-all font-medium" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+          <input 
+            type="text" 
+            placeholder="Buscar por brinco, raça ou lote..." 
+            className="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 bg-slate-50/50 focus:bg-white transition-all text-xs font-medium text-slate-800" 
+            value={searchTerm} 
+            onChange={(e) => setSearchTerm(e.target.value)} 
+          />
         </div>
         <div className="flex items-center gap-2">
-          <Filter className="text-gray-400" size={20} />
-          <select className="border border-gray-100 rounded-2xl px-4 py-3 outline-none focus:ring-2 focus:ring-emerald-500 bg-gray-50 font-bold text-gray-700 cursor-pointer" value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
+          <Filter className="text-slate-400" size={18} />
+          <select 
+            className="border border-slate-200 rounded-xl px-3.5 py-2.5 outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 bg-slate-50/50 text-xs font-bold text-slate-700 cursor-pointer" 
+            value={filterStatus} 
+            onChange={(e) => setFilterStatus(e.target.value)}
+          >
             <option value="available">No Pasto (Ativos)</option>
             <option value="all_history">Histórico Completo</option>
             {Object.values(AnimalStatus).map(s => <option key={s} value={s}>{s}</option>)}

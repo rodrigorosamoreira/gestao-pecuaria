@@ -138,134 +138,141 @@ const Dashboard: React.FC<DashboardProps> = ({ animals, transactions, inventory,
   })).sort((a, b) => b.value - a.value).slice(0, 5);
 
   return (
-    <div className="space-y-6 pb-10">
+    <div className="space-y-6 pb-12 font-sans">
       {/* Banner de Cotação Regional Scot Consultoria */}
       <ScotQuoteBar 
         compact={true} 
         onNavigateToCalculators={() => onChangeView?.('tools')} 
       />
 
-      <div className="space-y-6">
-                <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
-                    <div className="flex items-center justify-between mb-6">
-                        <h3 className="text-lg font-black text-gray-800 flex items-center gap-2">
-                            <Users size={20} className="text-blue-600" /> Resumo Detalhado do Rebanho
-                        </h3>
-                        <button 
-                            onClick={() => onChangeView?.('animals')}
-                            className="text-[10px] font-black text-blue-600 uppercase tracking-widest hover:underline"
-                        >
-                            Ver Rebanho Completo
-                        </button>
-                    </div>
-                    
-                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
-                        <div className="space-y-1">
-                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Total Ativo</p>
-                            <p className="text-2xl font-black text-gray-800">{totalAnimals} <span className="text-xs text-gray-400">cab.</span></p>
-                        </div>
-                        
-                        <div className="space-y-1">
-                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Peso Médio</p>
-                            <p className="text-2xl font-black text-gray-800">{(avgWeightKg / 30).toFixed(1)} <span className="text-xs text-gray-400">@</span></p>
-                            <p className="text-[10px] text-gray-400 font-bold">{avgWeightKg.toFixed(1)} kg</p>
-                        </div>
-
-                        <div className="space-y-1">
-                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">GMD Médio</p>
-                            <p className="text-2xl font-black text-emerald-600">{avgGmd.toFixed(3)} <span className="text-xs text-gray-400">kg/dia</span></p>
-                        </div>
-
-                        <div className="space-y-1">
-                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Machos</p>
-                            <div className="flex items-center gap-2">
-                                <div className="w-2 h-2 rounded-full bg-blue-500"></div>
-                                <p className="text-2xl font-black text-gray-800">{males}</p>
-                                <p className="text-[10px] text-gray-400 font-bold">({totalAnimals > 0 ? ((males/totalAnimals)*100).toFixed(0) : 0}%)</p>
-                            </div>
-                        </div>
-
-                        <div className="space-y-1">
-                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Fêmeas</p>
-                            <div className="flex items-center gap-2">
-                                <div className="w-2 h-2 rounded-full bg-pink-500"></div>
-                                <p className="text-2xl font-black text-gray-800">{females}</p>
-                                <p className="text-[10px] text-gray-400 font-bold">({totalAnimals > 0 ? ((females/totalAnimals)*100).toFixed(0) : 0}%)</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                  <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">Saldo em Caixa</p>
-                        <h3 className={`text-3xl font-black mt-1 ${totalBalance >= 0 ? 'text-blue-600' : 'text-red-600'}`}>
-                          R$ {totalBalance.toLocaleString('pt-BR')}
-                        </h3>
-                        <p className="text-[10px] text-gray-400 mt-1 font-medium">Fluxo total</p>
-                      </div>
-                      <div className={`p-4 rounded-2xl ${totalBalance >= 0 ? 'bg-blue-50 text-blue-600' : 'bg-red-50 text-red-600'}`}>
-                        <Wallet size={24} />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">Casos de Saúde</p>
-                        <h3 className={`text-3xl font-black mt-1 ${healthAlerts > 0 ? 'text-red-600' : 'text-gray-800'}`}>{healthAlerts}</h3>
-                        <p className="text-[10px] text-gray-400 mt-1 font-medium">Em tratamento</p>
-                      </div>
-                      <div className={`p-3 rounded-xl ${healthAlerts > 0 ? 'bg-red-50 text-red-600 animate-pulse' : 'bg-orange-50 text-orange-600'}`}>
-                        <HeartPulse size={24} />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
-                    <div className="flex justify-between items-start">
-                        <div>
-                            <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">Estoque Baixo</p>
-                            <h3 className={`text-3xl font-black mt-1 ${stockAlerts > 0 ? 'text-orange-600' : 'text-gray-800'}`}>{stockAlerts}</h3>
-                            <p className="text-[10px] text-gray-400 mt-1 font-medium">Itens críticos</p>
-                        </div>
-                        <div className={`p-3 rounded-xl ${stockAlerts > 0 ? 'bg-orange-50 text-orange-600' : 'bg-gray-50 text-gray-400'}`}>
-                            <Package size={24} />
-                        </div>
-                    </div>
-                  </div>
-
-                  <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
-                    <div className="flex justify-between items-start">
-                        <div>
-                            <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">Desempenho</p>
-                            <h3 className="text-3xl font-black text-gray-800 mt-1">{(avgWeightKg / 30).toFixed(1)} @</h3>
-                            <p className="text-[10px] text-gray-400 mt-1 font-medium">Média do rebanho</p>
-                        </div>
-                        <div className="p-3 bg-blue-50 text-blue-600 rounded-xl">
-                            <Scale size={24} />
-                        </div>
-                    </div>
-                  </div>
-                </div>
+      {/* Resumo do Rebanho & KPIs Principais */}
+      <div className="space-y-5">
+        <div className="agro-card p-6">
+          <div className="flex items-center justify-between mb-5 pb-4 border-b border-slate-100">
+            <div className="flex items-center gap-2.5">
+              <div className="p-2 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-100">
+                <Users size={18} />
+              </div>
+              <div>
+                <h3 className="text-base font-extrabold text-slate-900 tracking-tight">Resumo Detalhado do Rebanho</h3>
+                <p className="text-xs text-slate-500">Métricas consolidadas de contagem, peso e GMD</p>
+              </div>
             </div>
+            <button 
+              onClick={() => onChangeView?.('animals')}
+              className="text-xs font-bold text-emerald-700 hover:text-emerald-800 bg-emerald-50 hover:bg-emerald-100 px-3.5 py-1.5 rounded-lg transition-colors"
+            >
+              Ver Rebanho Completo →
+            </button>
+          </div>
+          
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-5">
+            <div className="p-3.5 rounded-xl bg-slate-50/80 border border-slate-100">
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Ativo</p>
+              <p className="text-2xl font-black text-slate-900 font-nums mt-0.5">{totalAnimals} <span className="text-xs font-normal text-slate-400">cab.</span></p>
+            </div>
+            
+            <div className="p-3.5 rounded-xl bg-slate-50/80 border border-slate-100">
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Peso Médio</p>
+              <p className="text-2xl font-black text-slate-900 font-nums mt-0.5">{(avgWeightKg / 30).toFixed(1)} <span className="text-xs font-normal text-slate-400">@</span></p>
+              <p className="text-[11px] text-slate-500 font-medium font-nums">{avgWeightKg.toFixed(1)} kg/cab</p>
+            </div>
+
+            <div className="p-3.5 rounded-xl bg-emerald-50/60 border border-emerald-100">
+              <p className="text-[10px] font-bold text-emerald-700 uppercase tracking-wider">GMD Médio</p>
+              <p className="text-2xl font-black text-emerald-700 font-nums mt-0.5">{avgGmd.toFixed(3)} <span className="text-xs font-normal text-emerald-600">kg/dia</span></p>
+              <p className="text-[11px] text-emerald-600 font-medium">Ganho Médio Diário</p>
+            </div>
+
+            <div className="p-3.5 rounded-xl bg-slate-50/80 border border-slate-100">
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Machos</p>
+              <div className="flex items-baseline gap-2 mt-0.5">
+                <span className="text-2xl font-black text-slate-900 font-nums">{males}</span>
+                <span className="text-xs text-slate-500 font-medium">({totalAnimals > 0 ? ((males/totalAnimals)*100).toFixed(0) : 0}%)</span>
+              </div>
+            </div>
+
+            <div className="p-3.5 rounded-xl bg-slate-50/80 border border-slate-100">
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Fêmeas</p>
+              <div className="flex items-baseline gap-2 mt-0.5">
+                <span className="text-2xl font-black text-slate-900 font-nums">{females}</span>
+                <span className="text-xs text-slate-500 font-medium">({totalAnimals > 0 ? ((females/totalAnimals)*100).toFixed(0) : 0}%)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Cards Rápidos de Indicadores Financeiros e Saúde */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="agro-card p-5">
+            <div className="flex justify-between items-start">
+              <div>
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Saldo em Caixa</p>
+                <h3 className={`text-2xl font-black mt-1 font-nums ${totalBalance >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+                  R$ {totalBalance.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                </h3>
+                <p className="text-[11px] text-slate-400 mt-1 font-medium">Saldo acumulado</p>
+              </div>
+              <div className={`p-3 rounded-xl border ${totalBalance >= 0 ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-rose-50 text-rose-600 border-rose-100'}`}>
+                <Wallet size={22} />
+              </div>
+            </div>
+          </div>
+
+          <div className="agro-card p-5">
+            <div className="flex justify-between items-start">
+              <div>
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Casos de Saúde</p>
+                <h3 className={`text-2xl font-black mt-1 font-nums ${healthAlerts > 0 ? 'text-rose-600' : 'text-slate-800'}`}>{healthAlerts}</h3>
+                <p className="text-[11px] text-slate-400 mt-1 font-medium">Animais em tratamento</p>
+              </div>
+              <div className={`p-3 rounded-xl border ${healthAlerts > 0 ? 'bg-rose-50 text-rose-600 border-rose-200' : 'bg-slate-50 text-slate-500 border-slate-200'}`}>
+                <HeartPulse size={22} />
+              </div>
+            </div>
+          </div>
+
+          <div className="agro-card p-5">
+            <div className="flex justify-between items-start">
+              <div>
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Estoque Baixo</p>
+                <h3 className={`text-2xl font-black mt-1 font-nums ${stockAlerts > 0 ? 'text-amber-600' : 'text-slate-800'}`}>{stockAlerts}</h3>
+                <p className="text-[11px] text-slate-400 mt-1 font-medium">Insumos em nível crítico</p>
+              </div>
+              <div className={`p-3 rounded-xl border ${stockAlerts > 0 ? 'bg-amber-50 text-amber-600 border-amber-200' : 'bg-slate-50 text-slate-500 border-slate-200'}`}>
+                <Package size={22} />
+              </div>
+            </div>
+          </div>
+
+          <div className="agro-card p-5">
+            <div className="flex justify-between items-start">
+              <div>
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Arroba Média</p>
+                <h3 className="text-2xl font-black text-slate-900 mt-1 font-nums">{(avgWeightKg / 30).toFixed(1)} @</h3>
+                <p className="text-[11px] text-slate-400 mt-1 font-medium">Desempenho por cabeça</p>
+              </div>
+              <div className="p-3 bg-slate-50 text-slate-700 rounded-xl border border-slate-200">
+                <Scale size={22} />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Gráfico de Fluxo de Caixa */}
-        <div className="lg:col-span-8 bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
-          <div className="flex items-center justify-between mb-6">
+        <div className="lg:col-span-8 agro-card p-6">
+          <div className="flex items-center justify-between mb-6 pb-3 border-b border-slate-100">
             <div>
-              <h3 className="text-lg font-black text-gray-800 flex items-center gap-2">
-                  <BarChart3 size={20} className="text-green-600" /> Evolução Financeira
+              <h3 className="text-base font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
+                <BarChart3 size={18} className="text-emerald-600" /> Evolução Financeira
               </h3>
-              <p className="text-xs text-gray-400 font-medium">Receitas vs Despesas nos últimos 6 meses</p>
+              <p className="text-xs text-slate-500">Receitas x Despesas nos últimos 6 meses</p>
             </div>
-            <div className="flex items-center gap-4 text-[10px] font-bold uppercase tracking-widest">
-              <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-green-500"></div> Receita</div>
-              <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-red-500"></div> Despesa</div>
+            <div className="flex items-center gap-4 text-xs font-bold">
+              <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-full bg-emerald-500"></div> <span className="text-slate-600">Receita</span></div>
+              <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-full bg-rose-500"></div> <span className="text-slate-600">Despesa</span></div>
             </div>
           </div>
           <div className="h-72">
@@ -273,93 +280,95 @@ const Dashboard: React.FC<DashboardProps> = ({ animals, transactions, inventory,
               <AreaChart data={lastMonths}>
                 <defs>
                   <linearGradient id="colorIncome" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#10B981" stopOpacity={0.1}/>
+                    <stop offset="5%" stopColor="#10B981" stopOpacity={0.15}/>
                     <stop offset="95%" stopColor="#10B981" stopOpacity={0}/>
                   </linearGradient>
                   <linearGradient id="colorExpense" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#EF4444" stopOpacity={0.1}/>
-                    <stop offset="95%" stopColor="#EF4444" stopOpacity={0}/>
+                    <stop offset="5%" stopColor="#F43F5E" stopOpacity={0.15}/>
+                    <stop offset="95%" stopColor="#F43F5E" stopOpacity={0}/>
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
-                <XAxis dataKey="month" axisLine={false} tickLine={false} fontSize={10} tick={{fill: '#9CA3AF'}} />
-                <YAxis axisLine={false} tickLine={false} fontSize={10} tick={{fill: '#9CA3AF'}} tickFormatter={(v) => `R$ ${v/1000}k`} />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                <XAxis dataKey="month" axisLine={false} tickLine={false} fontSize={11} tick={{fill: '#64748B'}} />
+                <YAxis axisLine={false} tickLine={false} fontSize={11} tick={{fill: '#64748B'}} tickFormatter={(v) => `R$ ${v/1000}k`} />
                 <Tooltip 
-                  contentStyle={{borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)'}} 
+                  contentStyle={{borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 4px 12px rgba(0,0,0,0.05)', fontSize: '12px'}} 
                   formatter={(v: number) => [`R$ ${v.toLocaleString('pt-BR')}`, '']}
                 />
-                <Area type="monotone" dataKey="income" stroke="#10B981" strokeWidth={3} fillOpacity={1} fill="url(#colorIncome)" />
-                <Area type="monotone" dataKey="expense" stroke="#EF4444" strokeWidth={3} fillOpacity={1} fill="url(#colorExpense)" />
+                <Area type="monotone" dataKey="income" stroke="#10B981" strokeWidth={2.5} fillOpacity={1} fill="url(#colorIncome)" />
+                <Area type="monotone" dataKey="expense" stroke="#F43F5E" strokeWidth={2.5} fillOpacity={1} fill="url(#colorExpense)" />
               </AreaChart>
             </ResponsiveContainer>
           </div>
         </div>
 
         {/* Widget de Pendências Críticas */}
-        <div className="lg:col-span-4 bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex flex-col">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-black text-gray-800 flex items-center gap-2">
-                <AlertTriangle size={20} className="text-red-500" /> Ações Urgentes
-            </h3>
-            <span className="bg-red-50 text-red-600 text-[10px] font-black px-2 py-0.5 rounded-full uppercase">Hoje</span>
-          </div>
+        <div className="lg:col-span-4 agro-card p-6 flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-5 pb-3 border-b border-slate-100">
+              <h3 className="text-base font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
+                <AlertTriangle size={18} className="text-rose-500" /> Ações Urgentes
+              </h3>
+              <span className="bg-rose-50 text-rose-600 text-[10px] font-bold px-2 py-0.5 rounded-full border border-rose-200">Manejo do Dia</span>
+            </div>
 
-          <div className="flex-1 space-y-3">
-            {urgentTasks.length > 0 ? (
-                urgentTasks.map((task, idx) => (
-                    <div key={`${task.id}-${idx}`} className="group p-3 rounded-2xl border border-gray-50 bg-gray-50/50 hover:bg-white hover:border-gray-100 hover:shadow-sm transition-all flex items-center gap-3">
-                        <div className={`p-2 rounded-xl shrink-0 ${
-                            task.severity === 'high' ? 'bg-red-100 text-red-600' : 
-                            task.severity === 'medium' ? 'bg-orange-100 text-orange-600' : 
-                            'bg-blue-100 text-blue-600'
-                        }`}>
-                            {task.type === 'stock' ? <Package size={16} /> : <HeartPulse size={16} />}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                            <p className="text-xs font-bold text-gray-800 truncate">{task.title}</p>
-                            <p className="text-[10px] text-gray-500 font-medium">
-                                {task.animal ? `Animal ${task.animal}` : task.subtitle}
-                            </p>
-                        </div>
-                        <ChevronRight size={14} className="text-gray-300 group-hover:text-gray-900 group-hover:translate-x-1 transition-all" />
-                    </div>
-                ))
-            ) : (
-                <div className="h-full flex flex-col items-center justify-center text-center p-6">
-                    <div className="p-4 bg-green-50 rounded-full mb-4">
-                        <TrendingUp size={32} className="text-green-600" />
-                    </div>
-                    <p className="text-sm font-bold text-gray-800">Tudo Atualizado!</p>
-                    <p className="text-xs text-gray-400 mt-1">Nenhuma pendência crítica detectada no momento.</p>
-                </div>
-            )}
+            <div className="space-y-3">
+              {urgentTasks.length > 0 ? (
+                  urgentTasks.map((task, idx) => (
+                      <div key={`${task.id}-${idx}`} className="p-3 rounded-xl border border-slate-100 bg-slate-50/60 hover:bg-white hover:border-slate-200 hover:shadow-xs transition-all flex items-center gap-3">
+                          <div className={`p-2 rounded-lg shrink-0 border ${
+                              task.severity === 'high' ? 'bg-rose-50 text-rose-600 border-rose-200' : 
+                              task.severity === 'medium' ? 'bg-amber-50 text-amber-600 border-amber-200' : 
+                              'bg-sky-50 text-sky-600 border-sky-200'
+                          }`}>
+                              {task.type === 'stock' ? <Package size={15} /> : <HeartPulse size={15} />}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                              <p className="text-xs font-bold text-slate-900 truncate">{task.title}</p>
+                              <p className="text-[11px] text-slate-500">
+                                  {task.animal ? `Brinco ${task.animal}` : task.subtitle}
+                              </p>
+                          </div>
+                          <ChevronRight size={14} className="text-slate-300" />
+                      </div>
+                  ))
+              ) : (
+                  <div className="py-8 flex flex-col items-center justify-center text-center">
+                      <div className="p-3 bg-emerald-50 text-emerald-600 rounded-full mb-3 border border-emerald-100">
+                          <TrendingUp size={24} />
+                      </div>
+                      <p className="text-xs font-bold text-slate-800">Tudo Atualizado!</p>
+                      <p className="text-[11px] text-slate-400 mt-0.5">Nenhuma pendência crítica detectada no momento.</p>
+                  </div>
+              )}
+            </div>
           </div>
 
           <button 
             onClick={() => onChangeView?.('health')}
-            className="w-full mt-6 py-3 rounded-xl bg-gray-50 text-[10px] font-black text-gray-500 hover:bg-gray-100 hover:text-gray-900 transition-all uppercase tracking-widest"
+            className="w-full mt-4 py-2.5 rounded-xl bg-slate-50 text-xs font-bold text-slate-600 hover:bg-slate-100 transition-all border border-slate-200/80"
           >
-            Ver todos os manejos
+            Ver Todos os Manejos →
           </button>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Distribuição de Gastos */}
-        <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
-          <h3 className="text-lg font-black text-gray-800 mb-6 flex items-center gap-2">
-            <PieChartIcon size={20} className="text-purple-600" /> Gastos por Categoria
+        <div className="agro-card p-6">
+          <h3 className="text-base font-extrabold text-slate-900 tracking-tight mb-5 pb-3 border-b border-slate-100 flex items-center gap-2">
+            <PieChartIcon size={18} className="text-emerald-600" /> Gastos por Categoria
           </h3>
-          <div className="h-64">
+          <div className="h-60">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
                   data={categoryData}
                   cx="50%"
                   cy="50%"
-                  innerRadius={60}
-                  outerRadius={85}
-                  paddingAngle={5}
+                  innerRadius={55}
+                  outerRadius={80}
+                  paddingAngle={4}
                   dataKey="value"
                   stroke="none"
                 >
@@ -371,39 +380,39 @@ const Dashboard: React.FC<DashboardProps> = ({ animals, transactions, inventory,
               </PieChart>
             </ResponsiveContainer>
           </div>
-          <div className="grid grid-cols-2 gap-2 mt-4">
+          <div className="grid grid-cols-2 gap-2 mt-2 pt-3 border-t border-slate-100">
             {categoryData.map((entry, index) => (
-              <div key={index} className="flex items-center gap-2 text-[10px] font-bold text-gray-500">
-                <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: COLORS[index % COLORS.length] }}></div>
+              <div key={index} className="flex items-center gap-2 text-xs font-medium text-slate-600">
+                <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: COLORS[index % COLORS.length] }}></div>
                 <span className="truncate">{entry.name}</span>
-                <span className="ml-auto text-gray-800">R$ {entry.value.toLocaleString('pt-BR')}</span>
+                <span className="ml-auto font-bold text-slate-900 font-nums">R$ {entry.value.toLocaleString('pt-BR')}</span>
               </div>
             ))}
           </div>
         </div>
 
         {/* Lembretes Próximos */}
-        <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
-          <h3 className="text-lg font-black text-gray-800 mb-6 flex items-center gap-2">
-            <Calendar size={20} className="text-blue-600" /> Agenda de Manejos
+        <div className="agro-card p-6">
+          <h3 className="text-base font-extrabold text-slate-900 tracking-tight mb-5 pb-3 border-b border-slate-100 flex items-center gap-2">
+            <Calendar size={18} className="text-emerald-600" /> Agenda de Manejos
           </h3>
-          <div className="space-y-4">
+          <div className="space-y-3">
             {healthRecords.filter(r => r.status === 'Em Tratamento').slice(0, 5).map((r, idx) => (
-                <div key={`${r.id}-${idx}`} className="flex items-center justify-between p-3 border-b border-gray-50 hover:bg-gray-50 transition-colors rounded-xl group">
+                <div key={`${r.id}-${idx}`} className="flex items-center justify-between p-3 border border-slate-100 bg-slate-50/50 rounded-xl hover:bg-slate-50 transition-colors">
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-xs group-hover:bg-blue-100 transition-colors">
+                        <div className="w-9 h-9 rounded-lg bg-emerald-100 text-emerald-800 font-extrabold text-xs flex items-center justify-center border border-emerald-200">
                             {new Date(r.startDate).getDate()}
                         </div>
                         <div>
-                            <p className="text-xs font-bold text-gray-800">{r.title}</p>
-                            <p className="text-[10px] text-gray-400 font-medium">Animal: {animals.find(a => a.id === r.animalId)?.earTag}</p>
+                            <p className="text-xs font-bold text-slate-900">{r.title}</p>
+                            <p className="text-[11px] text-slate-500">Animal: Brinco {animals.find(a => a.id === r.animalId)?.earTag || '-'}</p>
                         </div>
                     </div>
-                    <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded uppercase">Pendente</span>
+                    <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded uppercase">Em Tratamento</span>
                 </div>
             ))}
             {healthRecords.filter(r => r.status === 'Em Tratamento').length === 0 && (
-                <p className="text-center py-10 text-xs text-gray-400 font-medium italic">Nenhum manejo agendado para os próximos dias.</p>
+                <p className="text-center py-10 text-xs text-slate-400 font-medium italic">Nenhum manejo agendado para os próximos dias.</p>
             )}
           </div>
         </div>

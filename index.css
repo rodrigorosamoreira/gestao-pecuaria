@@ -1,12 +1,39 @@
 @import "tailwindcss";
 
+:root {
+  font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  color-scheme: light;
+}
+
 body { 
-  font-family: 'Inter', sans-serif; 
+  font-family: 'Plus Jakarta Sans', 'Inter', sans-serif; 
   background-color: #f8fafc; 
+  color: #0f172a;
+  -webkit-font-smoothing: antialiased;
+}
+
+.font-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }
 
 .scale-in { 
-  animation: scaleIn 0.2s ease-out forwards; 
+  animation: scaleIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards; 
 }
 
 @keyframes scaleIn { 
@@ -19,3 +46,32 @@ input::-webkit-inner-spin-button {
   -webkit-appearance: none; 
   margin: 0; 
 }
+
+/* Agro Tech Premium Card Styles */
+.agro-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.875rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.02), 0 1px 2px -1px rgba(0, 0, 0, 0.02);
+  transition: all 0.2s ease;
+}
+
+.agro-card:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 4px 12px -2px rgba(15, 23, 42, 0.05), 0 2px 4px -2px rgba(15, 23, 42, 0.05);
+}
+
+.agro-card-interactive {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.875rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.02);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.agro-card-interactive:hover {
+  border-color: #10b981;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px -3px rgba(16, 185, 129, 0.08), 0 4px 6px -4px rgba(16, 185, 129, 0.04);
+}
+

@@ -106,31 +106,31 @@ const ScotQuoteBar: React.FC<ScotQuoteBarProps> = ({
 
   if (compact) {
     return (
-      <div className="bg-gradient-to-r from-[#1a1f2c] to-[#242b3d] text-white p-4 rounded-2xl shadow-md border border-gray-800 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div className="bg-emerald-950 text-white p-4 rounded-xl shadow-xs border border-emerald-900/80 flex flex-col sm:flex-row items-center justify-between gap-4 font-sans">
         <div className="flex items-center gap-3 w-full sm:w-auto">
-          <div className="p-2.5 bg-emerald-500/20 text-emerald-400 rounded-xl shrink-0">
-            <Building2 size={20} />
+          <div className="p-2.5 bg-emerald-800/80 text-emerald-300 rounded-lg shrink-0 border border-emerald-700/50">
+            <Building2 size={18} />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-[10px] font-black text-emerald-400 uppercase tracking-widest">Arroba do Boi (Scot)</span>
-              <span className="text-[9px] bg-emerald-500/10 text-emerald-300 border border-emerald-500/30 px-1.5 py-0.5 rounded font-bold">{selectedQuote.state}</span>
+              <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider">Arroba do Boi (Scot)</span>
+              <span className="text-[9px] bg-emerald-800/60 text-emerald-200 border border-emerald-700/60 px-1.5 py-0.2 rounded font-semibold">{selectedQuote.state}</span>
             </div>
-            <p className="text-xl font-black text-white tracking-tight">
-              R$ {selectedQuote.boiGordoVista.toFixed(2)} <span className="text-xs font-normal text-gray-400">/@ (À Vista)</span>
+            <p className="text-lg font-black text-white font-nums tracking-tight">
+              R$ {selectedQuote.boiGordoVista.toFixed(2)} <span className="text-xs font-normal text-emerald-300/80">/@ (À Vista)</span>
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+        <div className="flex items-center gap-2.5 w-full sm:w-auto justify-end">
           <div className="relative">
             <select
               value={selectedRegionId}
               onChange={handleRegionChange}
-              className="bg-[#2a3245] border border-gray-700 text-white text-xs font-bold py-2 pl-3 pr-8 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer max-w-[200px] truncate"
+              className="bg-emerald-900/90 border border-emerald-800 text-white text-xs font-bold py-2 pl-3 pr-8 rounded-lg outline-none focus:ring-1 focus:ring-emerald-400 cursor-pointer max-w-[200px] truncate"
             >
               {quotes.map(q => (
-                <option key={q.id} value={q.id}>
+                <option key={q.id} value={q.id} className="bg-emerald-950 text-white">
                   {q.regionName}
                 </option>
               ))}
@@ -140,7 +140,7 @@ const ScotQuoteBar: React.FC<ScotQuoteBarProps> = ({
           <button
             type="button"
             onClick={handleApplyToCalc}
-            className="bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs py-2 px-3 rounded-xl uppercase tracking-wider transition-all flex items-center gap-1.5 shadow-sm whitespace-nowrap cursor-pointer"
+            className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs py-2 px-3.5 rounded-lg transition-all flex items-center gap-1.5 shadow-xs whitespace-nowrap cursor-pointer border border-emerald-500/40"
             title="Usar esta cotação nas calculadoras de margem e simulador"
           >
             <Calculator size={14} />
