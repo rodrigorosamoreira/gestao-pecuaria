@@ -208,7 +208,7 @@ const App: React.FC = () => {
 
     try {
       const defaultFazendaLot: Lot = {
-        id: `lot-fazenda-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`,
+        id: `lot-fazenda-${Date.now()}`,
         name: 'Fazenda',
         description: 'Lote principal da fazenda'
       };
@@ -338,8 +338,8 @@ const App: React.FC = () => {
         <AnimalManager 
           animals={farmData.animals} 
           lots={farmData.lots} 
-          onAddAnimal={a => updateActiveFarmData(d => ({ ...d, animals: [...d.animals, a], transactions: a.purchaseValue ? [...d.transactions, { id: `buy-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`, date: a.entryDate || new Date().toISOString().split('T')[0], description: `Compra: ${a.earTag}`, amount: a.purchaseValue, type: TransactionType.EXPENSE, category: 'Compra Animais' }] : d.transactions }))} 
-          onAddBatch={(ans, cost) => updateActiveFarmData(d => ({ ...d, animals: [...d.animals, ...ans], transactions: cost > 0 ? [...d.transactions, { id: `bt-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`, date: ans[0].entryDate || new Date().toISOString().split('T')[0], description: `Lote: ${ans.length} cab.`, amount: cost, type: TransactionType.EXPENSE, category: 'Compra Animais' }] : d.transactions }))}
+          onAddAnimal={a => updateActiveFarmData(d => ({ ...d, animals: [...d.animals, a], transactions: a.purchaseValue ? [...d.transactions, { id: `buy-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`, date: a.entryDate || new Date().toISOString().split('T')[0], description: `Compra: ${a.earTag}`, amount: a.purchaseValue, type: TransactionType.EXPENSE, category: 'Compra Animais' }] : d.transactions }))} 
+          onAddBatch={(ans, cost) => updateActiveFarmData(d => ({ ...d, animals: [...d.animals, ...ans], transactions: cost > 0 ? [...d.transactions, { id: `bt-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`, date: ans[0].entryDate || new Date().toISOString().split('T')[0], description: `Lote: ${ans.length} cab.`, amount: cost, type: TransactionType.EXPENSE, category: 'Compra Animais' }] : d.transactions }))}
           onUpdateAnimal={a => updateActiveFarmData(d => ({ ...d, animals: d.animals.map(old => old.id === a.id ? a : old) }))} 
           onDeleteAnimal={id => updateActiveFarmData(d => ({ ...d, animals: d.animals.filter(a => a.id !== id), healthRecords: d.healthRecords.filter(r => r.animalId !== id) }))}
           onSellAnimal={(id, date, val, w) => updateActiveFarmData(d => {
@@ -357,7 +357,7 @@ const App: React.FC = () => {
               transactions: [
                 ...d.transactions, 
                 { 
-                  id: `s-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`, 
+                  id: `s-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`, 
                   date, 
                   description: `Venda: ${animal.earTag} (Lucro: R$ ${profit.toLocaleString('pt-BR', { minimumFractionDigits: 2 })})`, 
                   amount: val, 
@@ -365,7 +365,7 @@ const App: React.FC = () => {
                   category: 'Vendas' 
                 },
                 {
-                  id: `sc-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`,
+                  id: `sc-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
                   date,
                   description: `Custo Estadia: ${animal.earTag} (${days} dias)`,
                   amount: stayCost,
@@ -394,8 +394,8 @@ const App: React.FC = () => {
               animals: d.animals.map(a => a.lotId === lotId && a.status === AnimalStatus.ACTIVE ? { ...a, status: AnimalStatus.SOLD, weightKg: avgW } : a),
               transactions: [
                 ...d.transactions,
-                { id: `ls-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`, date, description: `Venda Lote: ${lot?.name} (Lucro: R$ ${profit.toLocaleString('pt-BR', { minimumFractionDigits: 2 })})`, amount: rev, type: TransactionType.INCOME, category: 'Vendas' },
-                { id: `lm-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`, date, description: `Custo Estadia Lote: ${lot?.name}`, amount: totalStay, type: TransactionType.EXPENSE, category: 'Produção' }
+                { id: `ls-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`, date, description: `Venda Lote: ${lot?.name} (Lucro: R$ ${profit.toLocaleString('pt-BR', { minimumFractionDigits: 2 })})`, amount: rev, type: TransactionType.INCOME, category: 'Vendas' },
+                { id: `lm-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`, date, description: `Custo Estadia Lote: ${lot?.name}`, amount: totalStay, type: TransactionType.EXPENSE, category: 'Produção' }
               ]
             }));
           }}
@@ -438,7 +438,6 @@ const App: React.FC = () => {
           <AiConsultant 
             farmData={farmData} 
             farmName={activeFarm?.name || "Sua Fazenda"} 
-            onUpdateFarmData={(updated) => updateActiveFarmData(() => updated)}
           />
         );
       case 'valor_diario':

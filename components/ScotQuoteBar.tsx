@@ -189,8 +189,8 @@ const ScotQuoteBar: React.FC<ScotQuoteBarProps> = ({
                 onChange={handleRegionChange}
                 className="w-full sm:w-auto bg-[#252b3a] hover:bg-[#2e3547] text-white text-xs font-black py-3 pl-4 pr-10 rounded-2xl border border-gray-700 outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer shadow-inner transition-all"
               >
-                {quotes.map(q => (
-                  <option key={q.id} value={q.id}>
+                {quotes.map((q, idx) => (
+                  <option key={`${q.id}-${idx}`} value={q.id}>
                     {q.state} - {q.regionName}
                   </option>
                 ))}

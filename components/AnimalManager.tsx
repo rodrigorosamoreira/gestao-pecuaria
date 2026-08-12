@@ -119,7 +119,7 @@ const AnimalManager: React.FC<AnimalManagerProps> = ({
     const unitPrice = batchPriceMode === 'head' ? batchPriceValue : (avgWeightKg / 30) * batchPriceValue;
     const totalCost = unitPrice * batchQty;
     const newAnimals: Animal[] = Array.from({ length: batchQty }, (_, i) => ({
-      id: `${Date.now()}-${i}-${Math.random().toString(36).substr(2, 6)}`,
+      id: `${Date.now()}-${i}-${Math.random().toString(36).substring(2, 5)}`,
       earTag: `${batchBaseTag}${String(i + 1).padStart(3, '0')}`,
       breed: batchBreed,
       gender: AnimalGender.MALE,
@@ -143,7 +143,7 @@ const AnimalManager: React.FC<AnimalManagerProps> = ({
       : ((finalWeight / 30) * (currentAnimal.purchaseValue || 0));
     const animal: Animal = {
       ...(currentAnimal as Animal),
-      id: currentAnimal.id || `${Date.now()}-${Math.random().toString(36).substr(2, 6)}`,
+      id: currentAnimal.id || `${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
       weightKg: finalWeight,
       purchaseValue: finalPurchaseValue,
       history: currentAnimal.id ? (currentAnimal.history || []) : [{ date: currentAnimal.entryDate || getTodayString(), weightKg: finalWeight, gmd: 0 }]

@@ -102,7 +102,7 @@ const MarketMonitor: React.FC<MarketMonitorProps> = ({
                 <div className="flex flex-wrap gap-2">
                   {sources.map((src, idx) => (
                     <a 
-                      key={idx} 
+                      key={`src-${idx}-${src.web?.uri || ''}`} 
                       href={src.web?.uri || '#'} 
                       target="_blank" 
                       rel="noopener noreferrer"

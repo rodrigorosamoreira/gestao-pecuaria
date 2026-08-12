@@ -40,7 +40,7 @@ const HealthManager: React.FC<HealthManagerProps> = ({ animals, healthRecords, o
 
     const newRecord: HealthRecord = {
       ...(formData as HealthRecord),
-      id: `${Date.now()}-${Math.random().toString(36).substr(2, 6)}`,
+      id: `${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
       status: formData.type === 'Vacina' || formData.type === 'Vermífugo' ? 'Concluído' : 'Em Tratamento'
     };
 
@@ -148,7 +148,7 @@ const HealthManager: React.FC<HealthManagerProps> = ({ animals, healthRecords, o
                 filteredRecords.slice().reverse().map((record, idx) => {
                   const animal = animals.find(a => a.id === record.animalId);
                   return (
-                    <tr key={`${record.id || 'hr'}-${idx}`} className="hover:bg-gray-50/50 transition-colors group">
+                    <tr key={`${record.id}-${idx}`} className="hover:bg-gray-50/50 transition-colors group">
                       <td className="px-6 py-4">
                         <div className="flex flex-col">
                           <span className="font-black text-gray-900">{animal?.earTag || 'N/A'}</span>

@@ -76,21 +76,21 @@ const Dashboard: React.FC<DashboardProps> = ({ animals, transactions, inventory,
     severity: string;
   }> = [
     ...healthRecords.filter(r => r.status === 'Em Tratamento' && r.severity === HealthSeverity.CRITICAL).map(r => ({
-        id: r.id,
+        id: `health-crit-${r.id}`,
         type: 'health-critical',
         title: `CRÍTICO: ${r.title}`,
         animal: animals.find(a => a.id === r.animalId)?.earTag,
         severity: 'high'
     })),
     ...inventory.filter(i => i.quantity <= i.minQuantity).map(i => ({
-        id: i.id,
+        id: `stock-${i.id}`,
         type: 'stock',
         title: `Repor ${i.name}`,
         subtitle: `${i.quantity} ${i.unit} restantes`,
         severity: 'medium'
     })),
     ...healthRecords.filter(r => r.status === 'Em Tratamento' && r.notifyAsReminder && r.repeatAfterDays).map(r => ({
-        id: r.id,
+        id: `health-rem-${r.id}`,
         type: 'management',
         title: `Manejo: ${r.title}`,
         animal: animals.find(a => a.id === r.animalId)?.earTag,
@@ -307,7 +307,7 @@ const Dashboard: React.FC<DashboardProps> = ({ animals, transactions, inventory,
           <div className="flex-1 space-y-3">
             {urgentTasks.length > 0 ? (
                 urgentTasks.map((task, idx) => (
-                    <div key={`${task.id || 'ut'}-${idx}`} className="group p-3 rounded-2xl border border-gray-50 bg-gray-50/50 hover:bg-white hover:border-gray-100 hover:shadow-sm transition-all flex items-center gap-3">
+                    <div key={`${task.id}-${idx}`} className="group p-3 rounded-2xl border border-gray-50 bg-gray-50/50 hover:bg-white hover:border-gray-100 hover:shadow-sm transition-all flex items-center gap-3">
                         <div className={`p-2 rounded-xl shrink-0 ${
                             task.severity === 'high' ? 'bg-red-100 text-red-600' : 
                             task.severity === 'medium' ? 'bg-orange-100 text-orange-600' : 
@@ -389,7 +389,7 @@ const Dashboard: React.FC<DashboardProps> = ({ animals, transactions, inventory,
           </h3>
           <div className="space-y-4">
             {healthRecords.filter(r => r.status === 'Em Tratamento').slice(0, 5).map((r, idx) => (
-                <div key={`${r.id || 'hr'}-${idx}`} className="flex items-center justify-between p-3 border-b border-gray-50 hover:bg-gray-50 transition-colors rounded-xl group">
+                <div key={`${r.id}-${idx}`} className="flex items-center justify-between p-3 border-b border-gray-50 hover:bg-gray-50 transition-colors rounded-xl group">
                     <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-xs group-hover:bg-blue-100 transition-colors">
                             {new Date(r.startDate).getDate()}

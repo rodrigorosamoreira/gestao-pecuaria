@@ -20,23 +20,14 @@ import {
   Layers,
   HeartPulse,
   CornerDownLeft,
-  ChevronRight,
-  Key,
-  Settings,
-  X
+  ChevronRight
 } from 'lucide-react';
 import { FarmData } from '../types';
-import { 
-  fetchConsultantReport, 
-  sendConsultantChatMessage, 
-  getStoredGeminiKey, 
-  saveGeminiKey 
-} from '../services/geminiService';
+import { fetchConsultantReport, sendConsultantChatMessage } from '../services/geminiService';
 
 interface AiConsultantProps {
   farmData: FarmData;
   farmName?: string;
-  onUpdateFarmData?: (data: FarmData) => void;
 }
 
 interface ChatMessage {
@@ -46,43 +37,26 @@ interface ChatMessage {
   timestamp: string;
 }
 
-const AiConsultant: React.FC<AiConsultantProps> = ({ farmData, farmName = "Sua Fazenda", onUpdateFarmData }) => {
+const AiConsultant: React.FC<AiConsultantProps> = ({ farmData, farmName = "Sua Fazenda" }) => {
   const [activeTab, setActiveTab] = useState<'report' | 'chat'>('report');
 
   // Relatório State
-  const [reportText, setReportText] = useState<string>(farmData.aiReport || '');
+  const [reportText, setReportText] = useState<string>('');
   const [isLoadingReport, setIsLoadingReport] = useState<boolean>(false);
   const [copiedReport, setCopiedReport] = useState<boolean>(false);
 
-  // Key Modal State
-  const [isKeyModalOpen, setIsKeyModalOpen] = useState<boolean>(false);
-  const [apiKeyInput, setApiKeyInput] = useState<string>(getStoredGeminiKey());
-  const [keySavedNotice, setKeySavedNotice] = useState<boolean>(false);
-
-  const initialWelcome: ChatMessage[] = [
+  // Chat State
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
     {
       id: 'welcome-msg',
       role: 'assistant',
       content: `Olá, parceiro! Sou o seu **Consultor Pecuário IA** na fazenda **${farmName}**. 🤠\n\nEstou aqui para te ajudar a tomar as melhores decisões para o seu negócio pecuário, sempre guiado por três pilares essenciais:\n\n1. **Lucro Líquido & Margem por Arroba**: Foco em custo de produção, GMD e rentabilidade real.\n2. **Bem-Estar Animal**: Manejo calmo, água limpa, sombra e saúde no pasto e curral.\n3. **Realidade do Campo**: Sem invenções teóricas. Soluções práticas adaptadas ao dia a dia da roça.\n\nComo posso te ajudar hoje na sua propriedade?`,
       timestamp: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
     }
-  ];
-
-  // Chat State
-  const [chatMessages, setChatMessages] = useState<ChatMessage[]>(
-    farmData.aiChatHistory && farmData.aiChatHistory.length > 0 ? farmData.aiChatHistory : initialWelcome
-  );
+  ]);
   const [inputMessage, setInputMessage] = useState<string>('');
   const [isSendingChat, setIsSendingChat] = useState<boolean>(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
-
-  // Sync state with farmData props when farm changes
-  useEffect(() => {
-    if (farmData.aiReport) setReportText(farmData.aiReport);
-    if (farmData.aiChatHistory && farmData.aiChatHistory.length > 0) {
-      setChatMessages(farmData.aiChatHistory);
-    }
-  }, [farmData.aiReport, farmData.aiChatHistory]);
 
   // Auto scroll no chat
   useEffect(() => {
@@ -91,16 +65,6 @@ const AiConsultant: React.FC<AiConsultantProps> = ({ farmData, farmName = "Sua F
     }
   }, [chatMessages, activeTab, isSendingChat]);
 
-  // Handler para salvar Chave
-  const handleSaveKey = () => {
-    saveGeminiKey(apiKeyInput);
-    setKeySavedNotice(true);
-    setTimeout(() => {
-      setKeySavedNotice(false);
-      setIsKeyModalOpen(false);
-    }, 1500);
-  };
-
   // Handler para gerar relatório
   const handleGenerateReport = async () => {
     setIsLoadingReport(true);
@@ -108,12 +72,6 @@ const AiConsultant: React.FC<AiConsultantProps> = ({ farmData, farmName = "Sua F
     try {
       const text = await fetchConsultantReport(farmData, farmName);
       setReportText(text);
-      if (onUpdateFarmData && text) {
-        onUpdateFarmData({
-          ...farmData,
-          aiReport: text
-        });
-      }
     } catch (err) {
       console.error("Erro ao gerar relatório:", err);
       setReportText("Ocorreu um erro ao gerar o relatório diagnóstico. Tente novamente em instantes.");
@@ -142,7 +100,7 @@ const AiConsultant: React.FC<AiConsultantProps> = ({ farmData, farmName = "Sua F
     if (!textToSend.trim() || isSendingChat) return;
 
     const userMsg: ChatMessage = {
-      id: `user-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`,
+      id: `user-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
       role: 'user',
       content: textToSend,
       timestamp: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
@@ -158,25 +116,18 @@ const AiConsultant: React.FC<AiConsultantProps> = ({ farmData, farmName = "Sua F
       const responseText = await sendConsultantChatMessage(textToSend, formattedHistory, farmData, farmName);
 
       const assistantMsg: ChatMessage = {
-        id: `assistant-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`,
+        id: `assistant-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
         role: 'assistant',
         content: responseText,
         timestamp: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
       };
-      const finalHistory = [...newHistory, assistantMsg];
-      setChatMessages(finalHistory);
-      if (onUpdateFarmData) {
-        onUpdateFarmData({
-          ...farmData,
-          aiChatHistory: finalHistory
-        });
-      }
+      setChatMessages(prev => [...prev, assistantMsg]);
     } catch (err) {
       console.error("Erro no chat:", err);
       setChatMessages(prev => [
         ...prev,
         {
-          id: `err-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`,
+          id: `err-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
           role: 'assistant',
           content: 'Desculpe, tive uma oscilação na conexão com a IA. Pode repetir sua dúvida?',
           timestamp: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
@@ -238,105 +189,31 @@ const AiConsultant: React.FC<AiConsultantProps> = ({ farmData, farmName = "Sua F
           </div>
         </div>
 
-        {/* Abas de Navegação e Configurações */}
-        <div className="mt-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-t border-green-700/50 pt-6">
-          <div className="flex items-center gap-3 flex-wrap">
-            <button
-              onClick={() => setActiveTab('report')}
-              className={`flex items-center gap-2.5 px-5 py-3 rounded-2xl font-bold text-xs uppercase tracking-wider transition-all cursor-pointer ${
-                activeTab === 'report'
-                  ? 'bg-white text-green-900 shadow-lg scale-105 font-black'
-                  : 'bg-green-800/60 text-green-200 hover:bg-green-800 hover:text-white'
-              }`}
-            >
-              <FileText size={16} /> Relatório IA (Diagnóstico da Fazenda)
-            </button>
-
-            <button
-              onClick={() => setActiveTab('chat')}
-              className={`flex items-center gap-2.5 px-5 py-3 rounded-2xl font-bold text-xs uppercase tracking-wider transition-all cursor-pointer ${
-                activeTab === 'chat'
-                  ? 'bg-white text-green-900 shadow-lg scale-105 font-black'
-                  : 'bg-green-800/60 text-green-200 hover:bg-green-800 hover:text-white'
-              }`}
-            >
-              <MessageSquare size={16} /> Chat com Consultor IA
-            </button>
-          </div>
+        {/* Abas de Navegação */}
+        <div className="mt-8 flex items-center gap-3 border-t border-green-700/50 pt-6">
+          <button
+            onClick={() => setActiveTab('report')}
+            className={`flex items-center gap-2.5 px-5 py-3 rounded-2xl font-bold text-xs uppercase tracking-wider transition-all cursor-pointer ${
+              activeTab === 'report'
+                ? 'bg-white text-green-900 shadow-lg scale-105 font-black'
+                : 'bg-green-800/60 text-green-200 hover:bg-green-800 hover:text-white'
+            }`}
+          >
+            <FileText size={16} /> Relatório IA (Diagnóstico da Fazenda)
+          </button>
 
           <button
-            onClick={() => setIsKeyModalOpen(true)}
-            className="flex items-center gap-2 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-200 border border-emerald-400/30 px-4 py-2.5 rounded-2xl text-xs font-bold transition-all cursor-pointer shrink-0 self-start sm:self-auto"
-            title="Configurar ou verificar chave de API do Gemini"
+            onClick={() => setActiveTab('chat')}
+            className={`flex items-center gap-2.5 px-5 py-3 rounded-2xl font-bold text-xs uppercase tracking-wider transition-all cursor-pointer ${
+              activeTab === 'chat'
+                ? 'bg-white text-green-900 shadow-lg scale-105 font-black'
+                : 'bg-green-800/60 text-green-200 hover:bg-green-800 hover:text-white'
+            }`}
           >
-            <Key size={14} className="text-emerald-300" />
-            <span>Configurar Chave Gemini</span>
+            <MessageSquare size={16} /> Chat com Consultor IA
           </button>
         </div>
       </div>
-
-      {/* Modal de Configuração da Chave Gemini */}
-      {isKeyModalOpen && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
-          <div className="bg-white rounded-3xl p-6 md:p-8 max-w-lg w-full shadow-2xl border border-gray-100 space-y-6 relative">
-            <button 
-              onClick={() => setIsKeyModalOpen(false)}
-              className="absolute top-5 right-5 text-gray-400 hover:text-gray-600 p-2 rounded-full hover:bg-gray-100 transition-colors cursor-pointer"
-            >
-              <X size={20} />
-            </button>
-
-            <div className="flex items-center gap-3">
-              <div className="p-3 bg-emerald-100 text-emerald-800 rounded-2xl">
-                <Key size={24} />
-              </div>
-              <div>
-                <h3 className="text-lg font-black text-gray-900">Configuração do Gemini IA</h3>
-                <p className="text-xs text-gray-500 font-medium">Insira ou modifique sua chave privada da Google AI Studio</p>
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              <label className="text-xs font-bold text-gray-700 uppercase tracking-wider block">
-                Chave da API Gemini (GEMINI_API_KEY)
-              </label>
-              <input 
-                type="password" 
-                value={apiKeyInput}
-                onChange={(e) => setApiKeyInput(e.target.value)}
-                placeholder="Ex: AIzaSy..."
-                className="w-full bg-gray-50 border border-gray-200 rounded-2xl px-4 py-3 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:bg-white transition-all"
-              />
-              <p className="text-[11px] text-gray-500 leading-relaxed italic">
-                A chave é armazenada de forma segura diretamente no seu navegador. Se deixada em branco, o sistema utilizará o motor automático de inteligência diagnóstica da fazenda.
-              </p>
-            </div>
-
-            {keySavedNotice && (
-              <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-2xl text-xs font-bold flex items-center gap-2">
-                <CheckCircle2 size={16} /> Chave salva com sucesso!
-              </div>
-            )}
-
-            <div className="flex items-center justify-end gap-3 pt-2">
-              <button
-                type="button"
-                onClick={() => setIsKeyModalOpen(false)}
-                className="px-5 py-2.5 text-xs font-bold text-gray-600 hover:bg-gray-100 rounded-xl transition-all cursor-pointer"
-              >
-                Cancelar
-              </button>
-              <button
-                type="button"
-                onClick={handleSaveKey}
-                className="bg-emerald-700 hover:bg-emerald-800 text-white font-black text-xs px-6 py-2.5 rounded-xl uppercase tracking-wider transition-all shadow-md cursor-pointer"
-              >
-                Salvar Chave
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* CONTEÚDO DA ABA 1: RELATÓRIO IA */}
       {activeTab === 'report' && (
@@ -458,7 +335,7 @@ const AiConsultant: React.FC<AiConsultantProps> = ({ farmData, farmName = "Sua F
             <button
               onClick={() => setChatMessages([
                 {
-                  id: `welcome-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`,
+                  id: `welcome-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
                   role: 'assistant',
                   content: `Nova conversa iniciada. Em que posso ajudar a melhorar a operação ou rentabilidade de **${farmName}**?`,
                   timestamp: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
@@ -473,9 +350,9 @@ const AiConsultant: React.FC<AiConsultantProps> = ({ farmData, farmName = "Sua F
 
           {/* Histórico do Chat */}
           <div className="flex-1 p-4 md:p-6 overflow-y-auto space-y-4 custom-scrollbar bg-gray-50/50">
-            {chatMessages.map((msg, index) => (
+            {chatMessages.map((msg, idx) => (
               <div
-                key={`${msg.id || 'msg'}-${index}`}
+                key={`${msg.id}-${idx}`}
                 className={`flex gap-3 max-w-3xl ${msg.role === 'user' ? 'ml-auto flex-row-reverse' : ''}`}
               >
                 <div
@@ -524,7 +401,7 @@ const AiConsultant: React.FC<AiConsultantProps> = ({ farmData, farmName = "Sua F
             </span>
             {quickQuestions.map((q, i) => (
               <button
-                key={i}
+                key={`quick-${i}-${q.slice(0, 15)}`}
                 onClick={() => handleSendMessage(q)}
                 disabled={isSendingChat}
                 className="bg-gray-50 hover:bg-green-50 text-gray-700 hover:text-green-800 border border-gray-200 hover:border-green-300 px-3 py-1.5 rounded-full text-[11px] font-bold shrink-0 transition-all cursor-pointer"

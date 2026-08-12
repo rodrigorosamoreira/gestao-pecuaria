@@ -24,7 +24,7 @@ const LotManager: React.FC<LotManagerProps> = ({ lots, animals, onAddLot, onUpda
     if (currentLot.id) {
       onUpdateLot(currentLot);
     } else {
-      onAddLot({ ...currentLot, id: `${Date.now()}-${Math.random().toString(36).substr(2, 6)}` });
+      onAddLot({ ...currentLot, id: `${Date.now()}-${Math.random().toString(36).substring(2, 7)}` });
     }
     closeModal();
   };
@@ -76,7 +76,7 @@ const LotManager: React.FC<LotManagerProps> = ({ lots, animals, onAddLot, onUpda
             : 0;
 
           return (
-            <div key={`${lot.id || 'lot'}-${idx}`} className="bg-white p-8 rounded-[2rem] shadow-sm border border-gray-100 hover:shadow-xl transition-all relative group">
+            <div key={`${lot.id}-${idx}`} className="bg-white p-8 rounded-[2rem] shadow-sm border border-gray-100 hover:shadow-xl transition-all relative group">
               <div className="flex justify-between items-start mb-4">
                 <h3 className="text-xl font-black text-gray-800 uppercase tracking-tighter">{lot.name}</h3>
                 <div className="flex gap-2">
