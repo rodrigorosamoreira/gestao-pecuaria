@@ -1,5 +1,6 @@
 
 import React from 'react';
+import ScotQuoteBar from './ScotQuoteBar';
 import { Animal, Transaction, AnimalStatus, TransactionType, InventoryItem, HealthRecord, HealthSeverity, AnimalGender } from '../types';
 import { 
   TrendingUp, 
@@ -138,7 +139,13 @@ const Dashboard: React.FC<DashboardProps> = ({ animals, transactions, inventory,
 
   return (
     <div className="space-y-6 pb-10">
-            <div className="space-y-6">
+      {/* Banner de Cotação Regional Scot Consultoria */}
+      <ScotQuoteBar 
+        compact={true} 
+        onNavigateToCalculators={() => onChangeView?.('tools')} 
+      />
+
+      <div className="space-y-6">
                 <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
                     <div className="flex items-center justify-between mb-6">
                         <h3 className="text-lg font-black text-gray-800 flex items-center gap-2">

@@ -8,10 +8,12 @@ import FinanceManager from './components/FinanceManager';
 import InventoryManager from './components/InventoryManager';
 import LotManager from './components/LotManager';
 import ToolsCalculator from './components/ToolsCalculator';
+import MarketMonitor from './components/MarketMonitor';
+import AiConsultant from './components/AiConsultant';
 import HealthManager from './components/HealthManager';
 import TaskManager from './components/TaskManager';
 import ResetPasswordModal from './components/ResetPasswordModal';
-import { supabase } from './lib/supabase';
+import { supabase, clearSupabaseAuth } from './lib/supabase';
 import { 
   Animal, 
   AnimalStatus, 
@@ -41,8 +43,14 @@ const App: React.FC = () => {
   const [newFarmName, setNewFarmName] = useState('');
   const [isResetPasswordOpen, setIsResetPasswordOpen] = useState(false);
 
+  const DEFAULT_FAZENDA_LOT: Lot = {
+    id: 'lot-fazenda-default',
+    name: 'Fazenda',
+    description: 'Lote principal da fazenda'
+  };
+
   const activeFarm = farms.find(f => f.id === activeFarmId);
-  const farmData = activeFarm?.data || {
+  const rawFarmData = activeFarm?.data || {
     animals: [],
     transactions: [],
     inventory: [],
@@ -53,28 +61,49 @@ const App: React.FC = () => {
     calculatorConfig: undefined
   };
 
+  const farmData: FarmData = {
+    ...rawFarmData,
+    lots: (rawFarmData.lots && rawFarmData.lots.length > 0)
+      ? rawFarmData.lots
+      : [DEFAULT_FAZENDA_LOT]
+  };
+
   useEffect(() => {
     if (window.location.hash && window.location.hash.includes('type=recovery')) {
       setIsResetPasswordOpen(true);
     }
 
+    const handleAuthError = (err: any) => {
+      const msg = String(err?.message || err || '');
+      if (
+        msg.includes('Invalid Refresh Token') ||
+        msg.includes('Refresh Token Not Found') ||
+        msg.includes('refresh_token')
+      ) {
+        console.warn('Refresh token inválido detectado. Limpando armazenamento local...');
+        clearSupabaseAuth();
+        supabase.auth.signOut().catch(() => {});
+        setUser(null);
+      }
+    };
+
     supabase.auth.getSession().then(({ data: { session }, error }) => {
       if (error) {
         console.warn('Erro ao obter sessão do Supabase, limpando tokens inválidos:', error);
-        supabase.auth.signOut().catch(() => {});
+        handleAuthError(error);
         return;
       }
       if (session) {
         setUser({
           id: session.user.id,
-          name: String(session.user.user_metadata.full_name || session.user.email?.split('@')[0] || 'Usuário'),
+          name: String(session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'Usuário'),
           email: session.user.email || '',
           provider: 'email'
         });
       }
     }).catch(err => {
       console.warn('Falha na promessa do getSession:', err);
-      supabase.auth.signOut().catch(() => {});
+      handleAuthError(err);
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
@@ -85,7 +114,7 @@ const App: React.FC = () => {
       if (session) {
         setUser({
           id: session.user.id,
-          name: String(session.user.user_metadata.full_name || session.user.email?.split('@')[0] || 'Usuário'),
+          name: String(session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'Usuário'),
           email: session.user.email || '',
           provider: 'email'
         });
@@ -178,6 +207,12 @@ const App: React.FC = () => {
     if (!newFarmName.trim() || !user) return;
 
     try {
+      const defaultFazendaLot: Lot = {
+        id: `lot-fazenda-${Date.now()}`,
+        name: 'Fazenda',
+        description: 'Lote principal da fazenda'
+      };
+
       const { data, error } = await supabase
         .from('user_data')
         .insert({
@@ -187,7 +222,7 @@ const App: React.FC = () => {
             animals: [],
             transactions: [],
             inventory: [],
-            lots: [],
+            lots: [defaultFazendaLot],
             healthRecords: [],
             tasks: [],
             globalDailyCost: 0,
@@ -250,7 +285,24 @@ const App: React.FC = () => {
 
   const updateActiveFarmData = (updater: (prev: FarmData) => FarmData) => {
     if (!activeFarmId) return;
-    setFarms(prev => prev.map(f => f.id === activeFarmId ? { ...f, data: updater(f.data) } : f));
+    setFarms(prev => prev.map(f => {
+      if (f.id !== activeFarmId) return f;
+      const currentData = f.data || {
+        animals: [],
+        transactions: [],
+        inventory: [],
+        lots: [],
+        healthRecords: [],
+        tasks: [],
+        globalDailyCost: 0
+      };
+      const ensuredLots = (currentData.lots && currentData.lots.length > 0)
+        ? currentData.lots
+        : [DEFAULT_FAZENDA_LOT];
+      const dataWithLots: FarmData = { ...currentData, lots: ensuredLots };
+      const updatedData = updater(dataWithLots);
+      return { ...f, data: updatedData };
+    }));
   };
 
   const handleSelectFarm = (id: string) => {
@@ -266,10 +318,16 @@ const App: React.FC = () => {
   };
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
-    setUser(null);
-    setIsLoaded(false);
-    setCurrentView('dashboard');
+    try {
+      await supabase.auth.signOut();
+    } catch (e) {
+      console.warn('Erro ao encerrar sessão:', e);
+    } finally {
+      clearSupabaseAuth();
+      setUser(null);
+      setIsLoaded(false);
+      setCurrentView('dashboard');
+    }
   };
 
   const renderContent = () => {
@@ -349,6 +407,39 @@ const App: React.FC = () => {
       case 'lots': return <LotManager lots={farmData.lots} animals={farmData.animals} onAddLot={l => updateActiveFarmData(d => ({ ...d, lots: [...d.lots, l] }))} onUpdateLot={l => updateActiveFarmData(d => ({ ...d, lots: d.lots.map(old => old.id === l.id ? l : old) }))} onSellLot={(id, date, total) => alert('Utilize a venda por lote no Rebanho para cálculo de lucro')} />;
       case 'inventory': return <InventoryManager inventory={farmData.inventory} onAddStock={i => updateActiveFarmData(d => ({ ...d, inventory: [...d.inventory, i] }))} onUpdateStock={i => updateActiveFarmData(d => ({ ...d, inventory: d.inventory.map(old => old.id === i.id ? i : old) }))} />;
       case 'finance': return <FinanceManager transactions={farmData.transactions} onAddTransaction={t => updateActiveFarmData(d => ({ ...d, transactions: [...d.transactions, t] }))} />;
+      case 'market':
+        return (
+          <MarketMonitor 
+            onNavigateToCalculators={() => setCurrentView('tools')} 
+            onApplyPriceToCalculator={(sellPrice) => {
+              updateActiveFarmData(d => ({
+                ...d,
+                calculatorConfig: {
+                  ...d.calculatorConfig,
+                  predSellPrice: sellPrice,
+                  predBuyPrice: d.calculatorConfig?.predBuyPrice || 250,
+                  rentCost: d.calculatorConfig?.rentCost || 0,
+                  suppCostMonthly: d.calculatorConfig?.suppCostMonthly || 0,
+                  extraCostMonthly: d.calculatorConfig?.extraCostMonthly || 0,
+                  totalAnimalsDaily: d.calculatorConfig?.totalAnimalsDaily || 50,
+                  gmdDailyVal: d.calculatorConfig?.gmdDailyVal || 0,
+                  ingredients: d.calculatorConfig?.ingredients || [],
+                  avgLotWeight: d.calculatorConfig?.avgLotWeight || 0,
+                  numAnimals: d.calculatorConfig?.numAnimals || 50,
+                  pvPercent: d.calculatorConfig?.pvPercent || 0
+                }
+              }));
+              setCurrentView('tools');
+            }}
+          />
+        );
+      case 'consultant':
+        return (
+          <AiConsultant 
+            farmData={farmData} 
+            farmName={activeFarm?.name || "Sua Fazenda"} 
+          />
+        );
       case 'valor_diario':
       case 'suplementacao':
       case 'tools':

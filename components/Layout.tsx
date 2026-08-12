@@ -22,7 +22,9 @@ import {
   Tractor,
   Plus,
   Trash2,
-  KeyRound
+  KeyRound,
+  BarChart4,
+  Sparkles
 } from 'lucide-react';
 import { User, Animal, InventoryItem, HealthRecord, HealthSeverity, Task, Farm } from '../types';
 
@@ -119,6 +121,8 @@ const Layout: React.FC<LayoutProps> = ({
     { id: 'valor_diario', label: 'Valor Diário', icon: <DollarSign size={20} /> },
     { id: 'suplementacao', label: 'Suplementação', icon: <Zap size={20} /> },
     { id: 'tools', label: 'Simulador', icon: <Calculator size={20} /> },
+    { id: 'market', label: 'Monitor Scot', icon: <BarChart4 size={20} /> },
+    { id: 'consultant', label: 'Consultor IA', icon: <Sparkles size={20} /> },
   ];
 
   const toggleSidebar = () => setSidebarOpen(!isSidebarOpen);

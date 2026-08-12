@@ -20,9 +20,12 @@ import {
   ChevronRight,
   Zap,
   Activity,
-  Clock
+  Clock,
+  Building2,
+  MapPin
 } from 'lucide-react';
 import { Lot, AnimalStatus, CalculatorConfig, Ingredient } from '../types';
+import { getSelectedScotQuote } from '../services/scotData';
 
 interface ToolsCalculatorProps {
     onSaveDailyCost?: (cost: number, lotId?: string, config?: CalculatorConfig) => void;
@@ -118,6 +121,7 @@ const ToolsCalculator: React.FC<ToolsCalculatorProps> = ({ onSaveDailyCost, lots
   }, [targetLotId]); // Removido lots e initialConfig para evitar sobrescrever edições em curso
 
   // --- Estados da Calculadora de Mistura ---
+  const scotQuote = getSelectedScotQuote();
   const [calcInput, setCalcInput] = useState<{ id: string | 'total', value: number }>({ id: 'total', value: 100 });
 
   const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => e.currentTarget.select();
@@ -794,7 +798,17 @@ const ToolsCalculator: React.FC<ToolsCalculatorProps> = ({ onSaveDailyCost, lots
                             <input type="number" onFocus={handleFocus} className="w-full border border-gray-200 rounded-xl px-4 py-3 font-bold text-gray-800 bg-gray-50/50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all" value={predEntryWeight} onChange={e => setPredEntryWeight(Number(e.target.value))} />
                         </div>
                         <div className="space-y-1">
-                            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block ml-1">Compra (R$/@)</label>
+                            <div className="flex items-center justify-between">
+                                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block ml-1">Compra (R$/@)</label>
+                                <button
+                                  type="button"
+                                  onClick={() => setPredBuyPrice(scotQuote.boiGordoVista)}
+                                  className="text-[9px] font-bold text-blue-600 hover:underline flex items-center gap-0.5 cursor-pointer"
+                                  title={`Usar Cotação Scot ${scotQuote.state}`}
+                                >
+                                  <Building2 size={10} /> Scot {scotQuote.state}: R${scotQuote.boiGordoVista}
+                                </button>
+                            </div>
                             <input type="number" onFocus={handleFocus} className="w-full border border-gray-200 rounded-xl px-4 py-3 font-black text-blue-600 bg-gray-50/50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all" value={predBuyPrice} onChange={e => setPredBuyPrice(Number(e.target.value))} />
                         </div>
                     </div>
@@ -837,7 +851,17 @@ const ToolsCalculator: React.FC<ToolsCalculatorProps> = ({ onSaveDailyCost, lots
                             <input type="number" onFocus={handleFocus} className="w-full border border-gray-200 rounded-xl px-4 py-3 font-bold text-gray-800 bg-gray-50/50 focus:bg-white focus:ring-2 focus:ring-emerald-500 outline-none transition-all" value={predCarcassYield} onChange={e => setPredCarcassYield(Number(e.target.value))} />
                         </div>
                         <div className="space-y-1">
-                            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block ml-1">Venda (R$/@)</label>
+                            <div className="flex items-center justify-between">
+                                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block ml-1">Venda (R$/@)</label>
+                                <button
+                                  type="button"
+                                  onClick={() => setPredSellPrice(scotQuote.boiGordoVista)}
+                                  className="text-[9px] font-bold text-emerald-600 hover:underline flex items-center gap-0.5 cursor-pointer"
+                                  title={`Usar Cotação Scot ${scotQuote.state}`}
+                                >
+                                  <Building2 size={10} /> Scot {scotQuote.state}: R${scotQuote.boiGordoVista}
+                                </button>
+                            </div>
                             <input type="number" onFocus={handleFocus} className="w-full border border-gray-200 rounded-xl px-4 py-3 font-black text-emerald-600 bg-gray-50/50 focus:bg-white focus:ring-2 focus:ring-emerald-500 outline-none transition-all" value={predSellPrice} onChange={e => setPredSellPrice(Number(e.target.value))} />
                         </div>
                     </div>
