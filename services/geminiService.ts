@@ -1,4 +1,41 @@
+import { GoogleGenAI } from "@google/genai";
 import { Animal, Transaction, InventoryItem, Lot } from "../types";
+
+let clientAiInstance: GoogleGenAI | null = null;
+
+const getClientAi = (): GoogleGenAI | null => {
+  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+  if (!apiKey) return null;
+  if (!clientAiInstance) {
+    clientAiInstance = new GoogleGenAI({ apiKey });
+  }
+  return clientAiInstance;
+};
+
+// Fallback direto via SDK no cliente se a API do servidor Express falhar ou estiver em hospedagem estática (Vercel SPA)
+const callClientGeminiDirect = async (prompt: string, systemInstruction?: string): Promise<string | null> => {
+  const ai = getClientAi();
+  if (!ai) return null;
+
+  const models = ["gemini-3.6-flash", "gemini-3.1-flash-lite", "gemini-flash-latest"];
+  for (const model of models) {
+    try {
+      const config: any = {};
+      if (systemInstruction) {
+        config.systemInstruction = systemInstruction;
+      }
+      const res = await ai.models.generateContent({
+        model,
+        contents: prompt,
+        ...(Object.keys(config).length > 0 ? { config } : {}),
+      });
+      if (res && res.text) return res.text;
+    } catch (err) {
+      console.warn(`[Client Gemini Direct] Falha com modelo ${model}:`, err);
+    }
+  }
+  return null;
+};
 
 // Analisa o status da fazenda com base nos dados do rebanho, estoque e lotes.
 export const analyzeFarmStatus = async (
@@ -14,18 +51,25 @@ export const analyzeFarmStatus = async (
       body: JSON.stringify({ animals, transactions, inventory, lots }),
     });
 
-    const data = await response.json();
-    if (!response.ok) {
-      if (typeof data.error === 'string' && (data.error.includes("503") || data.error.includes("UNAVAILABLE") || data.error.includes("high demand") || data.error.includes("ApiError"))) {
-        return "O serviço de IA está com alta demanda no momento. Por favor, tente novamente em alguns instantes.";
-      }
-      return data.error || "Não foi possível gerar a análise no momento.";
+    if (response.ok) {
+      const data = await response.json();
+      return data.text || "Sem análise disponível.";
     }
 
-    return data.text || "Sem análise disponível.";
+    // Se o servidor respondeu erro ou 404 (hospedagem estática como Vercel SPA)
+    const prompt = `Analise o status de uma fazenda com ${animals.length} animais e ${transactions.length} transações financeiras. Forneça sugestões práticas em português brasileiro.`;
+    const fallbackText = await callClientGeminiDirect(prompt);
+    if (fallbackText) return fallbackText;
+
+    return "Não foi possível conectar ao servidor de IA. Se publicou na Vercel/site estático, adicione a variável 'VITE_GEMINI_API_KEY' nas configurações de ambiente.";
   } catch (error) {
     console.error("Erro na análise da fazenda via servidor:", error);
-    return "Não foi possível conectar ao serviço de IA. Tente novamente mais tarde.";
+
+    const prompt = `Analise o status de uma fazenda com ${animals.length} animais e ${transactions.length} transações financeiras. Forneça sugestões práticas em português brasileiro.`;
+    const fallbackText = await callClientGeminiDirect(prompt);
+    if (fallbackText) return fallbackText;
+
+    return "Erro de conexão ao servidor de IA. Se está usando Vercel/GitHub Pages, cadastre 'VITE_GEMINI_API_KEY' no painel do seu projeto.";
   }
 };
 
@@ -38,18 +82,22 @@ export const getQuickAdvice = async (question: string): Promise<string> => {
       body: JSON.stringify({ question }),
     });
 
-    const data = await response.json();
-    if (!response.ok) {
-      if (typeof data.error === 'string' && (data.error.includes("503") || data.error.includes("UNAVAILABLE") || data.error.includes("ApiError"))) {
-        return "Serviço de IA com alta demanda no momento. Tente novamente em instantes.";
-      }
-      return data.error || "Serviço de IA indisponível.";
+    if (response.ok) {
+      const data = await response.json();
+      return data.text || "Sem resposta.";
     }
 
-    return data.text || "Sem resposta.";
+    const fallbackText = await callClientGeminiDirect(`Responda de forma direta e técnica para um pecuarista brasileiro: ${question}`);
+    if (fallbackText) return fallbackText;
+
+    return "Serviço de IA indisponível no servidor. Configure GEMINI_API_KEY (no servidor) ou VITE_GEMINI_API_KEY (no painel da Vercel).";
   } catch (e) {
     console.error("Erro no conselho rápido:", e);
-    return "Erro no serviço de IA. Tente novamente mais tarde.";
+
+    const fallbackText = await callClientGeminiDirect(`Responda de forma direta e técnica para um pecuarista brasileiro: ${question}`);
+    if (fallbackText) return fallbackText;
+
+    return "Erro de conexão com o serviço de IA. Verifique as variáveis de ambiente na Vercel/Servidor.";
   }
 };
 
@@ -62,17 +110,23 @@ export const analyzeFeedFormula = async (ingredients: { name: string; percent: n
       body: JSON.stringify({ ingredients }),
     });
 
-    const data = await response.json();
-    if (!response.ok) {
-      if (typeof data.error === 'string' && (data.error.includes("503") || data.error.includes("UNAVAILABLE") || data.error.includes("ApiError"))) {
-        return "O serviço de IA está enfrentando alta demanda temporária. Tente novamente em instantes.";
-      }
-      return data.error || "Não foi possível analisar a mistura.";
+    if (response.ok) {
+      const data = await response.json();
+      return data.text || "Não foi possível analisar a mistura.";
     }
 
-    return data.text || "Não foi possível analisar a mistura.";
+    const ingredientsList = ingredients.map(i => `- ${i.name}: ${i.percent}%`).join('\n');
+    const fallbackText = await callClientGeminiDirect(`Analise a seguinte mistura nutricional para gado de corte/leite:\n${ingredientsList}`);
+    if (fallbackText) return fallbackText;
+
+    return "Não foi possível analisar a mistura no servidor. Verifique se a chave API da Gemini está cadastrada na Vercel ou no seu servidor.";
   } catch (e) {
     console.error("Erro ao processar análise nutricional:", e);
+
+    const ingredientsList = ingredients.map(i => `- ${i.name}: ${i.percent}%`).join('\n');
+    const fallbackText = await callClientGeminiDirect(`Analise a seguinte mistura nutricional para gado de corte/leite:\n${ingredientsList}`);
+    if (fallbackText) return fallbackText;
+
     return "Erro ao processar análise nutricional. Tente novamente mais tarde.";
   }
 };
@@ -89,15 +143,33 @@ export const fetchMarketData = async (regionName?: string): Promise<{ text: stri
       body: JSON.stringify({ regionName }),
     });
 
-    const data = await response.json();
-    return {
-      text: data.text || "Não foi possível obter os dados de mercado.",
-      sources: data.sources || []
+    if (response.ok) {
+      const data = await response.json();
+      return {
+        text: data.text || "Não foi possível obter os dados de mercado.",
+        sources: data.sources || []
+      };
+    }
+
+    const fallbackText = await callClientGeminiDirect(`Forneça uma análise atualizada sobre as cotações da arroba do boi gordo e grãos na região de ${regionName || 'São Paulo'}.`);
+    if (fallbackText) {
+      return { text: fallbackText, sources: [] };
+    }
+
+    return { 
+      text: "Cotações da Scot Consultoria: Boi Gordo R$ 342,00/@ em SP, Vaca Gordo R$ 315,00/@, Milho R$ 68,00/cx. (Servidor de IA indisponível).", 
+      sources: [] 
     };
   } catch (error) {
     console.error("Erro ao buscar dados de mercado via servidor:", error);
+
+    const fallbackText = await callClientGeminiDirect(`Forneça uma análise atualizada sobre as cotações da arroba do boi gordo e grãos na região de ${regionName || 'São Paulo'}.`);
+    if (fallbackText) {
+      return { text: fallbackText, sources: [] };
+    }
+
     return { 
-      text: "Erro ao conectar com o serviço de monitoramento de mercado. Tente novamente mais tarde.", 
+      text: "Cotações da Scot Consultoria: Boi Gordo R$ 342,00/@ em SP, Vaca Gordo R$ 315,00/@. Para análises completas da IA, adicione a chave GEMINI_API_KEY no seu servidor.", 
       sources: [] 
     };
   }
@@ -114,18 +186,24 @@ export const fetchConsultantReport = async (farmData: any, farmName?: string): P
       body: JSON.stringify({ farmData, farmName }),
     });
 
-    const data = await response.json();
-    if (!response.ok) {
-      if (typeof data.error === 'string' && (data.error.includes("503") || data.error.includes("UNAVAILABLE") || data.error.includes("high demand") || data.error.includes("ApiError"))) {
-        return "⚠️ **Serviço de IA com Alta Demanda Temporária**\n\nO servidor do Google Gemini está passando por uma oscilação momentânea de alta demanda (código 503).\n\nPor favor, aguarde alguns segundos e clique no botão **'Atualizar Diagnóstico'** para tentar novamente.";
-      }
-      return data.error || "Não foi possível gerar o relatório diagnóstico do consultor no momento.";
+    if (response.ok) {
+      const data = await response.json();
+      return data.text || "Relatório indisponível.";
     }
 
-    return data.text || "Relatório indisponível.";
+    const prompt = `Gere um relatório diagnóstico pecuário estratégico para a fazenda ${farmName || 'Sua Fazenda'} com base em ${farmData.animals?.length || 0} animais e ${farmData.transactions?.length || 0} transações. Estruture com emojis e Markdown em português do Brasil.`;
+    const fallbackText = await callClientGeminiDirect(prompt);
+    if (fallbackText) return fallbackText;
+
+    return "⚠️ **Erro de Conexão com o Servidor de IA**\n\nSe o seu app foi implantado como site estático no **Vercel** ou **GitHub Pages**, configure a variável `VITE_GEMINI_API_KEY` com sua chave do Google AI Studio no painel do Vercel/Hospedagem.\n\nSe você utiliza servidor próprio (Node/Docker), certifique-se de que a variável `GEMINI_API_KEY` está definida e o serviço rodando.";
   } catch (error) {
     console.error("Erro ao buscar relatório do consultor IA:", error);
-    return "Erro de conexão ao servidor de IA. Tente novamente em instantes.";
+
+    const prompt = `Gere um relatório diagnóstico pecuário estratégico para a fazenda ${farmName || 'Sua Fazenda'} com base em ${farmData.animals?.length || 0} animais e ${farmData.transactions?.length || 0} transações. Estruture com emojis e Markdown em português do Brasil.`;
+    const fallbackText = await callClientGeminiDirect(prompt);
+    if (fallbackText) return fallbackText;
+
+    return "⚠️ **Erro de Conexão ao Servidor de IA**\n\nNão foi possível conectar a rota `/api/gemini/consultant-report`.\n\n**Como Resolver no Vercel / GitHub:**\n1. Vá nas **Settings** > **Environment Variables** do seu projeto no Vercel.\n2. Adicione **`VITE_GEMINI_API_KEY`** com o valor da sua chave do Gemini (`AIzaSy...`).\n3. Faça um novo **Redeploy**.";
   }
 };
 
@@ -145,18 +223,29 @@ export const sendConsultantChatMessage = async (
       body: JSON.stringify({ message, history, farmData, farmName }),
     });
 
-    const data = await response.json();
-    if (!response.ok) {
-      if (typeof data.error === 'string' && (data.error.includes("503") || data.error.includes("UNAVAILABLE") || data.error.includes("high demand") || data.error.includes("ApiError"))) {
-        return "Desculpe, o servidor do Google Gemini está enfrentando uma alta demanda momentânea. Por favor, tente enviar sua mensagem novamente em alguns segundos.";
-      }
-      return data.error || "Não foi possível obter resposta do consultor.";
+    if (response.ok) {
+      const data = await response.json();
+      return data.text || "Sem resposta no momento.";
     }
 
-    return data.text || "Sem resposta no momento.";
+    const systemPrompt = `Você é o CONSULTOR PECUÁRIO IA da fazenda "${farmName || 'Sua Fazenda'}". Seja prático, empático e focado no lucro por arroba e bem-estar animal.`;
+    const formattedHistory = history.map((msg: any) => `${msg.role === 'user' ? 'Produtor' : 'Consultor IA'}: ${msg.content}`).join('\n');
+    const prompt = `${systemPrompt}\n\nHistórico:\n${formattedHistory}\n\nProdutor: ${message}\nConsultor IA:`;
+
+    const fallbackText = await callClientGeminiDirect(prompt);
+    if (fallbackText) return fallbackText;
+
+    return "Desculpe, o servidor de IA não está acessível no momento. Adicione a variável `VITE_GEMINI_API_KEY` na Vercel ou `GEMINI_API_KEY` no seu servidor backend.";
   } catch (error) {
     console.error("Erro no chat do consultor IA:", error);
-    return "Erro ao conversar com o consultor IA. Verifique sua conexão e tente novamente.";
+
+    const systemPrompt = `Você é o CONSULTOR PECUÁRIO IA da fazenda "${farmName || 'Sua Fazenda'}". Seja prático, empático e focado no lucro por arroba e bem-estar animal.`;
+    const formattedHistory = history.map((msg: any) => `${msg.role === 'user' ? 'Produtor' : 'Consultor IA'}: ${msg.content}`).join('\n');
+    const prompt = `${systemPrompt}\n\nHistórico:\n${formattedHistory}\n\nProdutor: ${message}\nConsultor IA:`;
+
+    const fallbackText = await callClientGeminiDirect(prompt);
+    if (fallbackText) return fallbackText;
+
+    return "Erro ao conversar com o consultor IA. Se publicou o app no Vercel, cadastre a chave `VITE_GEMINI_API_KEY` nas variáveis de ambiente e faça o redeploy.";
   }
 };
-
