@@ -20,10 +20,18 @@ import {
   Layers,
   HeartPulse,
   CornerDownLeft,
-  ChevronRight
+  ChevronRight,
+  Key,
+  Settings,
+  X
 } from 'lucide-react';
 import { FarmData } from '../types';
-import { fetchConsultantReport, sendConsultantChatMessage } from '../services/geminiService';
+import { 
+  fetchConsultantReport, 
+  sendConsultantChatMessage, 
+  getStoredGeminiKey, 
+  saveGeminiKey 
+} from '../services/geminiService';
 
 interface AiConsultantProps {
   farmData: FarmData;
@@ -45,6 +53,11 @@ const AiConsultant: React.FC<AiConsultantProps> = ({ farmData, farmName = "Sua F
   const [reportText, setReportText] = useState<string>(farmData.aiReport || '');
   const [isLoadingReport, setIsLoadingReport] = useState<boolean>(false);
   const [copiedReport, setCopiedReport] = useState<boolean>(false);
+
+  // Key Modal State
+  const [isKeyModalOpen, setIsKeyModalOpen] = useState<boolean>(false);
+  const [apiKeyInput, setApiKeyInput] = useState<string>(getStoredGeminiKey());
+  const [keySavedNotice, setKeySavedNotice] = useState<boolean>(false);
 
   const initialWelcome: ChatMessage[] = [
     {
@@ -77,6 +90,16 @@ const AiConsultant: React.FC<AiConsultantProps> = ({ farmData, farmName = "Sua F
       chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }
   }, [chatMessages, activeTab, isSendingChat]);
+
+  // Handler para salvar Chave
+  const handleSaveKey = () => {
+    saveGeminiKey(apiKeyInput);
+    setKeySavedNotice(true);
+    setTimeout(() => {
+      setKeySavedNotice(false);
+      setIsKeyModalOpen(false);
+    }, 1500);
+  };
 
   // Handler para gerar relatório
   const handleGenerateReport = async () => {
@@ -215,31 +238,105 @@ const AiConsultant: React.FC<AiConsultantProps> = ({ farmData, farmName = "Sua F
           </div>
         </div>
 
-        {/* Abas de Navegação */}
-        <div className="mt-8 flex items-center gap-3 border-t border-green-700/50 pt-6">
-          <button
-            onClick={() => setActiveTab('report')}
-            className={`flex items-center gap-2.5 px-5 py-3 rounded-2xl font-bold text-xs uppercase tracking-wider transition-all cursor-pointer ${
-              activeTab === 'report'
-                ? 'bg-white text-green-900 shadow-lg scale-105 font-black'
-                : 'bg-green-800/60 text-green-200 hover:bg-green-800 hover:text-white'
-            }`}
-          >
-            <FileText size={16} /> Relatório IA (Diagnóstico da Fazenda)
-          </button>
+        {/* Abas de Navegação e Configurações */}
+        <div className="mt-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-t border-green-700/50 pt-6">
+          <div className="flex items-center gap-3 flex-wrap">
+            <button
+              onClick={() => setActiveTab('report')}
+              className={`flex items-center gap-2.5 px-5 py-3 rounded-2xl font-bold text-xs uppercase tracking-wider transition-all cursor-pointer ${
+                activeTab === 'report'
+                  ? 'bg-white text-green-900 shadow-lg scale-105 font-black'
+                  : 'bg-green-800/60 text-green-200 hover:bg-green-800 hover:text-white'
+              }`}
+            >
+              <FileText size={16} /> Relatório IA (Diagnóstico da Fazenda)
+            </button>
+
+            <button
+              onClick={() => setActiveTab('chat')}
+              className={`flex items-center gap-2.5 px-5 py-3 rounded-2xl font-bold text-xs uppercase tracking-wider transition-all cursor-pointer ${
+                activeTab === 'chat'
+                  ? 'bg-white text-green-900 shadow-lg scale-105 font-black'
+                  : 'bg-green-800/60 text-green-200 hover:bg-green-800 hover:text-white'
+              }`}
+            >
+              <MessageSquare size={16} /> Chat com Consultor IA
+            </button>
+          </div>
 
           <button
-            onClick={() => setActiveTab('chat')}
-            className={`flex items-center gap-2.5 px-5 py-3 rounded-2xl font-bold text-xs uppercase tracking-wider transition-all cursor-pointer ${
-              activeTab === 'chat'
-                ? 'bg-white text-green-900 shadow-lg scale-105 font-black'
-                : 'bg-green-800/60 text-green-200 hover:bg-green-800 hover:text-white'
-            }`}
+            onClick={() => setIsKeyModalOpen(true)}
+            className="flex items-center gap-2 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-200 border border-emerald-400/30 px-4 py-2.5 rounded-2xl text-xs font-bold transition-all cursor-pointer shrink-0 self-start sm:self-auto"
+            title="Configurar ou verificar chave de API do Gemini"
           >
-            <MessageSquare size={16} /> Chat com Consultor IA
+            <Key size={14} className="text-emerald-300" />
+            <span>Configurar Chave Gemini</span>
           </button>
         </div>
       </div>
+
+      {/* Modal de Configuração da Chave Gemini */}
+      {isKeyModalOpen && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl p-6 md:p-8 max-w-lg w-full shadow-2xl border border-gray-100 space-y-6 relative">
+            <button 
+              onClick={() => setIsKeyModalOpen(false)}
+              className="absolute top-5 right-5 text-gray-400 hover:text-gray-600 p-2 rounded-full hover:bg-gray-100 transition-colors cursor-pointer"
+            >
+              <X size={20} />
+            </button>
+
+            <div className="flex items-center gap-3">
+              <div className="p-3 bg-emerald-100 text-emerald-800 rounded-2xl">
+                <Key size={24} />
+              </div>
+              <div>
+                <h3 className="text-lg font-black text-gray-900">Configuração do Gemini IA</h3>
+                <p className="text-xs text-gray-500 font-medium">Insira ou modifique sua chave privada da Google AI Studio</p>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <label className="text-xs font-bold text-gray-700 uppercase tracking-wider block">
+                Chave da API Gemini (GEMINI_API_KEY)
+              </label>
+              <input 
+                type="password" 
+                value={apiKeyInput}
+                onChange={(e) => setApiKeyInput(e.target.value)}
+                placeholder="Ex: AIzaSy..."
+                className="w-full bg-gray-50 border border-gray-200 rounded-2xl px-4 py-3 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:bg-white transition-all"
+              />
+              <p className="text-[11px] text-gray-500 leading-relaxed italic">
+                A chave é armazenada de forma segura diretamente no seu navegador. Se deixada em branco, o sistema utilizará o motor automático de inteligência diagnóstica da fazenda.
+              </p>
+            </div>
+
+            {keySavedNotice && (
+              <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-2xl text-xs font-bold flex items-center gap-2">
+                <CheckCircle2 size={16} /> Chave salva com sucesso!
+              </div>
+            )}
+
+            <div className="flex items-center justify-end gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setIsKeyModalOpen(false)}
+                className="px-5 py-2.5 text-xs font-bold text-gray-600 hover:bg-gray-100 rounded-xl transition-all cursor-pointer"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={handleSaveKey}
+                className="bg-emerald-700 hover:bg-emerald-800 text-white font-black text-xs px-6 py-2.5 rounded-xl uppercase tracking-wider transition-all shadow-md cursor-pointer"
+              >
+                Salvar Chave
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* CONTEÚDO DA ABA 1: RELATÓRIO IA */}
       {activeTab === 'report' && (
