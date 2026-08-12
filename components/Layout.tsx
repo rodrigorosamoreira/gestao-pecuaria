@@ -177,8 +177,8 @@ const Layout: React.FC<LayoutProps> = ({
                 <div className="absolute top-full left-0 w-full mt-2 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden z-[50] animate-in slide-in-from-top-2">
                    <div className="p-2 max-h-60 overflow-y-auto custom-scrollbar">
                       {farms.length > 0 ? (
-                        farms.map(farm => (
-                          <div key={farm.id} className="group flex items-center pr-2 border-b border-gray-50 last:border-0">
+                        farms.map((farm, idx) => (
+                          <div key={`${farm.id || 'farm'}-${idx}`} className="group flex items-center pr-2 border-b border-gray-50 last:border-0">
                             <button 
                               onClick={() => {
                                 onSelectFarm?.(farm.id);
@@ -305,9 +305,9 @@ const Layout: React.FC<LayoutProps> = ({
                       </div>
                       <div className="max-h-96 overflow-y-auto">
                         {notifications.length > 0 ? (
-                          notifications.map((n) => (
+                          notifications.map((n, idx) => (
                             <button 
-                              key={n.id}
+                              key={`${n.id || 'notif'}-${idx}`}
                               onClick={() => {
                                 onChangeView(n.view);
                                 setIsNotifOpen(false);

@@ -47,7 +47,7 @@ const TaskManager: React.FC<TaskManagerProps> = ({ tasks, onAddTask, onUpdateTas
 
     onAddTask({
       ...formData as Task,
-      id: Date.now().toString()
+      id: `${Date.now()}-${Math.random().toString(36).substr(2, 6)}`
     });
     setIsModalOpen(false);
     setFormData({
@@ -111,8 +111,8 @@ const TaskManager: React.FC<TaskManagerProps> = ({ tasks, onAddTask, onUpdateTas
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
         {filteredTasks.length > 0 ? (
-          filteredTasks.map(task => (
-            <div key={task.id} className={`bg-white rounded-2xl p-6 shadow-sm border transition-all hover:shadow-md ${task.status === 'Concluída' ? 'opacity-60 border-gray-100' : 'border-gray-100'}`}>
+          filteredTasks.map((task, idx) => (
+            <div key={`${task.id || 'task'}-${idx}`} className={`bg-white rounded-2xl p-6 shadow-sm border transition-all hover:shadow-md ${task.status === 'Concluída' ? 'opacity-60 border-gray-100' : 'border-gray-100'}`}>
               <div className="flex justify-between items-start mb-4">
                 <span className={`px-2 py-1 rounded text-[10px] font-black uppercase tracking-widest ${
                   task.priority === TaskPriority.HIGH ? 'bg-red-100 text-red-700' :

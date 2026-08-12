@@ -28,6 +28,7 @@ import { fetchConsultantReport, sendConsultantChatMessage } from '../services/ge
 interface AiConsultantProps {
   farmData: FarmData;
   farmName?: string;
+  onUpdateFarmData?: (data: FarmData) => void;
 }
 
 interface ChatMessage {
@@ -37,26 +38,38 @@ interface ChatMessage {
   timestamp: string;
 }
 
-const AiConsultant: React.FC<AiConsultantProps> = ({ farmData, farmName = "Sua Fazenda" }) => {
+const AiConsultant: React.FC<AiConsultantProps> = ({ farmData, farmName = "Sua Fazenda", onUpdateFarmData }) => {
   const [activeTab, setActiveTab] = useState<'report' | 'chat'>('report');
 
   // Relatório State
-  const [reportText, setReportText] = useState<string>('');
+  const [reportText, setReportText] = useState<string>(farmData.aiReport || '');
   const [isLoadingReport, setIsLoadingReport] = useState<boolean>(false);
   const [copiedReport, setCopiedReport] = useState<boolean>(false);
 
-  // Chat State
-  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
+  const initialWelcome: ChatMessage[] = [
     {
       id: 'welcome-msg',
       role: 'assistant',
       content: `Olá, parceiro! Sou o seu **Consultor Pecuário IA** na fazenda **${farmName}**. 🤠\n\nEstou aqui para te ajudar a tomar as melhores decisões para o seu negócio pecuário, sempre guiado por três pilares essenciais:\n\n1. **Lucro Líquido & Margem por Arroba**: Foco em custo de produção, GMD e rentabilidade real.\n2. **Bem-Estar Animal**: Manejo calmo, água limpa, sombra e saúde no pasto e curral.\n3. **Realidade do Campo**: Sem invenções teóricas. Soluções práticas adaptadas ao dia a dia da roça.\n\nComo posso te ajudar hoje na sua propriedade?`,
       timestamp: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
     }
-  ]);
+  ];
+
+  // Chat State
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>(
+    farmData.aiChatHistory && farmData.aiChatHistory.length > 0 ? farmData.aiChatHistory : initialWelcome
+  );
   const [inputMessage, setInputMessage] = useState<string>('');
   const [isSendingChat, setIsSendingChat] = useState<boolean>(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
+
+  // Sync state with farmData props when farm changes
+  useEffect(() => {
+    if (farmData.aiReport) setReportText(farmData.aiReport);
+    if (farmData.aiChatHistory && farmData.aiChatHistory.length > 0) {
+      setChatMessages(farmData.aiChatHistory);
+    }
+  }, [farmData.aiReport, farmData.aiChatHistory]);
 
   // Auto scroll no chat
   useEffect(() => {
@@ -72,6 +85,12 @@ const AiConsultant: React.FC<AiConsultantProps> = ({ farmData, farmName = "Sua F
     try {
       const text = await fetchConsultantReport(farmData, farmName);
       setReportText(text);
+      if (onUpdateFarmData && text) {
+        onUpdateFarmData({
+          ...farmData,
+          aiReport: text
+        });
+      }
     } catch (err) {
       console.error("Erro ao gerar relatório:", err);
       setReportText("Ocorreu um erro ao gerar o relatório diagnóstico. Tente novamente em instantes.");
@@ -100,7 +119,7 @@ const AiConsultant: React.FC<AiConsultantProps> = ({ farmData, farmName = "Sua F
     if (!textToSend.trim() || isSendingChat) return;
 
     const userMsg: ChatMessage = {
-      id: `user-${Date.now()}`,
+      id: `user-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`,
       role: 'user',
       content: textToSend,
       timestamp: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
@@ -116,18 +135,25 @@ const AiConsultant: React.FC<AiConsultantProps> = ({ farmData, farmName = "Sua F
       const responseText = await sendConsultantChatMessage(textToSend, formattedHistory, farmData, farmName);
 
       const assistantMsg: ChatMessage = {
-        id: `assistant-${Date.now()}`,
+        id: `assistant-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`,
         role: 'assistant',
         content: responseText,
         timestamp: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
       };
-      setChatMessages(prev => [...prev, assistantMsg]);
+      const finalHistory = [...newHistory, assistantMsg];
+      setChatMessages(finalHistory);
+      if (onUpdateFarmData) {
+        onUpdateFarmData({
+          ...farmData,
+          aiChatHistory: finalHistory
+        });
+      }
     } catch (err) {
       console.error("Erro no chat:", err);
       setChatMessages(prev => [
         ...prev,
         {
-          id: `err-${Date.now()}`,
+          id: `err-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`,
           role: 'assistant',
           content: 'Desculpe, tive uma oscilação na conexão com a IA. Pode repetir sua dúvida?',
           timestamp: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
@@ -335,7 +361,7 @@ const AiConsultant: React.FC<AiConsultantProps> = ({ farmData, farmName = "Sua F
             <button
               onClick={() => setChatMessages([
                 {
-                  id: `welcome-${Date.now()}`,
+                  id: `welcome-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`,
                   role: 'assistant',
                   content: `Nova conversa iniciada. Em que posso ajudar a melhorar a operação ou rentabilidade de **${farmName}**?`,
                   timestamp: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
@@ -350,9 +376,9 @@ const AiConsultant: React.FC<AiConsultantProps> = ({ farmData, farmName = "Sua F
 
           {/* Histórico do Chat */}
           <div className="flex-1 p-4 md:p-6 overflow-y-auto space-y-4 custom-scrollbar bg-gray-50/50">
-            {chatMessages.map((msg) => (
+            {chatMessages.map((msg, index) => (
               <div
-                key={msg.id}
+                key={`${msg.id || 'msg'}-${index}`}
                 className={`flex gap-3 max-w-3xl ${msg.role === 'user' ? 'ml-auto flex-row-reverse' : ''}`}
               >
                 <div

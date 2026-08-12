@@ -192,7 +192,7 @@ const ToolsCalculator: React.FC<ToolsCalculatorProps> = ({ onSaveDailyCost, lots
   const breakEven = arrobasUnit > 0 ? desembolsoTotalUnit / arrobasUnit : 0;
 
   const handleAddIngredient = () => {
-    setIngredients([...ingredients, { id: Date.now().toString(), name: '', percent: 0, priceKg: 0 }]);
+    setIngredients([...ingredients, { id: `${Date.now()}-${Math.random().toString(36).substr(2, 6)}`, name: '', percent: 0, priceKg: 0 }]);
   };
   const removeIngredient = (id: string) => setIngredients(ingredients.filter(i => i.id !== id));
   const updateIngredient = (id: string, field: keyof Ingredient, value: any) => {

@@ -24,7 +24,7 @@ const LotManager: React.FC<LotManagerProps> = ({ lots, animals, onAddLot, onUpda
     if (currentLot.id) {
       onUpdateLot(currentLot);
     } else {
-      onAddLot({ ...currentLot, id: Date.now().toString() });
+      onAddLot({ ...currentLot, id: `${Date.now()}-${Math.random().toString(36).substr(2, 6)}` });
     }
     closeModal();
   };
@@ -68,7 +68,7 @@ const LotManager: React.FC<LotManagerProps> = ({ lots, animals, onAddLot, onUpda
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {lots.map((lot) => {
+        {lots.map((lot, idx) => {
           const lotAnimals = animals.filter(a => a.lotId === lot.id && a.status !== 'Vendido' && a.status !== 'Morto');
           const headCount = lotAnimals.length;
           const avgWeight = headCount > 0 
@@ -76,7 +76,7 @@ const LotManager: React.FC<LotManagerProps> = ({ lots, animals, onAddLot, onUpda
             : 0;
 
           return (
-            <div key={lot.id} className="bg-white p-8 rounded-[2rem] shadow-sm border border-gray-100 hover:shadow-xl transition-all relative group">
+            <div key={`${lot.id || 'lot'}-${idx}`} className="bg-white p-8 rounded-[2rem] shadow-sm border border-gray-100 hover:shadow-xl transition-all relative group">
               <div className="flex justify-between items-start mb-4">
                 <h3 className="text-xl font-black text-gray-800 uppercase tracking-tighter">{lot.name}</h3>
                 <div className="flex gap-2">

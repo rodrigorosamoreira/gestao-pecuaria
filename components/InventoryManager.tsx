@@ -39,7 +39,7 @@ const InventoryManager: React.FC<InventoryManagerProps> = ({ inventory, onAddSto
     if (currentItem.id) {
       onUpdateStock(currentItem);
     } else {
-      onAddStock({ ...currentItem, id: Date.now().toString() });
+      onAddStock({ ...currentItem, id: `${Date.now()}-${Math.random().toString(36).substr(2, 6)}` });
     }
     closeModal();
   };
@@ -85,10 +85,10 @@ const InventoryManager: React.FC<InventoryManagerProps> = ({ inventory, onAddSto
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredItems.map((item) => {
+        {filteredItems.map((item, idx) => {
           const isLowStock = item.quantity <= item.minQuantity;
           return (
-            <div key={item.id} className={`bg-white p-6 rounded-xl shadow-sm border-2 ${isLowStock ? 'border-red-100' : 'border-transparent'}`}>
+            <div key={`${item.id || 'inv'}-${idx}`} className={`bg-white p-6 rounded-xl shadow-sm border-2 ${isLowStock ? 'border-red-100' : 'border-transparent'}`}>
               <div className="flex justify-between items-start mb-4">
                 <div>
                   <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">{item.category}</span>

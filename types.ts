@@ -154,6 +154,8 @@ export interface FarmData {
   tasks: Task[];
   globalDailyCost: number;
   calculatorConfig?: CalculatorConfig;
+  aiReport?: string;
+  aiChatHistory?: { id: string; role: 'user' | 'assistant'; content: string; timestamp: string }[];
 }
 
 export interface Farm {

@@ -21,7 +21,7 @@ const FinanceManager: React.FC<FinanceManagerProps> = ({ transactions, onAddTran
     if (!description || !amount) return;
 
     onAddTransaction({
-      id: `man-${Date.now()}`,
+      id: `man-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`,
       date: new Date().toISOString().split('T')[0],
       description,
       amount: parseFloat(amount),
@@ -189,8 +189,8 @@ const FinanceManager: React.FC<FinanceManagerProps> = ({ transactions, onAddTran
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
-                {filteredTransactions.map((t) => (
-                  <tr key={t.id} className="hover:bg-gray-50/50 transition-colors group">
+                {filteredTransactions.map((t, idx) => (
+                  <tr key={`${t.id || 'tx'}-${idx}`} className="hover:bg-gray-50/50 transition-colors group">
                     <td className="px-6 py-4">
                       <div className="flex flex-col">
                         <span className="text-xs font-bold text-gray-500">{new Date(t.date).toLocaleDateString('pt-BR')}</span>
