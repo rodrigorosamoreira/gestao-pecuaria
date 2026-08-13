@@ -73,16 +73,6 @@ const App: React.FC = () => {
       setIsResetPasswordOpen(true);
     }
 
-    // 1. Restaura usuário salvo localmente no início
-    const savedUser = localStorage.getItem('pecuaria_user');
-    if (savedUser) {
-      try {
-        setUser(JSON.parse(savedUser));
-      } catch (e) {
-        console.error('Erro ao restaurar usuário local:', e);
-      }
-    }
-
     const handleAuthError = (err: any) => {
       const msg = String(err?.message || err || '');
       if (
@@ -92,7 +82,6 @@ const App: React.FC = () => {
       ) {
         console.warn('Refresh token inválido detectado. Limpando armazenamento local...');
         clearSupabaseAuth();
-        localStorage.removeItem('pecuaria_user');
         supabase.auth.signOut().catch(() => {});
         setUser(null);
       }
@@ -105,14 +94,12 @@ const App: React.FC = () => {
         return;
       }
       if (session) {
-        const u: User = {
+        setUser({
           id: session.user.id,
           name: String(session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'Usuário'),
           email: session.user.email || '',
-          provider: (session.user.app_metadata?.provider as any) || 'email'
-        };
-        setUser(u);
-        localStorage.setItem('pecuaria_user', JSON.stringify(u));
+          provider: 'email'
+        });
       }
     }).catch(err => {
       console.warn('Falha na promessa do getSession:', err);
@@ -125,17 +112,14 @@ const App: React.FC = () => {
       }
 
       if (session) {
-        const u: User = {
+        setUser({
           id: session.user.id,
           name: String(session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'Usuário'),
           email: session.user.email || '',
-          provider: (session.user.app_metadata?.provider as any) || 'email'
-        };
-        setUser(u);
-        localStorage.setItem('pecuaria_user', JSON.stringify(u));
-      } else if (event === 'SIGNED_OUT') {
+          provider: 'email'
+        });
+      } else {
         setUser(null);
-        localStorage.removeItem('pecuaria_user');
         setIsLoaded(false);
         setFarms([]);
         setActiveFarmId(null);
@@ -481,15 +465,10 @@ const App: React.FC = () => {
     }
   };
 
-  const handleLogin = (u: User) => {
-    setUser(u);
-    localStorage.setItem('pecuaria_user', JSON.stringify(u));
-  };
-
   if (!user) {
     return (
       <>
-        <Login onLogin={handleLogin} />
+        <Login onLogin={setUser} />
         <ResetPasswordModal 
           isOpen={isResetPasswordOpen} 
           onClose={() => setIsResetPasswordOpen(false)} 
