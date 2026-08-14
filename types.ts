@@ -24,6 +24,7 @@ export interface User {
   email: string;
   photo?: string;
   provider: 'google' | 'email' | 'guest';
+  role?: 'admin' | 'user' | string;
 }
 
 export enum HealthSeverity {
@@ -163,4 +164,18 @@ export interface Farm {
   data: FarmData;
   updated_at: string;
   created_at?: string;
+}
+
+export interface PartnerSlot {
+  id: string;
+  slotNumber: number; // 1, 2, 3
+  isOccupied: boolean;
+  name: string;
+  category: string;
+  description: string;
+  logoUrl?: string;
+  linkUrl?: string;
+  phoneOrWhatsapp?: string;
+  badge?: string;
+  highlightColor?: string;
 }

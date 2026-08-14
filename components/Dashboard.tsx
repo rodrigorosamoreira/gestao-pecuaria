@@ -1,7 +1,8 @@
 
 import React from 'react';
 import ScotQuoteBar from './ScotQuoteBar';
-import { Animal, Transaction, AnimalStatus, TransactionType, InventoryItem, HealthRecord, HealthSeverity, AnimalGender } from '../types';
+import PartnersBanner from './PartnersBanner';
+import { Animal, Transaction, AnimalStatus, TransactionType, InventoryItem, HealthRecord, HealthSeverity, AnimalGender, User } from '../types';
 import { 
   TrendingUp, 
   Users, 
@@ -38,11 +39,12 @@ interface DashboardProps {
   inventory: InventoryItem[];
   healthRecords?: HealthRecord[];
   onChangeView?: (view: string) => void;
+  currentUser?: User | null;
 }
 
 const COLORS = ['#10B981', '#F59E0B', '#EF4444', '#3B82F6', '#8B5CF6', '#EC4899', '#06B6D4'];
 
-const Dashboard: React.FC<DashboardProps> = ({ animals, transactions, inventory, healthRecords = [], onChangeView }) => {
+const Dashboard: React.FC<DashboardProps> = ({ animals, transactions, inventory, healthRecords = [], onChangeView, currentUser }) => {
   // Calculate Stats
   const activeAnimals = animals.filter(a => a.status === AnimalStatus.ACTIVE);
   const totalAnimals = activeAnimals.length;
@@ -144,6 +146,9 @@ const Dashboard: React.FC<DashboardProps> = ({ animals, transactions, inventory,
         compact={true} 
         onNavigateToCalculators={() => onChangeView?.('tools')} 
       />
+
+      {/* Banner de Parceiros do Agro - 3 Espaços */}
+      <PartnersBanner currentUser={currentUser} />
 
       {/* Resumo do Rebanho & KPIs Principais */}
       <div className="space-y-5">

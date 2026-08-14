@@ -333,7 +333,16 @@ const App: React.FC = () => {
   const renderContent = () => {
     if (!activeFarm) return null;
     switch (currentView) {
-      case 'dashboard': return <Dashboard animals={farmData.animals} transactions={farmData.transactions} inventory={farmData.inventory} healthRecords={farmData.healthRecords} onChangeView={setCurrentView} />;
+      case 'dashboard': return (
+        <Dashboard 
+          animals={farmData.animals} 
+          transactions={farmData.transactions} 
+          inventory={farmData.inventory} 
+          healthRecords={farmData.healthRecords} 
+          onChangeView={setCurrentView} 
+          currentUser={user}
+        />
+      );
       case 'animals': return (
         <AnimalManager 
           animals={farmData.animals} 
