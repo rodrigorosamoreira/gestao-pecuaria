@@ -178,4 +178,8 @@ export interface PartnerSlot {
   phoneOrWhatsapp?: string;
   badge?: string;
   highlightColor?: string;
+  couponCode?: string;
+  couponDiscount?: string;
+  couponDescription?: string;
+  couponExpiration?: string;
 }

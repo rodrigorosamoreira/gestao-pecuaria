@@ -1,14 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { 
   Handshake, 
   ExternalLink, 
   Edit3, 
   CheckCircle2, 
-  Building2, 
-  Phone, 
-  Instagram, 
-  X, 
-  Check, 
   Store, 
   Tractor, 
   Beef, 
@@ -16,17 +11,20 @@ import {
   HeartPulse, 
   ShieldCheck, 
   Sparkles,
-  Layers,
   Settings,
   Plus,
   RefreshCw,
-  Tag,
   ArrowRight,
   MessageCircle,
   Lock,
   Unlock,
   KeyRound,
-  ShieldAlert
+  ShieldAlert,
+  Ticket,
+  Copy,
+  Check,
+  X,
+  Gift
 } from 'lucide-react';
 import { PartnerSlot, User } from '../types';
 import { 
@@ -40,27 +38,29 @@ interface PartnersBannerProps {
   currentUser?: User | null;
 }
 
-// Emails autorizados por padrão como Administradores Master da plataforma
 const MASTER_ADMIN_EMAILS = [
   'rodrigorosamoreira@gmail.com',
   'admin@gestaopeccuaria.com',
   'vivendoapecuaria@gmail.com'
 ];
 
-// Senha mestra / PIN de liberação administrativa
 const MASTER_ADMIN_PIN = 'pecuaria2025';
 const ADMIN_SESSION_KEY = 'gestao_pecuaria_admin_unlocked';
 
-const PartnersBanner: React.FC<PartnersBannerProps> = ({ compact = false, currentUser }) => {
+const PartnersBanner: React.FC<PartnersBannerProps> = ({ currentUser }) => {
   const [partnerSlots, setPartnerSlots] = useState<PartnerSlot[]>(getStoredPartnerSlots());
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
   const [isPinModalOpen, setIsPinModalOpen] = useState(false);
+  const [isCouponModalOpen, setIsCouponModalOpen] = useState(false);
+  const [selectedSlotForCoupon, setSelectedSlotForCoupon] = useState<PartnerSlot | null>(null);
+  const [copiedCoupon, setCopiedCoupon] = useState(false);
+  const [copiedCardSlotId, setCopiedCardSlotId] = useState<string | null>(null);
+  
   const [inputPin, setInputPin] = useState('');
   const [pinError, setPinError] = useState('');
   const [selectedSlotForContact, setSelectedSlotForContact] = useState<PartnerSlot | null>(null);
 
-  // Admin state check
   const [sessionAdminUnlocked, setSessionAdminUnlocked] = useState<boolean>(() => {
     try {
       return sessionStorage.getItem(ADMIN_SESSION_KEY) === 'true';
@@ -79,7 +79,6 @@ const PartnersBanner: React.FC<PartnersBannerProps> = ({ compact = false, curren
 
   const isAdmin = isEmailAdmin || sessionAdminUnlocked;
   
-  // State for the editor
   const [activeEditSlotIndex, setActiveEditSlotIndex] = useState<number>(0);
   const [editingSlots, setEditingSlots] = useState<PartnerSlot[]>(getStoredPartnerSlots());
   const [saveSuccessNotice, setSaveSuccessNotice] = useState(false);
@@ -105,7 +104,6 @@ const PartnersBanner: React.FC<PartnersBannerProps> = ({ compact = false, curren
       setIsPinModalOpen(false);
       setInputPin('');
       setPinError('');
-      // Open editor directly
       setEditingSlots(JSON.parse(JSON.stringify(partnerSlots)));
       setIsEditModalOpen(true);
     } else {
@@ -148,26 +146,54 @@ const PartnersBanner: React.FC<PartnersBannerProps> = ({ compact = false, curren
     setIsContactModalOpen(true);
   };
 
-  // Helper to render category icon fallback
+  const handleDirectCopyCoupon = (slot: PartnerSlot, e?: React.MouseEvent) => {
+    if (e) {
+      e.stopPropagation();
+    }
+    if (!slot.couponCode) return;
+    try {
+      navigator.clipboard.writeText(slot.couponCode);
+    } catch {
+      // Fallback
+    }
+    const slotKey = slot.id || `slot-${slot.slotNumber}`;
+    setCopiedCardSlotId(slotKey);
+    setTimeout(() => {
+      setCopiedCardSlotId(prev => prev === slotKey ? null : prev);
+    }, 2500);
+  };
+
+  const handleOpenCoupon = (slot: PartnerSlot) => {
+    setSelectedSlotForCoupon(slot);
+    setCopiedCoupon(false);
+    setIsCouponModalOpen(true);
+  };
+
+  const handleCopyCouponCode = (code: string) => {
+    navigator.clipboard.writeText(code);
+    setCopiedCoupon(true);
+    setTimeout(() => setCopiedCoupon(false), 2000);
+  };
+
   const renderCategoryIcon = (category: string, isOccupied: boolean) => {
     const cat = (category || '').toLowerCase();
     if (!isOccupied) return <Sparkles size={22} className="text-amber-500" />;
     if (cat.includes('nutri') || cat.includes('suplement') || cat.includes('ração')) {
-      return <Beef size={22} className="text-emerald-600" />;
+      return <Beef size={22} className="text-emerald-500" />;
     }
     if (cat.includes('balan') || cat.includes('tronco') || cat.includes('pes')) {
-      return <Scale size={22} className="text-blue-600" />;
+      return <Scale size={22} className="text-amber-400" />;
     }
     if (cat.includes('genét') || cat.includes('reprodu') || cat.includes('sêmen') || cat.includes('iatf')) {
-      return <ShieldCheck size={22} className="text-teal-600" />;
+      return <ShieldCheck size={22} className="text-teal-400" />;
     }
     if (cat.includes('saúd') || cat.includes('medic') || cat.includes('veterin')) {
-      return <HeartPulse size={22} className="text-rose-600" />;
+      return <HeartPulse size={22} className="text-rose-400" />;
     }
     if (cat.includes('máquin') || cat.includes('trator') || cat.includes('curral')) {
-      return <Tractor size={22} className="text-amber-600" />;
+      return <Tractor size={22} className="text-amber-500" />;
     }
-    return <Store size={22} className="text-emerald-700" />;
+    return <Store size={22} className="text-emerald-400" />;
   };
 
   const currentEditSlot = editingSlots[activeEditSlotIndex] || editingSlots[0];
@@ -181,15 +207,13 @@ const PartnersBanner: React.FC<PartnersBannerProps> = ({ compact = false, curren
 
   return (
     <div className="w-full font-sans">
-      {/* Container Principal do Banner */}
-      <div className="bg-gradient-to-r from-slate-900 via-emerald-950 to-slate-900 rounded-2xl p-5 md:p-6 text-white shadow-lg border border-emerald-800/40 relative overflow-hidden">
+      <div className="bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 rounded-2xl p-5 md:p-6 text-white shadow-xl border border-emerald-900/40 relative overflow-hidden">
         
-        {/* Subtle glow effect in background */}
         <div className="absolute top-0 right-0 -mt-8 -mr-8 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 left-1/3 -mb-8 w-64 h-64 bg-teal-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 left-1/3 -mb-8 w-64 h-64 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
 
         {/* Top Header of Banner */}
-        <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 mb-4 border-b border-emerald-800/50">
+        <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 mb-4 border-b border-slate-800">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-emerald-600/90 text-white flex items-center justify-center shadow-md shadow-emerald-950/40 border border-emerald-400/30">
               <Handshake size={22} className="text-emerald-100" />
@@ -211,7 +235,7 @@ const PartnersBanner: React.FC<PartnersBannerProps> = ({ compact = false, curren
                 )}
               </div>
               <p className="text-xs text-slate-300">
-                Empresas, insumos e tecnologias recomendadas para potencializar a pecuária de precisão.
+                Insumos, equipamentos e cupons de desconto para pecuária de alta rentabilidade.
               </p>
             </div>
           </div>
@@ -219,14 +243,13 @@ const PartnersBanner: React.FC<PartnersBannerProps> = ({ compact = false, curren
           <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
             <button
               onClick={() => handleOpenContact()}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-emerald-200 bg-emerald-900/60 hover:bg-emerald-800/80 rounded-xl border border-emerald-700/60 transition-all active:scale-95 shadow-sm"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-emerald-200 bg-emerald-950/80 hover:bg-emerald-900 rounded-xl border border-emerald-700/60 transition-all active:scale-95 shadow-sm"
               title="Informações para anunciar sua empresa"
             >
               <Megaphone size={14} className="text-emerald-300" />
               <span>Anuncie Aqui</span>
             </button>
 
-            {/* Gerenciar Espaços - Exclusivo para Administrador */}
             {isAdmin && (
               <button
                 onClick={() => openEditor(0)}
@@ -240,10 +263,11 @@ const PartnersBanner: React.FC<PartnersBannerProps> = ({ compact = false, curren
           </div>
         </div>
 
-        {/* The 3 Available / Configured Partner Slots */}
+        {/* 3 Partner Slots */}
         <div className="relative z-10 grid grid-cols-1 md:grid-cols-3 gap-4">
           {partnerSlots.map((slot, index) => {
             const isOccupied = slot.isOccupied;
+            const hasCoupon = Boolean(slot.couponCode && slot.couponCode.trim().length > 0);
 
             return (
               <div 
@@ -251,38 +275,47 @@ const PartnersBanner: React.FC<PartnersBannerProps> = ({ compact = false, curren
                 className={`
                   rounded-xl p-4 transition-all duration-200 flex flex-col justify-between relative group
                   ${isOccupied 
-                    ? 'bg-slate-900/90 border border-emerald-800/60 hover:border-emerald-500/80 shadow-md' 
-                    : 'bg-slate-900/40 border border-dashed border-slate-700/90 hover:border-emerald-500/60 hover:bg-slate-900/60'}
+                    ? 'bg-slate-900/90 border border-slate-800 hover:border-emerald-500/70 shadow-md' 
+                    : 'bg-slate-900/40 border border-dashed border-slate-800 hover:border-emerald-500/60 hover:bg-slate-900/60'}
                 `}
               >
-                {/* Slot Number Tag & Status Pill */}
+                {/* Header Tag and Badge */}
                 <div className="flex items-center justify-between gap-2 mb-3">
                   <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 bg-slate-800/80 border border-slate-700 px-2 py-0.5 rounded-md">
                     Espaço #{String(slot.slotNumber || index + 1).padStart(2, '0')}
                   </span>
 
-                  <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${
-                    isOccupied 
-                      ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30' 
-                      : 'bg-amber-500/15 text-amber-300 border-amber-500/30 animate-pulse'
-                  }`}>
-                    {slot.badge || (isOccupied ? 'Parceiro Oficial' : 'Espaço Disponível')}
-                  </span>
+                  <div className="flex items-center gap-1.5">
+                    {hasCoupon && (
+                      <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 flex items-center gap-1 animate-pulse">
+                        <Ticket size={10} />
+                        <span>{slot.couponDiscount || 'Cupom'}</span>
+                      </span>
+                    )}
+
+                    <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${
+                      isOccupied 
+                        ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30' 
+                        : 'bg-amber-500/15 text-amber-300 border-amber-500/30 animate-pulse'
+                    }`}>
+                      {slot.badge || (isOccupied ? 'Parceiro Oficial' : 'Espaço Disponível')}
+                    </span>
+                  </div>
                 </div>
 
-                {/* Main Content Info */}
-                <div className="space-y-2 mb-4">
+                {/* Main Content */}
+                <div className="space-y-2 mb-3">
                   <div className="flex items-start gap-3">
-                    <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 border overflow-hidden ${
+                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 border overflow-hidden p-1 ${
                       isOccupied 
-                        ? 'bg-slate-800 border-slate-700 shadow-inner' 
+                        ? 'bg-slate-950 border-slate-700 shadow-inner' 
                         : 'bg-slate-800/50 border-dashed border-slate-700'
                     }`}>
                       {slot.logoUrl ? (
                         <img 
                           src={slot.logoUrl} 
                           alt={slot.name} 
-                          className="w-full h-full object-cover" 
+                          className="w-full h-full object-contain" 
                           referrerPolicy="no-referrer"
                           onError={(e) => {
                             (e.target as HTMLElement).style.display = 'none';
@@ -306,9 +339,62 @@ const PartnersBanner: React.FC<PartnersBannerProps> = ({ compact = false, curren
                   <p className="text-xs text-slate-300 line-clamp-2 leading-relaxed">
                     {slot.description}
                   </p>
+
+                  {/* Coupon Strip Component inside Card */}
+                  {isOccupied && hasCoupon && (
+                    <div 
+                      onClick={(e) => handleDirectCopyCoupon(slot, e)}
+                      className={`mt-2.5 p-2.5 rounded-xl flex items-center justify-between cursor-pointer border transition-all active:scale-98 ${
+                        copiedCardSlotId === (slot.id || `slot-${slot.slotNumber}`)
+                          ? 'bg-emerald-950/90 border-emerald-500 shadow-md shadow-emerald-950/40 text-emerald-200'
+                          : 'bg-gradient-to-r from-amber-500/10 via-emerald-500/10 to-amber-500/10 border-amber-500/30 hover:border-amber-400 hover:bg-slate-800/80'
+                      }`}
+                      title={`Clique para copiar o cupom ${slot.couponCode}`}
+                    >
+                      <div className="flex items-center gap-2 min-w-0">
+                        <div className={`p-1.5 rounded-lg shrink-0 ${
+                          copiedCardSlotId === (slot.id || `slot-${slot.slotNumber}`)
+                            ? 'bg-emerald-500/30 text-emerald-300'
+                            : 'bg-amber-500/20 text-amber-300'
+                        }`}>
+                          <Ticket size={14} />
+                        </div>
+                        <div className="truncate">
+                          <p className="text-[10px] uppercase font-extrabold text-amber-300 leading-none mb-0.5">
+                            {slot.couponDiscount ? `Cupom: ${slot.couponDiscount}` : 'Cupom Promocional'}
+                          </p>
+                          <p className="text-xs font-mono font-black text-white tracking-wider truncate">
+                            {slot.couponCode}
+                          </p>
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={(e) => handleDirectCopyCoupon(slot, e)}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 shrink-0 transition-all shadow-sm ${
+                          copiedCardSlotId === (slot.id || `slot-${slot.slotNumber}`)
+                            ? 'bg-emerald-500 text-slate-950'
+                            : 'bg-amber-500/20 hover:bg-amber-400 text-amber-200 hover:text-slate-950 border border-amber-500/40'
+                        }`}
+                      >
+                        {copiedCardSlotId === (slot.id || `slot-${slot.slotNumber}`) ? (
+                          <>
+                            <Check size={13} className="stroke-[3]" />
+                            <span>Copiado!</span>
+                          </>
+                        ) : (
+                          <>
+                            <Copy size={13} />
+                            <span>Copiar</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  )}
                 </div>
 
-                {/* Footer Actions for this Slot */}
+                {/* Card Actions */}
                 <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between gap-2 mt-auto">
                   {isOccupied ? (
                     <>
@@ -321,6 +407,24 @@ const PartnersBanner: React.FC<PartnersBannerProps> = ({ compact = false, curren
                         <span>Conhecer Parceiro</span>
                         <ExternalLink size={13} />
                       </a>
+
+                      {hasCoupon && (
+                        <button
+                          onClick={(e) => handleDirectCopyCoupon(slot, e)}
+                          className={`p-2 rounded-lg border transition-colors ${
+                            copiedCardSlotId === (slot.id || `slot-${slot.slotNumber}`)
+                              ? 'text-emerald-300 bg-emerald-950 border-emerald-500'
+                              : 'text-amber-300 hover:text-white bg-amber-950/70 hover:bg-amber-900 border-amber-700/60'
+                          }`}
+                          title={copiedCardSlotId === (slot.id || `slot-${slot.slotNumber}`) ? "Cupom copiado!" : `Copiar cupom (${slot.couponCode})`}
+                        >
+                          {copiedCardSlotId === (slot.id || `slot-${slot.slotNumber}`) ? (
+                            <Check size={14} className="text-emerald-400 stroke-[2.5]" />
+                          ) : (
+                            <Copy size={14} />
+                          )}
+                        </button>
+                      )}
 
                       {isAdmin && (
                         <button
@@ -359,8 +463,8 @@ const PartnersBanner: React.FC<PartnersBannerProps> = ({ compact = false, curren
           })}
         </div>
 
-        {/* Small Bottom Status Strip */}
-        <div className="relative z-10 mt-4 pt-3 border-t border-emerald-900/40 flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-400">
+        {/* Footer info & Admin lock */}
+        <div className="relative z-10 mt-4 pt-3 border-t border-slate-800/80 flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-400">
           <div className="flex items-center gap-4">
             <span className="flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-emerald-400" />
@@ -377,7 +481,6 @@ const PartnersBanner: React.FC<PartnersBannerProps> = ({ compact = false, curren
               Interesse em parcerias? Contate <a href="https://instagram.com.br/vivendoapecuaria" target="_blank" rel="noopener noreferrer" className="text-emerald-400 font-bold hover:underline">@vivendoapecuaria</a>
             </span>
 
-            {/* Discrete Admin Key Icon for Owner */}
             <button
               onClick={() => {
                 if (sessionAdminUnlocked) {
@@ -394,6 +497,117 @@ const PartnersBanner: React.FC<PartnersBannerProps> = ({ compact = false, curren
           </div>
         </div>
       </div>
+
+      {/* Modal: Exibir Cupom de Desconto */}
+      {isCouponModalOpen && selectedSlotForCoupon && (
+        <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/75 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="bg-slate-900 w-full max-w-md rounded-2xl shadow-2xl overflow-hidden border border-amber-500/40 text-white relative">
+            
+            <button 
+              onClick={() => setIsCouponModalOpen(false)}
+              className="absolute top-4 right-4 p-1.5 text-slate-400 hover:text-white rounded-lg bg-slate-800/80 hover:bg-slate-800 transition-colors z-10"
+            >
+              <X size={18} />
+            </button>
+
+            <div className="bg-gradient-to-r from-amber-600 via-emerald-600 to-amber-600 p-6 text-center relative overflow-hidden">
+              <div className="inline-flex p-3 bg-white/10 rounded-2xl backdrop-blur-md mb-2 border border-white/20">
+                <Gift size={28} className="text-amber-200" />
+              </div>
+              <h3 className="text-xl font-extrabold tracking-tight text-white">
+                Cupom Exclusivo de Parceiro
+              </h3>
+              <p className="text-xs text-amber-100 font-medium mt-1">
+                {selectedSlotForCoupon.name}
+              </p>
+            </div>
+
+            <div className="p-6 space-y-4">
+              
+              {selectedSlotForCoupon.couponDiscount && (
+                <div className="text-center">
+                  <span className="inline-block px-3 py-1 bg-amber-500/20 text-amber-300 border border-amber-500/40 rounded-full text-xs font-bold uppercase tracking-wider">
+                    {selectedSlotForCoupon.couponDiscount}
+                  </span>
+                </div>
+              )}
+
+              {selectedSlotForCoupon.couponDescription && (
+                <p className="text-xs text-slate-300 text-center leading-relaxed">
+                  {selectedSlotForCoupon.couponDescription}
+                </p>
+              )}
+
+              {/* Cupom Box with Copy */}
+              <div className="p-4 bg-slate-950 border border-dashed border-amber-500/50 rounded-xl flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">Código do Cupom:</span>
+                  <span className="text-lg font-mono font-black text-amber-400 tracking-wider">
+                    {selectedSlotForCoupon.couponCode}
+                  </span>
+                </div>
+
+                <button
+                  onClick={() => handleCopyCouponCode(selectedSlotForCoupon.couponCode || '')}
+                  className={`px-3.5 py-2.5 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-all ${
+                    copiedCoupon
+                      ? 'bg-emerald-600 text-white'
+                      : 'bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-md'
+                  }`}
+                >
+                  {copiedCoupon ? (
+                    <>
+                      <Check size={14} />
+                      <span>Copiado!</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy size={14} />
+                      <span>Copiar</span>
+                    </>
+                  )}
+                </button>
+              </div>
+
+              {/* Instructions */}
+              <div className="p-3 bg-slate-800/60 rounded-xl border border-slate-700/60 text-[11px] text-slate-300 space-y-1">
+                <p className="font-bold text-white">Como usar:</p>
+                <p>1. Copie o código acima.</p>
+                <p>2. Informe ao parceiro no WhatsApp ou no carrinho de compras no site oficial.</p>
+              </div>
+
+              <div className="space-y-2 pt-2">
+                {selectedSlotForCoupon.phoneOrWhatsapp && (
+                  <a
+                    href={`https://wa.me/55${selectedSlotForCoupon.phoneOrWhatsapp.replace(/\D/g, '')}?text=${encodeURIComponent(
+                      `Olá! Vi o cupom ${selectedSlotForCoupon.couponCode} na plataforma Gestão Pecuária e gostaria de solicitar um orçamento.`
+                    )}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold text-xs shadow-md flex items-center justify-center gap-2 transition-all active:scale-98"
+                  >
+                    <MessageCircle size={16} />
+                    <span>Usar via WhatsApp ({selectedSlotForCoupon.phoneOrWhatsapp})</span>
+                  </a>
+                )}
+
+                {selectedSlotForCoupon.linkUrl && (
+                  <a
+                    href={selectedSlotForCoupon.linkUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full py-2.5 px-4 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl font-bold text-xs border border-slate-700 flex items-center justify-center gap-2 transition-all"
+                  >
+                    <span>Ir para o Site do Parceiro</span>
+                    <ExternalLink size={14} />
+                  </a>
+                )}
+              </div>
+
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Modal: Validação de PIN de Administrador */}
       {isPinModalOpen && (
@@ -470,7 +684,6 @@ const PartnersBanner: React.FC<PartnersBannerProps> = ({ compact = false, curren
         <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 overflow-y-auto">
           <div className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden border border-slate-200 animate-in zoom-in-95 duration-200 my-8">
             
-            {/* Header Modal */}
             <div className="bg-slate-900 p-5 text-white flex items-center justify-between border-b border-slate-800">
               <div className="flex items-center gap-3">
                 <div className="p-2.5 rounded-xl bg-amber-600 text-white">
@@ -486,7 +699,7 @@ const PartnersBanner: React.FC<PartnersBannerProps> = ({ compact = false, curren
                     </span>
                   </div>
                   <p className="text-xs text-slate-400">
-                    Defina quais marcas, links e produtos aparecem no banner do site.
+                    Defina marcas, cupons de desconto, logos e links de cada slot.
                   </p>
                 </div>
               </div>
@@ -573,7 +786,7 @@ const PartnersBanner: React.FC<PartnersBannerProps> = ({ compact = false, curren
                     required
                     value={currentEditSlot?.name || ''}
                     onChange={(e) => updateCurrentEditField('name', e.target.value)}
-                    placeholder="Ex: NutriCampo Nutrição Animal"
+                    placeholder="Ex: Constant Balanças"
                     className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
                   />
                 </div>
@@ -585,13 +798,58 @@ const PartnersBanner: React.FC<PartnersBannerProps> = ({ compact = false, curren
                     required
                     value={currentEditSlot?.category || ''}
                     onChange={(e) => updateCurrentEditField('category', e.target.value)}
-                    placeholder="Ex: Nutrição & Suplementação"
+                    placeholder="Ex: Balanças & Pesagem Pecuária"
                     className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
                   />
                 </div>
               </div>
 
-              {/* Selo / Badge personalizada */}
+              {/* Seção de Cupom de Desconto */}
+              <div className="p-3.5 bg-amber-50/60 border border-amber-200 rounded-xl space-y-3">
+                <div className="flex items-center gap-2">
+                  <Ticket size={16} className="text-amber-700" />
+                  <label className="text-xs font-extrabold text-amber-900">
+                    Cupom de Desconto & Vantagem Promocional
+                  </label>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-bold text-slate-700">Código do Cupom</label>
+                    <input 
+                      type="text"
+                      value={currentEditSlot?.couponCode || ''}
+                      onChange={(e) => updateCurrentEditField('couponCode', e.target.value.toUpperCase())}
+                      placeholder="Ex: CONSTANTVIP"
+                      className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs font-mono uppercase text-slate-900 focus:ring-2 focus:ring-amber-500 outline-none bg-white"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-bold text-slate-700">Texto de Destaque / Desconto</label>
+                    <input 
+                      type="text"
+                      value={currentEditSlot?.couponDiscount || ''}
+                      onChange={(e) => updateCurrentEditField('couponDiscount', e.target.value)}
+                      placeholder="Ex: 10% OFF ou Frete Grátis"
+                      className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-900 focus:ring-2 focus:ring-amber-500 outline-none bg-white"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[11px] font-bold text-slate-700">Regulamento / Descrição do Cupom</label>
+                  <input 
+                    type="text"
+                    value={currentEditSlot?.couponDescription || ''}
+                    onChange={(e) => updateCurrentEditField('couponDescription', e.target.value)}
+                    placeholder="Ex: Desconto exclusivo na compra de balanças para fazendas cadastradas."
+                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-900 focus:ring-2 focus:ring-amber-500 outline-none bg-white"
+                  />
+                </div>
+              </div>
+
+              {/* Selo / Telefone */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-slate-700">Selo / Badge de Destaque</label>
@@ -599,7 +857,7 @@ const PartnersBanner: React.FC<PartnersBannerProps> = ({ compact = false, curren
                     type="text"
                     value={currentEditSlot?.badge || ''}
                     onChange={(e) => updateCurrentEditField('badge', e.target.value)}
-                    placeholder="Ex: Parceiro Oficial, Patrocinador Master, Destaque"
+                    placeholder="Ex: Parceiro Oficial, Destaque"
                     className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
                   />
                 </div>
@@ -610,7 +868,7 @@ const PartnersBanner: React.FC<PartnersBannerProps> = ({ compact = false, curren
                     type="text"
                     value={currentEditSlot?.phoneOrWhatsapp || ''}
                     onChange={(e) => updateCurrentEditField('phoneOrWhatsapp', e.target.value)}
-                    placeholder="Ex: (67) 99999-0000"
+                    placeholder="Ex: (27) 99631-4111"
                     className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
                   />
                 </div>
@@ -644,16 +902,15 @@ const PartnersBanner: React.FC<PartnersBannerProps> = ({ compact = false, curren
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-slate-700">URL do Logotipo (Opcional)</label>
                   <input 
-                    type="url"
+                    type="text"
                     value={currentEditSlot?.logoUrl || ''}
                     onChange={(e) => updateCurrentEditField('logoUrl', e.target.value)}
-                    placeholder="https://exemplo.com/logo.png"
+                    placeholder="URL da imagem do logo"
                     className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
                   />
                 </div>
               </div>
 
-              {/* Feedback de salvamento */}
               {saveSuccessNotice && (
                 <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-xs font-bold flex items-center gap-2 animate-in fade-in">
                   <CheckCircle2 size={16} className="text-emerald-600" />
@@ -661,7 +918,7 @@ const PartnersBanner: React.FC<PartnersBannerProps> = ({ compact = false, curren
                 </div>
               )}
 
-              {/* Botoes de Ação */}
+              {/* Action Buttons */}
               <div className="pt-4 border-t border-slate-100 flex items-center justify-between gap-3">
                 <button
                   type="button"
@@ -694,7 +951,7 @@ const PartnersBanner: React.FC<PartnersBannerProps> = ({ compact = false, curren
         </div>
       )}
 
-      {/* Modal: Quero Anunciar / Seja um Parceiro */}
+      {/* Modal: Quero Anunciar */}
       {isContactModalOpen && (
         <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 overflow-y-auto">
           <div className="bg-white w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden border border-slate-200 animate-in zoom-in-95 duration-200">
@@ -736,12 +993,12 @@ const PartnersBanner: React.FC<PartnersBannerProps> = ({ compact = false, curren
               <div className="space-y-2.5 text-xs text-slate-700">
                 <div className="flex items-start gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100">
                   <div className="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-black shrink-0">1</div>
-                  <p className="pt-0.5 leading-tight"><strong className="text-slate-900">Público Qualificado:</strong> Produtores rurais com foco em ganho de peso, confinamento e rentabilidade.</p>
+                  <p className="pt-0.5 leading-tight"><strong className="text-slate-900">Público Qualificado:</strong> Produtores rurais com foco em ganho de peso, pesagem e rentabilidade.</p>
                 </div>
 
                 <div className="flex items-start gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100">
                   <div className="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-black shrink-0">2</div>
-                  <p className="pt-0.5 leading-tight"><strong className="text-slate-900">Banner Interativo:</strong> Link direto para seu WhatsApp comercial, Instagram ou catálogo de produtos.</p>
+                  <p className="pt-0.5 leading-tight"><strong className="text-slate-900">Cupom de Desconto:</strong> Destaque com código promocional para impulsionar suas conversões.</p>
                 </div>
 
                 <div className="flex items-start gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100">
@@ -750,7 +1007,7 @@ const PartnersBanner: React.FC<PartnersBannerProps> = ({ compact = false, curren
                 </div>
               </div>
 
-              {/* Botões de Contato */}
+              {/* Action Buttons */}
               <div className="pt-3 border-t border-slate-100 space-y-2.5">
                 <a
                   href={`https://wa.me/5567999990000?text=${encodeURIComponent(
@@ -772,7 +1029,6 @@ const PartnersBanner: React.FC<PartnersBannerProps> = ({ compact = false, curren
                   rel="noopener noreferrer"
                   className="w-full py-3 px-4 bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white rounded-xl font-bold text-xs shadow-md flex items-center justify-center gap-2 transition-all active:scale-98"
                 >
-                  <Instagram size={16} />
                   <span>Contatar no Instagram @vivendoapecuaria</span>
                 </a>
               </div>
@@ -794,7 +1050,6 @@ const PartnersBanner: React.FC<PartnersBannerProps> = ({ compact = false, curren
   );
 };
 
-// Simple internal icon component helper
 function Megaphone(props: { size?: number; className?: string }) {
   return (
     <svg 
@@ -816,4 +1071,3 @@ function Megaphone(props: { size?: number; className?: string }) {
 }
 
 export default PartnersBanner;
-
