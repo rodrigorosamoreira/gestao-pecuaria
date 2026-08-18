@@ -53,8 +53,10 @@ const ToolsCalculator: React.FC<ToolsCalculatorProps> = ({ onSaveDailyCost, lots
   const [predGmd, setPredGmd] = useState<number>(1.15);
   const [predDays, setPredDays] = useState<number>(180);
 
-  // --- Estados do Valor Diário / Suplementação (Persistíveis) ---
+  // --- Estados do Valor da Diária / Suplementação (Persistíveis) ---
+  const [rentMode, setRentMode] = useState<'total' | 'per_animal'>('total');
   const [rentCost, setRentCost] = useState<number>(3000);
+  const [rentPerAnimal, setRentPerAnimal] = useState<number>(60);
   const [suppCostMonthly, setSuppCostMonthly] = useState<number>(2000); 
   const [extraCostMonthly, setExtraCostMonthly] = useState<number>(500);
   const [totalAnimalsDaily, setTotalAnimalsDaily] = useState<number>(50);
@@ -87,10 +89,21 @@ const ToolsCalculator: React.FC<ToolsCalculatorProps> = ({ onSaveDailyCost, lots
       : initialConfig;
 
     if (configToLoad) {
-      setRentCost(configToLoad.rentCost || 0);
+      const loadedRentMode = configToLoad.rentMode || 'total';
+      setRentMode(loadedRentMode);
+      const loadedRentCost = configToLoad.rentCost || 0;
+      setRentCost(loadedRentCost);
+      const loadedAnimals = configToLoad.totalAnimalsDaily || 50;
+      setTotalAnimalsDaily(loadedAnimals);
+
+      if (configToLoad.rentPerAnimal !== undefined) {
+        setRentPerAnimal(configToLoad.rentPerAnimal);
+      } else if (loadedAnimals > 0 && loadedRentCost > 0) {
+        setRentPerAnimal(Number((loadedRentCost / loadedAnimals).toFixed(2)));
+      }
+
       setSuppCostMonthly(configToLoad.suppCostMonthly || 0);
       setExtraCostMonthly(configToLoad.extraCostMonthly || 0);
-      setTotalAnimalsDaily(configToLoad.totalAnimalsDaily || 50);
       setGmdDailyVal(configToLoad.gmdDailyVal || 0);
       setIngredients(configToLoad.ingredients || [
         { id: '1', name: 'Farelo de Milho', percent: 65, priceKg: 1.00 },
@@ -158,8 +171,12 @@ const ToolsCalculator: React.FC<ToolsCalculatorProps> = ({ onSaveDailyCost, lots
     return calcInput.value / (sourceIng.percent / totalPercent);
   };
 
-  // --- Cálculos Valor Diário ---
-  const totalMonthlyFinance = rentCost + suppCostMonthly + extraCostMonthly;
+  // --- Cálculos Valor da Diária ---
+  const effectiveRentCost = rentMode === 'per_animal' 
+    ? ((Number(rentPerAnimal) || 0) * (Number(totalAnimalsDaily) || 0)) 
+    : (Number(rentCost) || 0);
+
+  const totalMonthlyFinance = effectiveRentCost + suppCostMonthly + extraCostMonthly;
   const monthlyCostPerAnimal = totalAnimalsDaily > 0 ? totalMonthlyFinance / totalAnimalsDaily : 0;
   const dailyCostPerAnimal = monthlyCostPerAnimal / 30;
   const daysPerArroba = gmdDailyVal > 0 ? 30 / gmdDailyVal : 0;
@@ -205,7 +222,9 @@ const ToolsCalculator: React.FC<ToolsCalculatorProps> = ({ onSaveDailyCost, lots
       const safeDailyCost = isNaN(dailyCostPerAnimal) ? 0 : dailyCostPerAnimal;
       
       const config: CalculatorConfig = {
-        rentCost: Number(rentCost) || 0,
+        rentCost: Number(effectiveRentCost) || 0,
+        rentMode,
+        rentPerAnimal: Number(rentPerAnimal) || 0,
         suppCostMonthly: Number(suppCostMonthly) || 0,
         extraCostMonthly: Number(extraCostMonthly) || 0,
         totalAnimalsDaily: Number(totalAnimalsDaily) || 1,
@@ -250,7 +269,9 @@ const ToolsCalculator: React.FC<ToolsCalculatorProps> = ({ onSaveDailyCost, lots
 
     if (onSaveDailyCost) {
       const config: CalculatorConfig = {
-        rentCost: Number(rentCost) || 0,
+        rentCost: Number(effectiveRentCost) || 0,
+        rentMode,
+        rentPerAnimal: Number(rentPerAnimal) || 0,
         suppCostMonthly: totalMonthlyCostSupp,
         extraCostMonthly: Number(extraCostMonthly) || 0,
         totalAnimalsDaily: numAnimals,
@@ -290,7 +311,9 @@ const ToolsCalculator: React.FC<ToolsCalculatorProps> = ({ onSaveDailyCost, lots
       const safeDailyCost = Number(predDailyRate) || 0;
 
       const config: CalculatorConfig = {
-        rentCost: Number(rentCost) || 0,
+        rentCost: Number(effectiveRentCost) || 0,
+        rentMode,
+        rentPerAnimal: Number(rentPerAnimal) || 0,
         suppCostMonthly: Number(suppCostMonthly) || 0,
         extraCostMonthly: Number(extraCostMonthly) || 0,
         totalAnimalsDaily: Number(totalAnimalsDaily) || 1,
@@ -328,12 +351,12 @@ const ToolsCalculator: React.FC<ToolsCalculatorProps> = ({ onSaveDailyCost, lots
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h2 className="text-2xl font-black text-gray-800 tracking-tighter flex items-center gap-2 uppercase">
-            {activeTab === 'daily_value' && 'Valor Diário'}
+            {activeTab === 'daily_value' && 'Valor da Diária'}
             {activeTab === 'diet' && 'Suplementação'}
             {activeTab === 'prediction' && 'Simulador de Lucro'}
           </h2>
           <p className="text-gray-500 text-sm italic">
-            {activeTab === 'daily_value' && 'Calcule o custo diário por animal'}
+            {activeTab === 'daily_value' && 'Calcule o custo da diária por animal'}
             {activeTab === 'diet' && 'Manejo nutricional e composição de mistura'}
             {activeTab === 'prediction' && 'Projeção de rentabilidade do ciclo'}
           </p>
@@ -356,10 +379,115 @@ const ToolsCalculator: React.FC<ToolsCalculatorProps> = ({ onSaveDailyCost, lots
                  <DollarSign size={20} className="text-emerald-600" /> Custos Mensais
                </h3>
                <div className="space-y-6">
-                  <div className="space-y-1">
-                    <label className="text-[11px] font-bold text-gray-500 uppercase tracking-widest ml-1">Arrendamento (R$/mês)</label>
-                    <input type="number" onFocus={handleFocus} className="w-full border border-gray-200 rounded-xl px-5 py-3 font-bold text-gray-700 bg-gray-50 focus:bg-white outline-none focus:ring-2 focus:ring-emerald-500 transition-all" value={rentCost} onChange={e => setRentCost(Number(e.target.value))} />
+                  {/* Arrendamento / Custo de Oportunidade */}
+                  <div className="space-y-3 bg-slate-50/80 p-5 rounded-2xl border border-slate-200/80">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                      <label className="text-[11px] font-black text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+                        <Building2 size={15} className="text-emerald-700" />
+                        Arrendamento / Custo de Oportunidade
+                      </label>
+                      
+                      {/* Alternador: Total ou Por Animal */}
+                      <div className="flex bg-slate-200/90 rounded-xl p-0.5 self-start sm:self-auto border border-slate-300/60 shadow-inner">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (rentMode !== 'total') {
+                              setRentMode('total');
+                              if (rentPerAnimal > 0 && totalAnimalsDaily > 0) {
+                                setRentCost(Number((rentPerAnimal * totalAnimalsDaily).toFixed(2)));
+                              }
+                            }
+                          }}
+                          className={`px-3 py-1 text-[10px] font-extrabold rounded-lg uppercase tracking-wider transition-all cursor-pointer ${
+                            rentMode === 'total'
+                              ? 'bg-white text-emerald-800 shadow-xs'
+                              : 'text-slate-600 hover:text-slate-900'
+                          }`}
+                        >
+                          Valor Total
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (rentMode !== 'per_animal') {
+                              setRentMode('per_animal');
+                              if (rentCost > 0 && totalAnimalsDaily > 0) {
+                                setRentPerAnimal(Number((rentCost / totalAnimalsDaily).toFixed(2)));
+                              }
+                            }
+                          }}
+                          className={`px-3 py-1 text-[10px] font-extrabold rounded-lg uppercase tracking-wider transition-all cursor-pointer ${
+                            rentMode === 'per_animal'
+                              ? 'bg-white text-emerald-800 shadow-xs'
+                              : 'text-slate-600 hover:text-slate-900'
+                          }`}
+                        >
+                          Valor por Animal
+                        </button>
+                      </div>
+                    </div>
+
+                    {rentMode === 'total' ? (
+                      <div className="space-y-1.5">
+                        <div className="relative">
+                          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-extrabold text-sm">R$</span>
+                          <input 
+                            type="number" 
+                            step="0.01"
+                            onFocus={handleFocus} 
+                            className="w-full border border-slate-200 rounded-xl pl-12 pr-28 py-3 font-black text-lg text-slate-800 bg-white focus:bg-white outline-none focus:ring-2 focus:ring-emerald-500 font-nums transition-all" 
+                            value={rentCost || ''} 
+                            onChange={e => {
+                              const val = Number(e.target.value);
+                              setRentCost(val);
+                              if (totalAnimalsDaily > 0) {
+                                setRentPerAnimal(Number((val / totalAnimalsDaily).toFixed(2)));
+                              }
+                            }} 
+                            placeholder="0,00"
+                          />
+                          <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">R$/mês total</span>
+                        </div>
+                        <div className="flex items-center justify-between text-[11px] text-slate-500 font-medium px-1">
+                          <span>Equivalente por animal:</span>
+                          <span className="font-extrabold text-slate-800 font-nums">
+                            R$ {(totalAnimalsDaily > 0 ? (rentCost / totalAnimalsDaily) : 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} /cab/mês ({totalAnimalsDaily} animais)
+                          </span>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="space-y-1.5">
+                        <div className="relative">
+                          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-extrabold text-sm">R$</span>
+                          <input 
+                            type="number" 
+                            step="0.01"
+                            onFocus={handleFocus} 
+                            className="w-full border border-emerald-300 rounded-xl pl-12 pr-32 py-3 font-black text-lg text-emerald-900 bg-white focus:bg-white outline-none focus:ring-2 focus:ring-emerald-500 font-nums transition-all" 
+                            value={rentPerAnimal || ''} 
+                            onChange={e => {
+                              const val = Number(e.target.value);
+                              setRentPerAnimal(val);
+                              setRentCost(Number((val * (totalAnimalsDaily || 0)).toFixed(2)));
+                            }} 
+                            placeholder="0,00"
+                          />
+                          <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-emerald-700">R$/cab/mês</span>
+                        </div>
+                        <div className="flex items-center justify-between text-[11px] bg-emerald-50/80 p-2.5 rounded-xl border border-emerald-200/60 text-emerald-900 font-medium">
+                          <span className="flex items-center gap-1">
+                            <Calculator size={13} className="text-emerald-700" />
+                            Total calculado (R$ {Number(rentPerAnimal || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })} × {totalAnimalsDaily} animais):
+                          </span>
+                          <span className="font-black text-emerald-950 font-nums text-xs">
+                            R$ {((Number(rentPerAnimal || 0)) * (Number(totalAnimalsDaily || 0))).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} /mês
+                          </span>
+                        </div>
+                      </div>
+                    )}
                   </div>
+
                   <div className="space-y-1">
                     <label className="text-[11px] font-bold text-gray-500 uppercase tracking-widest ml-1">Suplementação (R$/mês)</label>
                     <input type="number" onFocus={handleFocus} className="w-full border border-gray-200 rounded-xl px-5 py-3 font-bold text-gray-700 bg-gray-50 focus:bg-white outline-none focus:ring-2 focus:ring-emerald-500 transition-all" value={suppCostMonthly} onChange={e => setSuppCostMonthly(Number(e.target.value))} />
@@ -371,7 +499,19 @@ const ToolsCalculator: React.FC<ToolsCalculatorProps> = ({ onSaveDailyCost, lots
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1">
                         <label className="text-[11px] font-bold text-gray-500 uppercase tracking-widest ml-1">Total de Animais</label>
-                        <input type="number" onFocus={handleFocus} className="w-full border border-gray-200 rounded-xl px-5 py-3 font-bold text-gray-700 bg-gray-50 focus:bg-white outline-none focus:ring-2 focus:ring-emerald-500 transition-all" value={totalAnimalsDaily} onChange={e => setTotalAnimalsDaily(Number(e.target.value))} />
+                        <input 
+                          type="number" 
+                          onFocus={handleFocus} 
+                          className="w-full border border-gray-200 rounded-xl px-5 py-3 font-bold text-gray-700 bg-gray-50 focus:bg-white outline-none focus:ring-2 focus:ring-emerald-500 transition-all" 
+                          value={totalAnimalsDaily} 
+                          onChange={e => {
+                            const newTotal = Number(e.target.value);
+                            setTotalAnimalsDaily(newTotal);
+                            if (rentMode === 'per_animal') {
+                              setRentCost(Number((rentPerAnimal * newTotal).toFixed(2)));
+                            }
+                          }} 
+                        />
                     </div>
                     <div className="space-y-1">
                         <label className="text-[11px] font-bold text-gray-500 uppercase tracking-widest ml-1">GMD (kg/animal)</label>

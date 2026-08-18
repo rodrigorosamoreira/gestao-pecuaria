@@ -124,6 +124,8 @@ export interface Ingredient {
 
 export interface CalculatorConfig {
   rentCost: number;
+  rentMode?: 'total' | 'per_animal';
+  rentPerAnimal?: number;
   suppCostMonthly: number;
   extraCostMonthly: number;
   totalAnimalsDaily: number;
