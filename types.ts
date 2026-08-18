@@ -91,14 +91,29 @@ export interface Lot {
   calculatorConfig?: CalculatorConfig;
 }
 
+export interface StockMovement {
+  id: string;
+  date: string;
+  type: 'entrada' | 'consumo' | 'ajuste';
+  quantity: number;
+  unitCost?: number;
+  totalCost?: number;
+  notes?: string;
+  lotId?: string;
+  lotName?: string;
+}
+
 export interface InventoryItem {
   id: string;
   name: string;
-  category: 'Ração' | 'Medicamento' | 'Equipamento' | 'Outro';
+  category: 'Ração' | 'Medicamento' | 'Equipamento' | 'Suplemento' | 'Pastagem' | 'Outro' | string;
   quantity: number;
   minQuantity: number;
   unit: string;
   unitCost: number;
+  totalCost?: number;
+  lastPurchaseDate?: string;
+  history?: StockMovement[];
 }
 
 export enum TransactionType {

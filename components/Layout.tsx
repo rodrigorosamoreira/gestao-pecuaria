@@ -98,13 +98,18 @@ const Layout: React.FC<LayoutProps> = ({
         })),
       ...inventory
         .filter(i => i.quantity <= i.minQuantity)
-        .map(i => ({
-          id: `stock-${i.id}`,
-          title: `Estoque Baixo: ${i.name}`,
-          description: `Apenas ${i.quantity} ${i.unit} restantes (Mínimo: ${i.minQuantity}).`,
-          type: 'warning' as const,
-          view: 'inventory'
-        }))
+        .map(i => {
+          const isZero = i.quantity <= 0;
+          return {
+            id: `stock-${i.id}`,
+            title: isZero ? `Estoque Esgotado: ${i.name}` : `Estoque Mínimo Atingido: ${i.name}`,
+            description: isZero 
+              ? `Saldo ZERADO! Mínimo de segurança: ${i.minQuantity} ${i.unit}. Clique para reabastecer.`
+              : `Saldo atual: ${i.quantity} ${i.unit} (Atingiu o mínimo de ${i.minQuantity} ${i.unit}). Necessário reposição.`,
+            type: isZero ? ('error' as const) : ('warning' as const),
+            view: 'inventory'
+          };
+        })
     ];
     return notices;
   };

@@ -244,14 +244,17 @@ const Dashboard: React.FC<DashboardProps> = ({ animals, transactions, inventory,
             </div>
           </div>
 
-          <div className="agro-card p-5">
+          <div 
+            onClick={() => onChangeView?.('inventory')}
+            className="agro-card p-5 cursor-pointer hover:border-amber-400/80 transition-all group"
+          >
             <div className="flex justify-between items-start">
               <div>
-                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Estoque Baixo</p>
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider group-hover:text-amber-700 transition-colors">Estoque Baixo</p>
                 <h3 className={`text-2xl font-black mt-1 font-nums ${stockAlerts > 0 ? 'text-amber-600' : 'text-slate-800'}`}>{stockAlerts}</h3>
                 <p className="text-[11px] text-slate-400 mt-1 font-medium">Insumos em nível crítico</p>
               </div>
-              <div className={`p-3 rounded-xl border ${stockAlerts > 0 ? 'bg-amber-50 text-amber-600 border-amber-200' : 'bg-slate-50 text-slate-500 border-slate-200'}`}>
+              <div className={`p-3 rounded-xl border ${stockAlerts > 0 ? 'bg-amber-50 text-amber-600 border-amber-200 group-hover:scale-105' : 'bg-slate-50 text-slate-500 border-slate-200'} transition-transform`}>
                 <Package size={22} />
               </div>
             </div>

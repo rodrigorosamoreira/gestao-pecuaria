@@ -20,6 +20,7 @@ import {
   Transaction, 
   TransactionType, 
   InventoryItem, 
+  StockMovement,
   Lot, 
   User,
   FarmData,
@@ -472,7 +473,78 @@ const App: React.FC = () => {
           onSellLot={(id, date, total) => alert('Utilize a venda por lote no Rebanho para cálculo de lucro')} 
         />
       );
-      case 'inventory': return <InventoryManager inventory={farmData.inventory} onAddStock={i => updateActiveFarmData(d => ({ ...d, inventory: [...d.inventory, i] }))} onUpdateStock={i => updateActiveFarmData(d => ({ ...d, inventory: d.inventory.map(old => old.id === i.id ? i : old) }))} />;
+      case 'inventory': return (
+        <InventoryManager 
+          inventory={farmData.inventory} 
+          lots={farmData.lots}
+          onAddStock={(item, financialExpense) => updateActiveFarmData(d => {
+            const newTransactions = [...d.transactions];
+            if (financialExpense && financialExpense.amount > 0) {
+              newTransactions.push({
+                id: `exp-inv-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+                date: financialExpense.date || new Date().toISOString().split('T')[0],
+                description: financialExpense.description || `Compra de Estoque: ${item.name} (${item.quantity} ${item.unit})`,
+                amount: financialExpense.amount,
+                type: TransactionType.EXPENSE,
+                category: financialExpense.category || (item.category === 'Medicamento' ? 'Sanidade' : item.category === 'Ração' || item.category === 'Suplemento' ? 'Nutrição' : 'Insumos/Estoque')
+              });
+            }
+            return {
+              ...d,
+              inventory: [...d.inventory, item],
+              transactions: newTransactions
+            };
+          })} 
+          onUpdateStock={(item, financialExpense) => updateActiveFarmData(d => {
+            const newTransactions = [...d.transactions];
+            if (financialExpense && financialExpense.amount > 0) {
+              newTransactions.push({
+                id: `exp-inv-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+                date: financialExpense.date || new Date().toISOString().split('T')[0],
+                description: financialExpense.description || `Compra de Estoque: ${item.name}`,
+                amount: financialExpense.amount,
+                type: TransactionType.EXPENSE,
+                category: financialExpense.category || (item.category === 'Medicamento' ? 'Sanidade' : item.category === 'Ração' || item.category === 'Suplemento' ? 'Nutrição' : 'Insumos/Estoque')
+              });
+            }
+            return {
+              ...d,
+              inventory: d.inventory.map(old => old.id === item.id ? item : old),
+              transactions: newTransactions
+            };
+          })}
+          onConsumeStock={(itemId, consumedQuantity, details) => updateActiveFarmData(d => {
+            const item = d.inventory.find(i => i.id === itemId);
+            if (!item) return d;
+            const newQty = Math.max(0, Number((item.quantity - consumedQuantity).toFixed(2)));
+            const movement: StockMovement = {
+              id: `mov-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+              date: details?.date || new Date().toISOString().split('T')[0],
+              type: 'consumo',
+              quantity: consumedQuantity,
+              unitCost: item.unitCost,
+              totalCost: Number((consumedQuantity * item.unitCost).toFixed(2)),
+              notes: details?.notes || 'Consumo operacional',
+              lotId: details?.lotId,
+              lotName: d.lots.find(l => l.id === details?.lotId)?.name
+            };
+            const updatedItem: InventoryItem = {
+              ...item,
+              quantity: newQty,
+              history: [movement, ...(item.history || [])]
+            };
+            return {
+              ...d,
+              inventory: d.inventory.map(i => i.id === itemId ? updatedItem : i)
+            };
+          })}
+          onDeleteStock={id => updateActiveFarmData(d => ({
+            ...d,
+            inventory: d.inventory.filter(i => i.id !== id)
+          }))}
+          onChangeView={setCurrentView}
+        />
+      );
       case 'finance': return <FinanceManager transactions={farmData.transactions} onAddTransaction={t => updateActiveFarmData(d => ({ ...d, transactions: [...d.transactions, t] }))} />;
       case 'market':
         return (
