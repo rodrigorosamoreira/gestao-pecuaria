@@ -122,15 +122,15 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
         </div>
 
         {/* Top Header Logo */}
-        <div className="relative z-10 flex items-center gap-3">
-          <div className="p-3 bg-emerald-600/90 backdrop-blur-md rounded-2xl text-white shadow-xl shadow-emerald-950/50 border border-emerald-400/30">
-            <Beef size={28} className="text-emerald-100" />
+        <div className="relative z-10 flex items-center gap-3.5">
+          <div className="w-14 h-14 bg-white p-1 rounded-2xl shadow-xl shadow-emerald-950/60 border border-emerald-400/40 overflow-hidden shrink-0 flex items-center justify-center">
+            <img src="/logo.png" alt="Gestão Pecuária Logo" className="w-full h-full object-cover rounded-xl" referrerPolicy="no-referrer" />
           </div>
           <div>
-            <span className="text-xl font-black tracking-tight text-white uppercase block leading-none">
+            <span className="text-2xl font-black tracking-tight text-white uppercase block leading-none">
               Gestão <span className="text-emerald-400">Pecuária</span>
             </span>
-            <span className="text-[10px] uppercase font-bold tracking-widest text-emerald-300/80">
+            <span className="text-[11px] uppercase font-bold tracking-widest text-emerald-300/90 mt-1 block">
               Sistema de Precisão Zootécnica
             </span>
           </div>

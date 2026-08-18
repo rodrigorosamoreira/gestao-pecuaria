@@ -146,8 +146,8 @@ const Layout: React.FC<LayoutProps> = ({
         <div className="p-5 border-b border-emerald-900/80 shrink-0 bg-emerald-950/80">
           <div className="flex items-center justify-between mb-5">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 rounded-xl bg-emerald-600 flex items-center justify-center text-white shadow-md shadow-emerald-950/50 ring-1 ring-emerald-400/30">
-                <Beef size={22} />
+              <div className="w-11 h-11 rounded-xl bg-white p-0.5 flex items-center justify-center shadow-md shadow-emerald-950/50 ring-1 ring-emerald-400/40 overflow-hidden shrink-0">
+                <img src="/logo.png" alt="Gestão Pecuária" className="w-full h-full object-cover rounded-lg" referrerPolicy="no-referrer" />
               </div>
               <div>
                 <span className="text-lg font-extrabold tracking-tight text-white block leading-tight">Gestão Pecuária</span>
