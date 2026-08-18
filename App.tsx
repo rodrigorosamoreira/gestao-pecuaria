@@ -408,12 +408,70 @@ const App: React.FC = () => {
               ]
             }));
           }}
+          onBatchWeighLot={(lotId, date, newAvgWeight, gmd, applyMode) => {
+            updateActiveFarmData(d => {
+              const lotAnimals = d.animals.filter(a => a.lotId === lotId && a.status === AnimalStatus.ACTIVE);
+              if (lotAnimals.length === 0) return d;
+              const prevAvg = lotAnimals.reduce((acc, a) => acc + (a.weightKg || 0), 0) / lotAnimals.length;
+              const deltaGain = newAvgWeight - prevAvg;
+
+              const updatedAnimals = d.animals.map(a => {
+                if (a.lotId !== lotId || a.status !== AnimalStatus.ACTIVE) return a;
+                const newWeight = applyMode === 'gain_delta'
+                  ? Math.max(1, Number(((a.weightKg || 0) + deltaGain).toFixed(2)))
+                  : newAvgWeight;
+                const newHistory = [...(a.history || []), { date, weightKg: newWeight, gmd }];
+                return {
+                  ...a,
+                  weightKg: newWeight,
+                  gmd,
+                  lastWeighingDate: date,
+                  history: newHistory
+                };
+              });
+
+              return { ...d, animals: updatedAnimals };
+            });
+          }}
           savedDailyCost={farmData.globalDailyCost} 
         />
       );
       case 'health': return <HealthManager animals={farmData.animals} healthRecords={farmData.healthRecords} onAddRecord={r => updateActiveFarmData(d => ({ ...d, healthRecords: [...d.healthRecords, r] }))} onUpdateRecord={r => updateActiveFarmData(d => ({ ...d, healthRecords: d.healthRecords.map(old => old.id === r.id ? r : old) }))} />;
       case 'tasks': return <TaskManager tasks={farmData.tasks} onAddTask={t => updateActiveFarmData(d => ({ ...d, tasks: [...d.tasks, t] }))} onUpdateTask={t => updateActiveFarmData(d => ({ ...d, tasks: d.tasks.map(old => old.id === t.id ? t : old) }))} onDeleteTask={id => updateActiveFarmData(d => ({ ...d, tasks: d.tasks.filter(t => t.id !== id) }))} />;
-      case 'lots': return <LotManager lots={farmData.lots} animals={farmData.animals} onAddLot={l => updateActiveFarmData(d => ({ ...d, lots: [...d.lots, l] }))} onUpdateLot={l => updateActiveFarmData(d => ({ ...d, lots: d.lots.map(old => old.id === l.id ? l : old) }))} onSellLot={(id, date, total) => alert('Utilize a venda por lote no Rebanho para cálculo de lucro')} />;
+      case 'lots': return (
+        <LotManager 
+          lots={farmData.lots} 
+          animals={farmData.animals} 
+          onAddLot={l => updateActiveFarmData(d => ({ ...d, lots: [...d.lots, l] }))} 
+          onUpdateLot={l => updateActiveFarmData(d => ({ ...d, lots: d.lots.map(old => old.id === l.id ? l : old) }))} 
+          onBatchWeighLot={(lotId, date, newAvgWeight, gmd, applyMode) => {
+            updateActiveFarmData(d => {
+              const lotAnimals = d.animals.filter(a => a.lotId === lotId && a.status === AnimalStatus.ACTIVE);
+              if (lotAnimals.length === 0) return d;
+              const prevAvg = lotAnimals.reduce((acc, a) => acc + (a.weightKg || 0), 0) / lotAnimals.length;
+              const deltaGain = newAvgWeight - prevAvg;
+
+              const updatedAnimals = d.animals.map(a => {
+                if (a.lotId !== lotId || a.status !== AnimalStatus.ACTIVE) return a;
+                const newWeight = applyMode === 'gain_delta'
+                  ? Math.max(1, Number(((a.weightKg || 0) + deltaGain).toFixed(2)))
+                  : newAvgWeight;
+                const newHistory = [...(a.history || []), { date, weightKg: newWeight, gmd }];
+                return {
+                  ...a,
+                  weightKg: newWeight,
+                  gmd,
+                  lastWeighingDate: date,
+                  history: newHistory
+                };
+              });
+
+              return { ...d, animals: updatedAnimals };
+            });
+          }}
+          onSellLot={(id, date, total) => alert('Utilize a venda por lote no Rebanho para cálculo de lucro')} 
+        />
+      );
       case 'inventory': return <InventoryManager inventory={farmData.inventory} onAddStock={i => updateActiveFarmData(d => ({ ...d, inventory: [...d.inventory, i] }))} onUpdateStock={i => updateActiveFarmData(d => ({ ...d, inventory: d.inventory.map(old => old.id === i.id ? i : old) }))} />;
       case 'finance': return <FinanceManager transactions={farmData.transactions} onAddTransaction={t => updateActiveFarmData(d => ({ ...d, transactions: [...d.transactions, t] }))} />;
       case 'market':

@@ -69,6 +69,8 @@ export interface Animal {
   birthDate: string;
   entryDate?: string;
   weightKg: number;
+  gmd?: number;
+  lastWeighingDate?: string;
   status: AnimalStatus;
   notes?: string;
   lastVaccinationDate?: string;

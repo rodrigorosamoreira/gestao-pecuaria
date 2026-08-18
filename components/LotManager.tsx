@@ -1,7 +1,12 @@
-
 import React, { useState } from 'react';
-import { Lot, Animal } from '../types';
-import { Layers, Plus, Edit2, Users, Scale, DollarSign, X } from 'lucide-react';
+import { Lot, Animal, AnimalStatus } from '../types';
+import { Layers, Plus, Edit2, Users, Scale, DollarSign, X, TrendingUp, Sparkles, Calendar } from 'lucide-react';
+import { 
+  getTodayDateString, 
+  calculateLotWeighingStats, 
+  calculateGMDFromWeighing,
+  getDaysDifference 
+} from '../services/weightService';
 
 interface LotManagerProps {
   lots: Lot[];
@@ -9,15 +14,36 @@ interface LotManagerProps {
   onAddLot: (lot: Lot) => void;
   onUpdateLot: (lot: Lot) => void;
   onSellLot?: (lotId: string, date: string, totalValue: number) => void;
+  onBatchWeighLot?: (lotId: string, date: string, newAvgWeight: number, gmd: number, applyMode: 'uniform' | 'gain_delta') => void;
 }
 
-const LotManager: React.FC<LotManagerProps> = ({ lots, animals, onAddLot, onUpdateLot, onSellLot }) => {
+const LotManager: React.FC<LotManagerProps> = ({ 
+  lots, 
+  animals, 
+  onAddLot, 
+  onUpdateLot, 
+  onSellLot,
+  onBatchWeighLot 
+}) => {
+  const todayStr = getTodayDateString();
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSellModalOpen, setIsSellModalOpen] = useState(false);
+  const [isWeighModalOpen, setIsWeighModalOpen] = useState(false);
   const [currentLot, setCurrentLot] = useState<Lot>({ id: '', name: '', description: '' });
   
-  const [sellDate, setSellDate] = useState(new Date().toISOString().split('T')[0]);
+  const [sellDate, setSellDate] = useState(todayStr);
   const [sellValue, setSellValue] = useState<number>(0);
+
+  // Estados de Pesagem do Lote
+  const [lotWeighDate, setLotWeighDate] = useState(todayStr);
+  const [lotWeighAvgValue, setLotWeighAvgValue] = useState<number>(350);
+  const [lotWeighUnit, setLotWeighUnit] = useState<'kg' | 'arroba'>('kg');
+  const [lotWeighGmd, setLotWeighGmd] = useState<number>(0.8);
+  const [isLotWeighGmdManual, setIsLotWeighGmdManual] = useState(false);
+  const [lotWeighApplyMode, setLotWeighApplyMode] = useState<'uniform' | 'gain_delta'>('uniform');
+
+  const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => e.currentTarget.select();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,28 +66,66 @@ const LotManager: React.FC<LotManagerProps> = ({ lots, animals, onAddLot, onUpda
     setIsSellModalOpen(true);
   };
 
+  const openWeighModal = (lot: Lot) => {
+    setCurrentLot(lot);
+    const lotAnimals = animals.filter(a => a.lotId === lot.id && a.status === AnimalStatus.ACTIVE);
+    const stats = calculateLotWeighingStats(lotAnimals, todayStr);
+    setLotWeighDate(todayStr);
+    setLotWeighAvgValue(stats.avgRecordedWeightKg || 350);
+    setLotWeighUnit('kg');
+    setLotWeighGmd(stats.avgGmd || 0.8);
+    setIsLotWeighGmdManual(false);
+    setLotWeighApplyMode('uniform');
+    setIsWeighModalOpen(true);
+  };
+
   const closeModal = () => {
     setIsModalOpen(false);
     setIsSellModalOpen(false);
+    setIsWeighModalOpen(false);
   };
 
   const handleSellSubmit = (e: React.FormEvent) => {
-      e.preventDefault();
-      if (onSellLot && currentLot.id) {
-          onSellLot(currentLot.id, sellDate, sellValue);
-          setIsSellModalOpen(false);
-      }
+    e.preventDefault();
+    if (onSellLot && currentLot.id) {
+      onSellLot(currentLot.id, sellDate, sellValue);
+      setIsSellModalOpen(false);
+    }
+  };
+
+  const handleWeighSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!currentLot.id) return;
+
+    const lotAnimals = animals.filter(a => a.lotId === currentLot.id && a.status === AnimalStatus.ACTIVE);
+    if (lotAnimals.length === 0) {
+      alert("Este lote não possui animais ativos para pesagem.");
+      return;
+    }
+
+    const finalAvgWeightKg = lotWeighUnit === 'kg' ? lotWeighAvgValue : lotWeighAvgValue * 30;
+    const stats = calculateLotWeighingStats(lotAnimals, todayStr);
+    const autoGmd = calculateGMDFromWeighing(stats.avgRecordedWeightKg, finalAvgWeightKg, stats.mostRecentWeighingDate, lotWeighDate).gmd;
+    const finalGmd = isLotWeighGmdManual ? lotWeighGmd : autoGmd;
+
+    if (onBatchWeighLot) {
+      onBatchWeighLot(currentLot.id, lotWeighDate, finalAvgWeightKg, finalGmd, lotWeighApplyMode);
+    }
+    setIsWeighModalOpen(false);
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 font-sans">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
-            <Layers className="text-blue-600" /> Gestão de Lotes
-        </h2>
+        <div>
+          <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2.5">
+            <Layers className="text-emerald-700" /> Gestão de Lotes de Manejo
+          </h2>
+          <p className="text-xs text-slate-500">Acompanhamento do peso médio, GMD diário e peso previsto por lote</p>
+        </div>
         <button 
           onClick={() => openModal()}
-          className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 shadow-sm transition-colors"
+          className="bg-emerald-700 hover:bg-emerald-800 text-white px-4.5 py-2.5 rounded-xl flex items-center gap-2 shadow-xs transition-all font-bold text-xs cursor-pointer border border-emerald-800"
         >
           <Plus size={18} /> Novo Lote
         </button>
@@ -69,104 +133,379 @@ const LotManager: React.FC<LotManagerProps> = ({ lots, animals, onAddLot, onUpda
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {lots.map((lot, idx) => {
-          const lotAnimals = animals.filter(a => a.lotId === lot.id && a.status !== 'Vendido' && a.status !== 'Morto');
-          const headCount = lotAnimals.length;
-          const avgWeight = headCount > 0 
-            ? lotAnimals.reduce((sum, a) => sum + a.weightKg, 0) / headCount 
-            : 0;
+          const lotAnimals = animals.filter(a => a.lotId === lot.id && a.status === AnimalStatus.ACTIVE);
+          const stats = calculateLotWeighingStats(lotAnimals, todayStr);
 
           return (
-            <div key={`${lot.id}-${idx}`} className="bg-white p-8 rounded-[2rem] shadow-sm border border-gray-100 hover:shadow-xl transition-all relative group">
-              <div className="flex justify-between items-start mb-4">
-                <h3 className="text-xl font-black text-gray-800 uppercase tracking-tighter">{lot.name}</h3>
-                <div className="flex gap-2">
-                    <button onClick={() => openModal(lot)} className="text-gray-400 hover:text-blue-600 p-2 rounded-full hover:bg-blue-50 transition-all"><Edit2 size={18} /></button>
-                    {headCount > 0 && (
-                        <button onClick={() => openSellModal(lot)} className="text-gray-400 hover:text-green-600 p-2 rounded-full hover:bg-green-50 transition-all" title="Vender Lote Inteiro"><DollarSign size={18} /></button>
+            <div key={`${lot.id}-${idx}`} className="agro-card p-6 flex flex-col justify-between relative group hover:border-emerald-200 transition-all">
+              <div>
+                <div className="flex justify-between items-start mb-2">
+                  <h3 className="text-lg font-black text-slate-900 uppercase tracking-tight">{lot.name}</h3>
+                  <div className="flex items-center gap-1">
+                    <button 
+                      onClick={() => openWeighModal(lot)} 
+                      className="text-emerald-700 hover:bg-emerald-50 p-2 rounded-xl transition-all" 
+                      title="Pesar Lote Completo"
+                    >
+                      <Scale size={18} />
+                    </button>
+                    <button 
+                      onClick={() => openModal(lot)} 
+                      className="text-slate-400 hover:text-blue-600 p-2 rounded-xl hover:bg-blue-50 transition-all"
+                      title="Editar Lote"
+                    >
+                      <Edit2 size={18} />
+                    </button>
+                    {stats.headCount > 0 && (
+                      <button 
+                        onClick={() => openSellModal(lot)} 
+                        className="text-slate-400 hover:text-green-600 p-2 rounded-xl hover:bg-green-50 transition-all" 
+                        title="Vender Lote Inteiro"
+                      >
+                        <DollarSign size={18} />
+                      </button>
                     )}
+                  </div>
                 </div>
-              </div>
-              <p className="text-xs text-gray-400 font-medium mb-6 h-10 line-clamp-2 italic uppercase tracking-widest">{lot.description || 'Sem descrição.'}</p>
-              
-              <div className="grid grid-cols-2 gap-4 border-t border-gray-50 pt-6">
-                <div className="flex items-center gap-3">
-                    <div className="p-2 bg-blue-50 text-blue-600 rounded-xl"><Users size={20} /></div>
-                    <div>
-                        <p className="text-2xl font-black text-gray-800 tracking-tighter">{headCount}</p>
-                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Cabeças</p>
-                    </div>
-                </div>
-                <div className="flex items-center gap-3">
-                    <div className="p-2 bg-green-50 text-green-600 rounded-xl"><Scale size={20} /></div>
-                    <div>
-                        <p className="text-2xl font-black text-gray-800 tracking-tighter">{avgWeight.toFixed(1)} <span className="text-[10px]">kg</span></p>
-                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Peso Médio</p>
-                    </div>
+
+                <p className="text-xs text-slate-400 font-medium mb-5 line-clamp-2">
+                  {lot.description || 'Sem descrição cadastrada.'}
+                </p>
+
+                {/* Métricas do Lote */}
+                <div className="grid grid-cols-2 gap-3 pt-3 border-t border-slate-100">
+                  <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Cabeças</p>
+                    <p className="text-xl font-black text-slate-900 font-nums mt-0.5">{stats.headCount}</p>
+                  </div>
+
+                  <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Média Balança</p>
+                    <p className="text-xl font-black text-slate-900 font-nums mt-0.5">
+                      {stats.avgRecordedArroba.toFixed(1)} <span className="text-xs font-normal text-slate-400">@</span>
+                    </p>
+                    <p className="text-[10px] text-slate-400 font-nums">{stats.avgRecordedWeightKg.toFixed(1)} kg</p>
+                  </div>
+
+                  <div className="p-3 bg-emerald-50/70 rounded-xl border border-emerald-100">
+                    <p className="text-[10px] font-bold text-emerald-800 uppercase tracking-wider">GMD Médio</p>
+                    <p className="text-base font-black text-emerald-800 font-nums mt-0.5">
+                      +{stats.avgGmd.toFixed(3)} <span className="text-[10px] font-normal text-emerald-600">kg/d</span>
+                    </p>
+                  </div>
+
+                  <div className="p-3 bg-emerald-100/60 rounded-xl border border-emerald-200/70">
+                    <p className="text-[10px] font-black text-emerald-900 uppercase tracking-wider flex items-center gap-1">
+                      <Sparkles size={10} className="text-emerald-700" /> Previsto Hoje
+                    </p>
+                    <p className="text-base font-black text-emerald-950 font-nums mt-0.5">
+                      {stats.avgPredictedArroba.toFixed(1)} <span className="text-[10px] font-bold text-emerald-700">@</span>
+                    </p>
+                    <p className="text-[10px] text-emerald-700 font-bold font-nums">{stats.avgPredictedWeightKg.toFixed(1)} kg</p>
+                  </div>
                 </div>
               </div>
 
-              {lot.dailyCost ? (
-                  <div className="mt-6 bg-gray-50 p-3 rounded-2xl border border-gray-100 flex justify-between items-center">
-                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Diária Lote:</span>
-                    <span className="text-sm font-black text-blue-600">R$ {lot.dailyCost.toFixed(2)}</span>
-                  </div>
-              ) : (
-                  <div className="mt-6 text-center">
-                    <span className="text-[9px] font-bold text-gray-300 uppercase tracking-widest italic">Usando diária padrão da fazenda</span>
-                  </div>
-              )}
+              <div className="mt-5 pt-4 border-t border-slate-100 flex items-center justify-between gap-2">
+                <button
+                  type="button"
+                  onClick={() => openWeighModal(lot)}
+                  className="w-full bg-emerald-700 hover:bg-emerald-800 text-white py-2.5 px-3 rounded-xl font-extrabold text-xs flex items-center justify-center gap-1.5 transition-all shadow-xs"
+                >
+                  <Scale size={15} /> Pesar Lote Completo
+                </button>
+              </div>
             </div>
           );
         })}
       </div>
 
+      {/* MODAL CONFIGURAÇÃO DO LOTE */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
-          <div className="bg-white rounded-[2rem] shadow-xl w-full max-w-md overflow-hidden scale-in">
-            <div className="px-8 py-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-              <h3 className="text-lg font-black text-gray-800 uppercase tracking-widest">Configuração do Lote</h3>
-              <button onClick={closeModal} className="text-gray-400 hover:text-gray-600 p-2"><X size={24} /></button>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden border border-slate-100">
+            <div className="px-7 py-5 bg-slate-900 text-white flex justify-between items-center">
+              <h3 className="text-base font-black uppercase tracking-tight">Configuração do Lote</h3>
+              <button onClick={closeModal} className="hover:bg-white/10 p-2 rounded-full"><X size={20} /></button>
             </div>
-            <form onSubmit={handleSubmit} className="p-8 space-y-6">
-              <div>
-                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 mb-1">Nome do Lote</label>
-                <input type="text" required className="w-full border border-gray-200 rounded-2xl px-5 py-3 font-bold bg-gray-50 focus:bg-white outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-                  value={currentLot.name} onChange={e => setCurrentLot({...currentLot, name: e.target.value})} placeholder="Ex: Engorda 2024" />
+            <form onSubmit={handleSubmit} className="p-7 space-y-5">
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-extrabold text-slate-700 uppercase tracking-wider">Nome do Lote</label>
+                <input 
+                  type="text" 
+                  required 
+                  className="w-full border border-slate-200 rounded-xl px-4 py-2.5 font-bold text-slate-900 bg-slate-50 focus:bg-white outline-none focus:ring-2 focus:ring-emerald-500 text-sm"
+                  value={currentLot.name} 
+                  onChange={e => setCurrentLot({...currentLot, name: e.target.value})} 
+                  placeholder="Ex: Confinamento 01" 
+                />
               </div>
-              <div>
-                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 mb-1">Descrição</label>
-                <textarea className="w-full border border-gray-200 rounded-2xl px-5 py-3 font-medium bg-gray-50 focus:bg-white outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-                  value={currentLot.description} onChange={e => setCurrentLot({...currentLot, description: e.target.value})} rows={3} />
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-extrabold text-slate-700 uppercase tracking-wider">Descrição / Observações</label>
+                <textarea 
+                  className="w-full border border-slate-200 rounded-xl px-4 py-2.5 font-medium text-slate-800 bg-slate-50 focus:bg-white outline-none focus:ring-2 focus:ring-emerald-500 text-xs"
+                  value={currentLot.description} 
+                  onChange={e => setCurrentLot({...currentLot, description: e.target.value})} 
+                  rows={3} 
+                  placeholder="Ex: Pasto com braquiária, suplementação mineral..."
+                />
               </div>
-              <button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-xl shadow-blue-100">Salvar Lote</button>
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-extrabold text-slate-700 uppercase tracking-wider">Custo Diário Específico (R$/cab/dia)</label>
+                <input 
+                  type="number" 
+                  step="0.01"
+                  onFocus={handleFocus}
+                  className="w-full border border-slate-200 rounded-xl px-4 py-2.5 font-bold text-slate-900 bg-slate-50 focus:bg-white outline-none focus:ring-2 focus:ring-emerald-500 text-sm font-nums"
+                  value={currentLot.dailyCost || ''} 
+                  onChange={e => setCurrentLot({...currentLot, dailyCost: Number(e.target.value)})} 
+                  placeholder="Deixe em branco para usar o padrão da fazenda"
+                />
+              </div>
+              <div className="flex gap-3 pt-2">
+                <button type="button" onClick={closeModal} className="flex-1 py-3 text-slate-500 font-bold text-xs hover:bg-slate-100 rounded-xl uppercase">Cancelar</button>
+                <button type="submit" className="flex-2 py-3 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl font-extrabold text-xs uppercase tracking-wider shadow-md">Salvar Lote</button>
+              </div>
             </form>
           </div>
         </div>
       )}
 
-      {isSellModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
-          <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-md overflow-hidden scale-in border-4 border-green-50">
-            <div className="px-8 py-6 border-b border-gray-100 flex justify-between items-center bg-green-600 text-white">
-              <h3 className="text-lg font-black uppercase tracking-tight">Liquidacion de Lote</h3>
-              <button onClick={closeModal} className="text-white hover:bg-white/10 rounded-full p-1"><X size={24} /></button>
-            </div>
-            <form onSubmit={handleSellSubmit} className="p-10 space-y-8">
-              <div>
-                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 mb-1">Data da Venda</label>
-                <input type="date" required className="w-full border border-gray-200 rounded-2xl px-5 py-3 font-bold bg-gray-50 focus:bg-white outline-none"
-                  value={sellDate} onChange={e => setSellDate(e.target.value)} />
-              </div>
-              <div>
-                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 mb-1">Valor Total Bruto (R$)</label>
-                <div className="relative">
-                  <span className="absolute left-5 top-1/2 -translate-y-1/2 text-green-600 font-black text-xl">R$</span>
-                  <input type="number" required className="w-full border border-gray-200 rounded-[2rem] pl-16 pr-6 py-5 font-black text-3xl text-green-900 bg-gray-50 focus:bg-white focus:ring-4 focus:ring-green-100 outline-none"
-                    value={sellValue || ''} onChange={e => setSellValue(Number(e.target.value))} placeholder="0,00" />
+      {/* MODAL PESAGEM DO LOTE */}
+      {isWeighModalOpen && currentLot.id && (() => {
+        const lotAnimals = animals.filter(a => a.lotId === currentLot.id && a.status === AnimalStatus.ACTIVE);
+        const stats = calculateLotWeighingStats(lotAnimals, todayStr);
+        const inputAvgKg = lotWeighUnit === 'kg' ? Number(lotWeighAvgValue || 0) : Number(lotWeighAvgValue || 0) * 30;
+        const autoCalc = calculateGMDFromWeighing(stats.avgRecordedWeightKg, inputAvgKg, stats.mostRecentWeighingDate, lotWeighDate);
+        const activeGmd = isLotWeighGmdManual ? lotWeighGmd : autoCalc.gmd;
+        const daysFromWeighingToToday = Math.max(0, getDaysDifference(lotWeighDate, todayStr));
+        const futurePredictedAvgKg = inputAvgKg + (daysFromWeighingToToday * activeGmd);
+
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 backdrop-blur-xs p-4 overflow-y-auto">
+            <div className="bg-white rounded-3xl shadow-2xl w-full max-w-xl overflow-hidden border border-slate-100 my-8">
+              <div className="px-7 py-5 bg-gradient-to-r from-emerald-800 to-slate-900 text-white flex justify-between items-center">
+                <div className="flex items-center gap-3">
+                  <div className="p-2.5 rounded-xl bg-white/10 text-emerald-300">
+                    <Scale size={22} />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-black uppercase tracking-tight">Pesagem do Lote: {currentLot.name}</h3>
+                    <p className="text-xs text-emerald-200 font-medium">{stats.headCount} animais no lote</p>
+                  </div>
                 </div>
-                <p className="mt-4 text-[10px] text-gray-400 font-bold uppercase tracking-widest text-center px-4">O lucro será calculado automaticamente subtraindo o valor de compra e a estadia total do lote.</p>
+                <button onClick={closeModal} className="hover:bg-white/10 p-2 rounded-full"><X size={20} /></button>
               </div>
-              <button type="submit" className="w-full bg-green-600 hover:bg-green-700 text-white py-5 rounded-[2rem] font-black text-xs uppercase tracking-[0.2em] shadow-2xl shadow-green-200">Confirmar Liquidação</button>
+
+              <form onSubmit={handleWeighSubmit} className="p-7 space-y-5">
+                {/* Resumo Atual */}
+                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200/70 grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  <div>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Média Anterior</p>
+                    <p className="text-base font-black text-slate-800 font-nums mt-0.5">{stats.avgRecordedWeightKg.toFixed(1)} kg</p>
+                    <span className="text-xs font-bold text-slate-500 font-nums">({stats.avgRecordedArroba.toFixed(1)} @)</span>
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Última Data Base</p>
+                    <p className="text-xs font-black text-slate-800 mt-1">
+                      {stats.mostRecentWeighingDate ? new Date(stats.mostRecentWeighingDate + 'T00:00:00').toLocaleDateString('pt-BR') : 'Entrada'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-bold text-emerald-700 uppercase tracking-wider">GMD Anterior</p>
+                    <p className="text-sm font-black text-emerald-800 font-nums mt-0.5">+{stats.avgGmd.toFixed(3)} kg/d</p>
+                  </div>
+                </div>
+
+                {/* Nova Pesagem */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-extrabold text-slate-700 uppercase tracking-wider">Data da Pesagem</label>
+                    <input 
+                      type="date" 
+                      className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 font-bold text-slate-800 bg-slate-50 focus:bg-white outline-none focus:ring-2 focus:ring-emerald-500 text-sm" 
+                      value={lotWeighDate} 
+                      onChange={e => setLotWeighDate(e.target.value)} 
+                      required 
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <div className="flex justify-between items-center">
+                      <label className="text-[11px] font-extrabold text-slate-700 uppercase tracking-wider">Novo Peso Médio</label>
+                      <div className="flex bg-slate-200 rounded-lg p-0.5">
+                        <button 
+                          type="button" 
+                          onClick={() => {
+                            if (lotWeighUnit === 'arroba') {
+                              setLotWeighAvgValue(Number((lotWeighAvgValue * 30).toFixed(1)));
+                              setLotWeighUnit('kg');
+                            }
+                          }} 
+                          className={`px-2 py-0.5 text-[9px] font-black rounded ${lotWeighUnit === 'kg' ? 'bg-white text-emerald-700 shadow-2xs' : 'text-slate-500'}`}
+                        >
+                          KG
+                        </button>
+                        <button 
+                          type="button" 
+                          onClick={() => {
+                            if (lotWeighUnit === 'kg') {
+                              setLotWeighAvgValue(Number((lotWeighAvgValue / 30).toFixed(2)));
+                              setLotWeighUnit('arroba');
+                            }
+                          }} 
+                          className={`px-2 py-0.5 text-[9px] font-black rounded ${lotWeighUnit === 'arroba' ? 'bg-white text-emerald-700 shadow-2xs' : 'text-slate-500'}`}
+                        >
+                          @
+                        </button>
+                      </div>
+                    </div>
+                    <div className="relative">
+                      <input 
+                        type="number" 
+                        step="0.1" 
+                        onFocus={handleFocus} 
+                        className="w-full border border-slate-200 rounded-xl px-4 py-2.5 font-black text-xl text-slate-900 bg-slate-50 focus:bg-white outline-none focus:ring-2 focus:ring-emerald-500 pr-12 font-nums" 
+                        value={lotWeighAvgValue || ''} 
+                        onChange={e => setLotWeighAvgValue(Number(e.target.value))} 
+                        required 
+                      />
+                      <span className="absolute right-3.5 top-1/2 -translate-y-1/2 font-black text-xs text-slate-400 uppercase font-mono">
+                        {lotWeighUnit === 'kg' ? 'KG' : '@'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* GMD Realizado e Projeção */}
+                <div className="bg-gradient-to-br from-emerald-50 to-emerald-100/50 p-4.5 rounded-2xl border border-emerald-200/80 space-y-3.5">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-[10px] font-extrabold text-emerald-900 uppercase tracking-wider">GMD Realizado do Lote</p>
+                      <p className="text-xs text-emerald-700 font-medium">
+                        {autoCalc.days} dias · Variação: {autoCalc.weightDiffKg >= 0 ? `+${autoCalc.weightDiffKg.toFixed(1)}` : autoCalc.weightDiffKg.toFixed(1)} kg/cab
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-xl font-black text-emerald-900 font-nums">
+                        {autoCalc.gmd >= 0 ? `+${autoCalc.gmd.toFixed(3)}` : autoCalc.gmd.toFixed(3)}
+                      </span>
+                      <span className="text-xs font-bold text-emerald-700 block">kg/dia/cab</span>
+                    </div>
+                  </div>
+
+                  <div className="pt-2 border-t border-emerald-200/60 flex items-center justify-between gap-3">
+                    <div className="flex-1">
+                      <label className="text-[10px] font-bold text-slate-600 uppercase tracking-wider block">GMD Base Para o Peso Previsto</label>
+                      <p className="text-[10px] text-slate-500">Adicionado diariamente para cada animal</p>
+                    </div>
+                    <div className="w-28 relative">
+                      <input 
+                        type="number" 
+                        step="0.001" 
+                        onFocus={handleFocus}
+                        className="w-full border border-emerald-300 rounded-lg px-2.5 py-1.5 font-black text-sm text-emerald-950 bg-white text-right font-nums focus:ring-2 focus:ring-emerald-500 outline-none"
+                        value={isLotWeighGmdManual ? lotWeighGmd : autoCalc.gmd}
+                        onChange={e => {
+                          setIsLotWeighGmdManual(true);
+                          setLotWeighGmd(Number(e.target.value));
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="pt-2 border-t border-emerald-200/60 space-y-1.5">
+                    <label className="text-[10px] font-extrabold text-slate-700 uppercase tracking-wider block">Modo de Aplicação</label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button 
+                        type="button"
+                        onClick={() => setLotWeighApplyMode('uniform')}
+                        className={`p-2 rounded-xl text-left border transition-all ${
+                          lotWeighApplyMode === 'uniform' 
+                            ? 'bg-white border-emerald-500 shadow-xs' 
+                            : 'bg-emerald-50/50 border-emerald-200 text-slate-600'
+                        }`}
+                      >
+                        <p className="text-[11px] font-bold text-slate-800">Peso Uniforme</p>
+                        <p className="text-[9px] text-slate-500 leading-tight">Define {inputAvgKg.toFixed(1)} kg para todos</p>
+                      </button>
+                      
+                      <button 
+                        type="button"
+                        onClick={() => setLotWeighApplyMode('gain_delta')}
+                        className={`p-2 rounded-xl text-left border transition-all ${
+                          lotWeighApplyMode === 'gain_delta' 
+                            ? 'bg-white border-emerald-500 shadow-xs' 
+                            : 'bg-emerald-50/50 border-emerald-200 text-slate-600'
+                        }`}
+                      >
+                        <p className="text-[11px] font-bold text-slate-800">Ganho Proporcional</p>
+                        <p className="text-[9px] text-slate-500 leading-tight">Soma {autoCalc.weightDiffKg >= 0 ? `+${autoCalc.weightDiffKg.toFixed(1)}` : autoCalc.weightDiffKg.toFixed(1)} kg ao peso atual</p>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Prévia Peso Previsto */}
+                <div className="p-4 bg-slate-900 text-white rounded-2xl flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <Sparkles className="text-emerald-400 shrink-0" size={18} />
+                    <div>
+                      <p className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider">Novo Peso Previsto Médio</p>
+                      <p className="text-xs text-slate-300 font-medium">Projeção diária por cabeça</p>
+                    </div>
+                  </div>
+                  <div className="text-right font-nums">
+                    <span className="text-lg font-black text-white">{futurePredictedAvgKg.toFixed(1)} kg</span>
+                    <span className="text-xs font-bold text-emerald-300 block">({(futurePredictedAvgKg / 30).toFixed(1)} @)</span>
+                  </div>
+                </div>
+
+                <div className="flex gap-3 pt-2">
+                  <button type="button" onClick={closeModal} className="flex-1 py-3 text-slate-500 font-bold text-xs hover:bg-slate-100 rounded-xl uppercase">Cancelar</button>
+                  <button type="submit" className="flex-2 py-3 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl font-extrabold text-xs uppercase tracking-wider shadow-md">Confirmar Pesagem do Lote</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* MODAL LIQUIDAÇÃO / VENDA */}
+      {isSellModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden border border-slate-100">
+            <div className="px-7 py-5 bg-green-700 text-white flex justify-between items-center">
+              <h3 className="text-base font-black uppercase tracking-tight">Liquidação de Lote</h3>
+              <button onClick={closeModal} className="hover:bg-white/10 p-2 rounded-full"><X size={20} /></button>
+            </div>
+            <form onSubmit={handleSellSubmit} className="p-7 space-y-5">
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-extrabold text-slate-700 uppercase tracking-wider">Data da Venda</label>
+                <input 
+                  type="date" 
+                  required 
+                  className="w-full border border-slate-200 rounded-xl px-4 py-2.5 font-bold bg-slate-50 focus:bg-white outline-none text-sm"
+                  value={sellDate} 
+                  onChange={e => setSellDate(e.target.value)} 
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-extrabold text-slate-700 uppercase tracking-wider">Valor Total Bruto (R$)</label>
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-green-700 font-black text-lg">R$</span>
+                  <input 
+                    type="number" 
+                    required 
+                    onFocus={handleFocus}
+                    className="w-full border border-slate-200 rounded-xl pl-12 pr-4 py-3 font-black text-2xl text-green-900 bg-slate-50 focus:bg-white outline-none font-nums"
+                    value={sellValue || ''} 
+                    onChange={e => setSellValue(Number(e.target.value))} 
+                    placeholder="0,00" 
+                  />
+                </div>
+              </div>
+              <button type="submit" className="w-full bg-green-700 hover:bg-green-800 text-white py-3.5 rounded-xl font-black text-xs uppercase tracking-wider shadow-md">Confirmar Liquidação</button>
             </form>
           </div>
         </div>

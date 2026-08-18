@@ -16,8 +16,10 @@ import {
   BarChart3,
   Calendar,
   ChevronRight,
-  HeartPulse
+  HeartPulse,
+  Sparkles
 } from 'lucide-react';
+import { calculateLotWeighingStats, getTodayDateString } from '../services/weightService';
 import { 
   BarChart, 
   Bar, 
@@ -51,14 +53,11 @@ const Dashboard: React.FC<DashboardProps> = ({ animals, transactions, inventory,
   
   const males = activeAnimals.filter(a => a.gender === AnimalGender.MALE).length;
   const females = activeAnimals.filter(a => a.gender === AnimalGender.FEMALE).length;
-  const avgWeightKg = activeAnimals.length > 0 
-    ? activeAnimals.reduce((acc, a) => acc + a.weightKg, 0) / activeAnimals.length 
-    : 0;
-
-  const animalsWithHistory = activeAnimals.filter(a => a.history?.length > 0);
-  const avgGmd = animalsWithHistory.length > 0 
-    ? animalsWithHistory.reduce((acc, a) => acc + (a.history[a.history.length-1].gmd || 0), 0) / animalsWithHistory.length 
-    : 0;
+  
+  const todayStr = getTodayDateString();
+  const herdStats = calculateLotWeighingStats(activeAnimals, todayStr);
+  const avgWeightKg = herdStats.avgRecordedWeightKg;
+  const avgGmd = herdStats.avgGmd;
 
   const totalBalance = transactions.reduce((acc, t) => 
     t.type === TransactionType.INCOME ? acc + t.amount : acc - t.amount, 0
@@ -171,22 +170,30 @@ const Dashboard: React.FC<DashboardProps> = ({ animals, transactions, inventory,
             </button>
           </div>
           
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-5">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3.5">
             <div className="p-3.5 rounded-xl bg-slate-50/80 border border-slate-100">
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Ativo</p>
               <p className="text-2xl font-black text-slate-900 font-nums mt-0.5">{totalAnimals} <span className="text-xs font-normal text-slate-400">cab.</span></p>
             </div>
             
             <div className="p-3.5 rounded-xl bg-slate-50/80 border border-slate-100">
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Peso Médio</p>
-              <p className="text-2xl font-black text-slate-900 font-nums mt-0.5">{(avgWeightKg / 30).toFixed(1)} <span className="text-xs font-normal text-slate-400">@</span></p>
-              <p className="text-[11px] text-slate-500 font-medium font-nums">{avgWeightKg.toFixed(1)} kg/cab</p>
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Média Balança</p>
+              <p className="text-2xl font-black text-slate-900 font-nums mt-0.5">{herdStats.avgRecordedArroba.toFixed(1)} <span className="text-xs font-normal text-slate-400">@</span></p>
+              <p className="text-[11px] text-slate-500 font-medium font-nums">{herdStats.avgRecordedWeightKg.toFixed(1)} kg/cab</p>
             </div>
 
             <div className="p-3.5 rounded-xl bg-emerald-50/60 border border-emerald-100">
               <p className="text-[10px] font-bold text-emerald-700 uppercase tracking-wider">GMD Médio</p>
-              <p className="text-2xl font-black text-emerald-700 font-nums mt-0.5">{avgGmd.toFixed(3)} <span className="text-xs font-normal text-emerald-600">kg/dia</span></p>
+              <p className="text-2xl font-black text-emerald-700 font-nums mt-0.5">+{herdStats.avgGmd.toFixed(3)} <span className="text-xs font-normal text-emerald-600">kg/d</span></p>
               <p className="text-[11px] text-emerald-600 font-medium">Ganho Médio Diário</p>
+            </div>
+
+            <div className="p-3.5 rounded-xl bg-gradient-to-br from-emerald-50 to-white border border-emerald-200">
+              <p className="text-[10px] font-extrabold text-emerald-800 uppercase tracking-wider flex items-center gap-1">
+                <Sparkles size={11} className="text-emerald-600" /> Peso Previsto
+              </p>
+              <p className="text-2xl font-black text-emerald-900 font-nums mt-0.5">{herdStats.avgPredictedArroba.toFixed(1)} <span className="text-xs font-bold text-emerald-700">@</span></p>
+              <p className="text-[11px] text-emerald-700 font-bold font-nums">{herdStats.avgPredictedWeightKg.toFixed(1)} kg hoje</p>
             </div>
 
             <div className="p-3.5 rounded-xl bg-slate-50/80 border border-slate-100">
