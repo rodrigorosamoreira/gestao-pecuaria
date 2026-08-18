@@ -27,6 +27,7 @@ import {
   Sparkles
 } from 'lucide-react';
 import { User, Animal, InventoryItem, HealthRecord, HealthSeverity, Task, Farm } from '../types';
+import { APP_LOGO_DATA_URI } from '../src/assets/logoData';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -147,7 +148,12 @@ const Layout: React.FC<LayoutProps> = ({
           <div className="flex items-center justify-between mb-5">
             <div className="flex items-center space-x-3">
               <div className="w-11 h-11 rounded-xl bg-white p-0.5 flex items-center justify-center shadow-md shadow-emerald-950/50 ring-1 ring-emerald-400/40 overflow-hidden shrink-0">
-                <img src="/logo.png" alt="Gestão Pecuária" className="w-full h-full object-cover rounded-lg" referrerPolicy="no-referrer" />
+                <img 
+                  src={APP_LOGO_DATA_URI} 
+                  alt="Gestão Pecuária" 
+                  className="w-full h-full object-cover rounded-lg" 
+                  referrerPolicy="no-referrer" 
+                />
               </div>
               <div>
                 <span className="text-lg font-extrabold tracking-tight text-white block leading-tight">Gestão Pecuária</span>

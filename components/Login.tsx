@@ -23,6 +23,7 @@ import {
 import { User } from '../types';
 import { supabase } from '../lib/supabase';
 import ranchBg from '../src/assets/images/ranch_login_bg_1786582194800.jpg';
+import { APP_LOGO_DATA_URI } from '../src/assets/logoData';
 
 interface LoginProps {
   onLogin: (user: User) => void;
@@ -124,7 +125,12 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
         {/* Top Header Logo */}
         <div className="relative z-10 flex items-center gap-3.5">
           <div className="w-14 h-14 bg-white p-1 rounded-2xl shadow-xl shadow-emerald-950/60 border border-emerald-400/40 overflow-hidden shrink-0 flex items-center justify-center">
-            <img src="/logo.png" alt="Gestão Pecuária Logo" className="w-full h-full object-cover rounded-xl" referrerPolicy="no-referrer" />
+            <img 
+              src={APP_LOGO_DATA_URI} 
+              alt="Gestão Pecuária Logo" 
+              className="w-full h-full object-cover rounded-xl" 
+              referrerPolicy="no-referrer" 
+            />
           </div>
           <div>
             <span className="text-2xl font-black tracking-tight text-white uppercase block leading-none">
