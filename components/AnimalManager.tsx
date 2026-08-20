@@ -238,12 +238,13 @@ const AnimalManager: React.FC<AnimalManagerProps> = ({
   // Abrir Modal de Pesagem de Lote
   const openLotWeighModal = (lotId: string) => {
     setLotWeighLotId(lotId);
+    const lot = lots.find(l => l.id === lotId);
     const lotAnimals = animals.filter(a => a.lotId === lotId && a.status === AnimalStatus.ACTIVE);
-    const stats = calculateLotWeighingStats(lotAnimals, todayStr);
+    const stats = calculateLotWeighingStats(lotAnimals, todayStr, lot);
     setLotWeighDate(todayStr);
     setLotWeighAvgValue(stats.avgRecordedWeightKg || 350);
     setLotWeighUnit('kg');
-    setLotWeighGmd(stats.avgGmd || 0.8);
+    setLotWeighGmd(lot?.averageGmd ?? stats.avgGmd ?? 0.8);
     setIsLotWeighGmdManual(false);
     setLotWeighApplyMode('uniform');
     setIsLotWeighModalOpen(true);
@@ -254,6 +255,7 @@ const AnimalManager: React.FC<AnimalManagerProps> = ({
     e.preventDefault();
     if (!lotWeighLotId) return;
 
+    const lot = lots.find(l => l.id === lotWeighLotId);
     const lotAnimals = animals.filter(a => a.lotId === lotWeighLotId && a.status === AnimalStatus.ACTIVE);
     if (lotAnimals.length === 0) {
       alert("Este lote não possui animais ativos no pasto para pesagem.");
@@ -261,7 +263,7 @@ const AnimalManager: React.FC<AnimalManagerProps> = ({
     }
 
     const finalAvgWeightKg = lotWeighUnit === 'kg' ? lotWeighAvgValue : lotWeighAvgValue * 30;
-    const stats = calculateLotWeighingStats(lotAnimals, todayStr);
+    const stats = calculateLotWeighingStats(lotAnimals, todayStr, lot);
     const autoGmd = calculateGMDFromWeighing(stats.avgRecordedWeightKg, finalAvgWeightKg, stats.mostRecentWeighingDate, lotWeighDate).gmd;
     const finalGmd = isLotWeighGmdManual ? lotWeighGmd : autoGmd;
 
@@ -302,7 +304,7 @@ const AnimalManager: React.FC<AnimalManagerProps> = ({
   // Renderizador de Linha de Animal com Peso Registrado, GMD e Peso Previsto
   const renderAnimalRow = (animal: Animal) => {
     const lastWeigh = getAnimalLastWeighing(animal);
-    const pred = calculatePredictedWeight(animal, todayStr);
+    const pred = calculatePredictedWeight(animal, todayStr, lots);
 
     return (
       <tr key={animal.id} className="hover:bg-emerald-50/20 transition-colors border-b border-slate-100/80">
@@ -340,14 +342,21 @@ const AnimalManager: React.FC<AnimalManagerProps> = ({
           </div>
         </td>
 
-        {/* GMD Diário */}
+        {/* GMD Diário (Lote ou Individual) */}
         <td className="px-6 py-4">
-          <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-50 border border-emerald-200/60 text-emerald-800">
-            <TrendingUp size={12} className="text-emerald-600" />
-            <span className="text-xs font-black font-nums">
-              {pred.gmd > 0 ? `+${pred.gmd.toFixed(3)}` : pred.gmd.toFixed(3)}
-            </span>
-            <span className="text-[9px] font-bold text-emerald-600 uppercase">kg/d</span>
+          <div className="inline-flex flex-col gap-0.5">
+            <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-50 border border-emerald-200/60 text-emerald-800">
+              <TrendingUp size={12} className="text-emerald-600" />
+              <span className="text-xs font-black font-nums">
+                {pred.gmd > 0 ? `+${pred.gmd.toFixed(3)}` : pred.gmd.toFixed(3)}
+              </span>
+              <span className="text-[9px] font-bold text-emerald-600 uppercase">kg/d</span>
+            </div>
+            {pred.gmdSource === 'lot' && (
+              <span className="text-[9px] font-bold text-emerald-700 px-1">
+                Lote: {pred.lotName || 'Atribuído'}
+              </span>
+            )}
           </div>
         </td>
 
@@ -382,7 +391,7 @@ const AnimalManager: React.FC<AnimalManagerProps> = ({
                   setIndWeightValue(0); 
                   setIsModalIndividualOpen(true); 
                 }} 
-                className="p-2 text-pink-500 hover:bg-pink-50 rounded-xl transition-all" 
+                className="p-2 text-pink-500 hover:bg-pink-50 rounded-xl transition-all cursor-pointer" 
                 title="Registrar Cria (Bezerro)"
               >
                 <Baby size={17} />
@@ -390,35 +399,35 @@ const AnimalManager: React.FC<AnimalManagerProps> = ({
             )}
             <button 
               onClick={() => openWeighModal(animal)} 
-              className="p-2 text-emerald-700 bg-emerald-50 hover:bg-emerald-600 hover:text-white border border-emerald-200/60 rounded-xl transition-all shadow-xs" 
+              className="p-2 text-emerald-700 bg-emerald-50 hover:bg-emerald-600 hover:text-white border border-emerald-200/60 rounded-xl transition-all shadow-xs cursor-pointer" 
               title="Registrar Nova Pesagem e GMD"
             >
               <Scale size={17} />
             </button>
             <button 
               onClick={() => { setCurrentAnimal(animal); setSellWeightValue(animal.weightKg); setSellPriceValue(0); setIsSellModalOpen(true); }} 
-              className="p-2 text-green-700 hover:bg-green-50 rounded-xl transition-all" 
+              className="p-2 text-green-700 hover:bg-green-50 rounded-xl transition-all cursor-pointer" 
               title="Vender Animal"
             >
               <DollarSign size={17} />
             </button>
             <button 
               onClick={() => { setCurrentAnimal(animal); setDeathCause(''); setIsDeathModalOpen(true); }} 
-              className="p-2 text-red-600 hover:bg-red-50 rounded-xl transition-all" 
+              className="p-2 text-red-600 hover:bg-red-50 rounded-xl transition-all cursor-pointer" 
               title="Informar Óbito"
             >
               <Skull size={17} />
             </button>
             <button 
               onClick={() => { setCurrentAnimal(animal); setIndWeightValue(animal.weightKg); setIndInitialGmd(animal.gmd || 0.8); setIsModalIndividualOpen(true); }} 
-              className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all" 
+              className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all cursor-pointer" 
               title="Editar Cadastro"
             >
               <Edit2 size={17} />
             </button>
             <button 
               onClick={() => { if(confirm(`Excluir o animal ${animal.earTag}?`)) onDeleteAnimal(animal.id); }} 
-              className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all" 
+              className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all cursor-pointer" 
               title="Excluir Animal"
             >
               <Trash2 size={17} />
@@ -581,7 +590,7 @@ const AnimalManager: React.FC<AnimalManagerProps> = ({
           const lotName = lot?.name || 'Lote Desconhecido';
           const isOpen = expandedLots[lotId] ?? false;
           
-          const lotStats = calculateLotWeighingStats(animalsInLot, todayStr);
+          const lotStats = calculateLotWeighingStats(animalsInLot, todayStr, lot);
 
           return (
             <div key={lotId} className="bg-white rounded-3xl shadow-xs border border-slate-200/80 overflow-hidden">
@@ -1206,7 +1215,19 @@ const AnimalManager: React.FC<AnimalManagerProps> = ({
                <div className="grid grid-cols-2 gap-6">
                   <div className="space-y-1">
                     <label className="text-[10px] font-black text-slate-400 uppercase ml-1">Lote de Destino (Obrigatório)</label>
-                    <select className="w-full border border-slate-200 rounded-2xl px-5 py-3 font-bold bg-slate-50 outline-none focus:ring-2 focus:ring-emerald-500" value={batchLotId} onChange={e => setBatchLotId(e.target.value)} required>
+                    <select 
+                      className="w-full border border-slate-200 rounded-2xl px-5 py-3 font-bold bg-slate-50 outline-none focus:ring-2 focus:ring-emerald-500" 
+                      value={batchLotId} 
+                      onChange={e => {
+                        const newLotId = e.target.value;
+                        setBatchLotId(newLotId);
+                        const selectedLot = lots.find(l => l.id === newLotId);
+                        if (selectedLot && typeof selectedLot.averageGmd === 'number') {
+                          setBatchInitialGmd(selectedLot.averageGmd);
+                        }
+                      }} 
+                      required
+                    >
                        <option value="">Selecione um lote...</option>
                        {lots.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
                     </select>

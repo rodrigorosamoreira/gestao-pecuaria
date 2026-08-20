@@ -1,6 +1,10 @@
 import React, { useState } from 'react';
-import { Lot, Animal, AnimalStatus } from '../types';
-import { Layers, Plus, Edit2, Users, Scale, DollarSign, X, TrendingUp, Sparkles, Calendar } from 'lucide-react';
+import { Lot, Animal, AnimalStatus, LotWeighingRecord } from '../types';
+import { 
+  Layers, Plus, Edit2, Users, Scale, DollarSign, X, 
+  TrendingUp, Sparkles, Calendar, History, CheckCircle2, 
+  Info, ArrowRight, ShieldCheck, Tag
+} from 'lucide-react';
 import { 
   getTodayDateString, 
   calculateLotWeighingStats, 
@@ -22,7 +26,7 @@ const LotManager: React.FC<LotManagerProps> = ({
   animals, 
   onAddLot, 
   onUpdateLot, 
-  onSellLot,
+  onSellLot, 
   onBatchWeighLot 
 }) => {
   const todayStr = getTodayDateString();
@@ -30,7 +34,8 @@ const LotManager: React.FC<LotManagerProps> = ({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSellModalOpen, setIsSellModalOpen] = useState(false);
   const [isWeighModalOpen, setIsWeighModalOpen] = useState(false);
-  const [currentLot, setCurrentLot] = useState<Lot>({ id: '', name: '', description: '' });
+  const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
+  const [currentLot, setCurrentLot] = useState<Lot>({ id: '', name: '', description: '', averageGmd: 0.8 });
   
   const [sellDate, setSellDate] = useState(todayStr);
   const [sellValue, setSellValue] = useState<number>(0);
@@ -47,16 +52,29 @@ const LotManager: React.FC<LotManagerProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const gmdValue = typeof currentLot.averageGmd === 'number' && !isNaN(currentLot.averageGmd) 
+      ? Number(currentLot.averageGmd) 
+      : 0.8;
+      
+    const lotToSave: Lot = {
+      ...currentLot,
+      averageGmd: gmdValue
+    };
+
     if (currentLot.id) {
-      onUpdateLot(currentLot);
+      onUpdateLot(lotToSave);
     } else {
-      onAddLot({ ...currentLot, id: `${Date.now()}-${Math.random().toString(36).substring(2, 7)}` });
+      onAddLot({ 
+        ...lotToSave, 
+        id: `${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+        history: []
+      });
     }
     closeModal();
   };
 
   const openModal = (lot?: Lot) => {
-    setCurrentLot(lot || { id: '', name: '', description: '' });
+    setCurrentLot(lot ? { ...lot, averageGmd: lot.averageGmd ?? 0.8 } : { id: '', name: '', description: '', averageGmd: 0.8 });
     setIsModalOpen(true);
   };
 
@@ -69,20 +87,26 @@ const LotManager: React.FC<LotManagerProps> = ({
   const openWeighModal = (lot: Lot) => {
     setCurrentLot(lot);
     const lotAnimals = animals.filter(a => a.lotId === lot.id && a.status === AnimalStatus.ACTIVE);
-    const stats = calculateLotWeighingStats(lotAnimals, todayStr);
+    const stats = calculateLotWeighingStats(lotAnimals, todayStr, lot);
     setLotWeighDate(todayStr);
     setLotWeighAvgValue(stats.avgRecordedWeightKg || 350);
     setLotWeighUnit('kg');
-    setLotWeighGmd(stats.avgGmd || 0.8);
+    setLotWeighGmd(lot.averageGmd ?? stats.avgGmd ?? 0.8);
     setIsLotWeighGmdManual(false);
     setLotWeighApplyMode('uniform');
     setIsWeighModalOpen(true);
+  };
+
+  const openHistoryModal = (lot: Lot) => {
+    setCurrentLot(lot);
+    setIsHistoryModalOpen(true);
   };
 
   const closeModal = () => {
     setIsModalOpen(false);
     setIsSellModalOpen(false);
     setIsWeighModalOpen(false);
+    setIsHistoryModalOpen(false);
   };
 
   const handleSellSubmit = (e: React.FormEvent) => {
@@ -104,7 +128,7 @@ const LotManager: React.FC<LotManagerProps> = ({
     }
 
     const finalAvgWeightKg = lotWeighUnit === 'kg' ? lotWeighAvgValue : lotWeighAvgValue * 30;
-    const stats = calculateLotWeighingStats(lotAnimals, todayStr);
+    const stats = calculateLotWeighingStats(lotAnimals, todayStr, currentLot);
     const autoGmd = calculateGMDFromWeighing(stats.avgRecordedWeightKg, finalAvgWeightKg, stats.mostRecentWeighingDate, lotWeighDate).gmd;
     const finalGmd = isLotWeighGmdManual ? lotWeighGmd : autoGmd;
 
@@ -121,7 +145,9 @@ const LotManager: React.FC<LotManagerProps> = ({
           <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2.5">
             <Layers className="text-emerald-700" /> Gestão de Lotes de Manejo
           </h2>
-          <p className="text-xs text-slate-500">Acompanhamento do peso médio, GMD diário e peso previsto por lote</p>
+          <p className="text-xs text-slate-500">
+            Cada lote possui seu próprio <strong>GMD médio guardado separadamente</strong>, projetando o <strong>peso previsto</strong> dos animais em tempo real.
+          </p>
         </div>
         <button 
           onClick={() => openModal()}
@@ -134,14 +160,32 @@ const LotManager: React.FC<LotManagerProps> = ({
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {lots.map((lot, idx) => {
           const lotAnimals = animals.filter(a => a.lotId === lot.id && a.status === AnimalStatus.ACTIVE);
-          const stats = calculateLotWeighingStats(lotAnimals, todayStr);
+          const stats = calculateLotWeighingStats(lotAnimals, todayStr, lot);
+          const hasWeighHistory = (lot.history && lot.history.length > 0);
+          const daysFromLastWeighing = stats.mostRecentWeighingDate ? getDaysDifference(stats.mostRecentWeighingDate, todayStr) : 0;
 
           return (
-            <div key={`${lot.id}-${idx}`} className="agro-card p-6 flex flex-col justify-between relative group hover:border-emerald-200 transition-all">
+            <div key={`${lot.id}-${idx}`} className="agro-card p-6 flex flex-col justify-between relative group hover:border-emerald-300 transition-all shadow-xs">
               <div>
                 <div className="flex justify-between items-start mb-2">
-                  <h3 className="text-lg font-black text-slate-900 uppercase tracking-tight">{lot.name}</h3>
+                  <div>
+                    <h3 className="text-lg font-black text-slate-900 uppercase tracking-tight">{lot.name}</h3>
+                    <div className="flex items-center gap-1.5 mt-0.5">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-800 text-[10px] font-black border border-emerald-200">
+                        <TrendingUp size={11} className="text-emerald-700" /> GMD Lote: +{stats.avgGmd.toFixed(3)} kg/d
+                      </span>
+                    </div>
+                  </div>
                   <div className="flex items-center gap-1">
+                    {hasWeighHistory && (
+                      <button 
+                        onClick={() => openHistoryModal(lot)} 
+                        className="text-slate-400 hover:text-emerald-700 hover:bg-emerald-50 p-2 rounded-xl transition-all" 
+                        title="Histórico de Pesagens do Lote"
+                      >
+                        <History size={18} />
+                      </button>
+                    )}
                     <button 
                       onClick={() => openWeighModal(lot)} 
                       className="text-emerald-700 hover:bg-emerald-50 p-2 rounded-xl transition-all" 
@@ -152,7 +196,7 @@ const LotManager: React.FC<LotManagerProps> = ({
                     <button 
                       onClick={() => openModal(lot)} 
                       className="text-slate-400 hover:text-blue-600 p-2 rounded-xl hover:bg-blue-50 transition-all"
-                      title="Editar Lote"
+                      title="Editar Lote e GMD"
                     >
                       <Edit2 size={18} />
                     </button>
@@ -168,40 +212,46 @@ const LotManager: React.FC<LotManagerProps> = ({
                   </div>
                 </div>
 
-                <p className="text-xs text-slate-400 font-medium mb-5 line-clamp-2">
-                  {lot.description || 'Sem descrição cadastrada.'}
+                <p className="text-xs text-slate-500 font-medium mb-4 line-clamp-2">
+                  {lot.description || 'Sem observações cadastradas.'}
                 </p>
 
                 {/* Métricas do Lote */}
                 <div className="grid grid-cols-2 gap-3 pt-3 border-t border-slate-100">
                   <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Cabeças</p>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Cabeças Ativas</p>
                     <p className="text-xl font-black text-slate-900 font-nums mt-0.5">{stats.headCount}</p>
+                    <p className="text-[10px] text-slate-400 font-medium">{stats.headCount === 1 ? '1 animal' : `${stats.headCount} animais`}</p>
                   </div>
 
                   <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Média Balança</p>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Média na Balança</p>
                     <p className="text-xl font-black text-slate-900 font-nums mt-0.5">
                       {stats.avgRecordedArroba.toFixed(1)} <span className="text-xs font-normal text-slate-400">@</span>
                     </p>
                     <p className="text-[10px] text-slate-400 font-nums">{stats.avgRecordedWeightKg.toFixed(1)} kg</p>
                   </div>
 
-                  <div className="p-3 bg-emerald-50/70 rounded-xl border border-emerald-100">
-                    <p className="text-[10px] font-bold text-emerald-800 uppercase tracking-wider">GMD Médio</p>
-                    <p className="text-base font-black text-emerald-800 font-nums mt-0.5">
-                      +{stats.avgGmd.toFixed(3)} <span className="text-[10px] font-normal text-emerald-600">kg/d</span>
+                  <div className="p-3 bg-emerald-50/80 rounded-xl border border-emerald-100">
+                    <p className="text-[10px] font-bold text-emerald-800 uppercase tracking-wider">GMD Gravado no Lote</p>
+                    <p className="text-base font-black text-emerald-900 font-nums mt-0.5">
+                      +{stats.avgGmd.toFixed(3)} <span className="text-[10px] font-bold text-emerald-700">kg/d</span>
+                    </p>
+                    <p className="text-[10px] text-emerald-600 font-medium">
+                      {daysFromLastWeighing > 0 ? `${daysFromLastWeighing} dias desde a pesagem` : 'Pesado hoje'}
                     </p>
                   </div>
 
-                  <div className="p-3 bg-emerald-100/60 rounded-xl border border-emerald-200/70">
-                    <p className="text-[10px] font-black text-emerald-900 uppercase tracking-wider flex items-center gap-1">
-                      <Sparkles size={10} className="text-emerald-700" /> Previsto Hoje
+                  <div className="p-3 bg-emerald-100/70 rounded-xl border border-emerald-200">
+                    <p className="text-[10px] font-black text-emerald-950 uppercase tracking-wider flex items-center gap-1">
+                      <Sparkles size={11} className="text-emerald-700" /> Peso Previsto Hoje
                     </p>
                     <p className="text-base font-black text-emerald-950 font-nums mt-0.5">
-                      {stats.avgPredictedArroba.toFixed(1)} <span className="text-[10px] font-bold text-emerald-700">@</span>
+                      {stats.avgPredictedArroba.toFixed(1)} <span className="text-[10px] font-bold text-emerald-800">@</span>
                     </p>
-                    <p className="text-[10px] text-emerald-700 font-bold font-nums">{stats.avgPredictedWeightKg.toFixed(1)} kg</p>
+                    <p className="text-[10px] text-emerald-800 font-bold font-nums">
+                      {stats.avgPredictedWeightKg.toFixed(1)} kg (+{stats.totalWeightGainKg > 0 ? (stats.totalWeightGainKg / (stats.headCount || 1)).toFixed(1) : '0.0'} kg)
+                    </p>
                   </div>
                 </div>
               </div>
@@ -210,7 +260,7 @@ const LotManager: React.FC<LotManagerProps> = ({
                 <button
                   type="button"
                   onClick={() => openWeighModal(lot)}
-                  className="w-full bg-emerald-700 hover:bg-emerald-800 text-white py-2.5 px-3 rounded-xl font-extrabold text-xs flex items-center justify-center gap-1.5 transition-all shadow-xs"
+                  className="w-full bg-emerald-700 hover:bg-emerald-800 text-white py-2.5 px-3 rounded-xl font-extrabold text-xs flex items-center justify-center gap-1.5 transition-all shadow-xs cursor-pointer"
                 >
                   <Scale size={15} /> Pesar Lote Completo
                 </button>
@@ -220,13 +270,15 @@ const LotManager: React.FC<LotManagerProps> = ({
         })}
       </div>
 
-      {/* MODAL CONFIGURAÇÃO DO LOTE */}
+      {/* MODAL CONFIGURAÇÃO DO LOTE (Com GMD Próprio) */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
           <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden border border-slate-100">
             <div className="px-7 py-5 bg-slate-900 text-white flex justify-between items-center">
-              <h3 className="text-base font-black uppercase tracking-tight">Configuração do Lote</h3>
-              <button onClick={closeModal} className="hover:bg-white/10 p-2 rounded-full"><X size={20} /></button>
+              <h3 className="text-base font-black uppercase tracking-tight">
+                {currentLot.id ? 'Editar Lote & GMD' : 'Novo Lote de Manejo'}
+              </h3>
+              <button onClick={closeModal} className="hover:bg-white/10 p-2 rounded-full cursor-pointer"><X size={20} /></button>
             </div>
             <form onSubmit={handleSubmit} className="p-7 space-y-5">
               <div className="space-y-1.5">
@@ -237,19 +289,48 @@ const LotManager: React.FC<LotManagerProps> = ({
                   className="w-full border border-slate-200 rounded-xl px-4 py-2.5 font-bold text-slate-900 bg-slate-50 focus:bg-white outline-none focus:ring-2 focus:ring-emerald-500 text-sm"
                   value={currentLot.name} 
                   onChange={e => setCurrentLot({...currentLot, name: e.target.value})} 
-                  placeholder="Ex: Confinamento 01" 
+                  placeholder="Ex: Confinamento Piquete 01" 
                 />
               </div>
+
+              {/* Campo de GMD Médio Específico deste Lote */}
+              <div className="space-y-1.5 bg-emerald-50/70 p-4 rounded-2xl border border-emerald-200">
+                <div className="flex items-center justify-between">
+                  <label className="text-[11px] font-extrabold text-emerald-900 uppercase tracking-wider flex items-center gap-1.5">
+                    <TrendingUp size={14} className="text-emerald-700" /> GMD Médio do Lote (kg/cab/dia)
+                  </label>
+                </div>
+                <p className="text-[11px] text-emerald-700 font-medium">
+                  Este GMD é guardado exclusivamente para este lote e adiciona peso diariamente aos animais nele alocados.
+                </p>
+                <div className="relative mt-2">
+                  <input 
+                    type="number" 
+                    step="0.001"
+                    required
+                    onFocus={handleFocus}
+                    className="w-full border border-emerald-300 rounded-xl px-4 py-2.5 font-black text-emerald-950 bg-white focus:bg-white outline-none focus:ring-2 focus:ring-emerald-500 text-base font-nums"
+                    value={currentLot.averageGmd ?? 0.8} 
+                    onChange={e => setCurrentLot({...currentLot, averageGmd: Number(e.target.value)})} 
+                    placeholder="0.800"
+                  />
+                  <span className="absolute right-4 top-1/2 -translate-y-1/2 font-bold text-xs text-emerald-700">
+                    kg/dia
+                  </span>
+                </div>
+              </div>
+
               <div className="space-y-1.5">
                 <label className="text-[11px] font-extrabold text-slate-700 uppercase tracking-wider">Descrição / Observações</label>
                 <textarea 
                   className="w-full border border-slate-200 rounded-xl px-4 py-2.5 font-medium text-slate-800 bg-slate-50 focus:bg-white outline-none focus:ring-2 focus:ring-emerald-500 text-xs"
-                  value={currentLot.description} 
+                  value={currentLot.description || ''} 
                   onChange={e => setCurrentLot({...currentLot, description: e.target.value})} 
                   rows={3} 
-                  placeholder="Ex: Pasto com braquiária, suplementação mineral..."
+                  placeholder="Ex: Pasto com braquiária, suplementação proteico-energética..."
                 />
               </div>
+
               <div className="space-y-1.5">
                 <label className="text-[11px] font-extrabold text-slate-700 uppercase tracking-wider">Custo Diário Específico (R$/cab/dia)</label>
                 <input 
@@ -262,11 +343,70 @@ const LotManager: React.FC<LotManagerProps> = ({
                   placeholder="Deixe em branco para usar o padrão da fazenda"
                 />
               </div>
+
               <div className="flex gap-3 pt-2">
-                <button type="button" onClick={closeModal} className="flex-1 py-3 text-slate-500 font-bold text-xs hover:bg-slate-100 rounded-xl uppercase">Cancelar</button>
-                <button type="submit" className="flex-2 py-3 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl font-extrabold text-xs uppercase tracking-wider shadow-md">Salvar Lote</button>
+                <button type="button" onClick={closeModal} className="flex-1 py-3 text-slate-500 font-bold text-xs hover:bg-slate-100 rounded-xl uppercase cursor-pointer">Cancelar</button>
+                <button type="submit" className="flex-2 py-3 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl font-extrabold text-xs uppercase tracking-wider shadow-md cursor-pointer">Salvar Lote</button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL HISTÓRICO DE PESAGENS DO LOTE */}
+      {isHistoryModalOpen && currentLot.id && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden border border-slate-100">
+            <div className="px-7 py-5 bg-slate-900 text-white flex justify-between items-center">
+              <div className="flex items-center gap-2.5">
+                <History className="text-emerald-400" size={20} />
+                <div>
+                  <h3 className="text-base font-black uppercase tracking-tight">Histórico de Pesagens: {currentLot.name}</h3>
+                  <p className="text-xs text-slate-300">GMDs médios apurados para este lote</p>
+                </div>
+              </div>
+              <button onClick={closeModal} className="hover:bg-white/10 p-2 rounded-full cursor-pointer"><X size={20} /></button>
+            </div>
+            
+            <div className="p-6 max-h-[60vh] overflow-y-auto space-y-3">
+              {(!currentLot.history || currentLot.history.length === 0) ? (
+                <div className="text-center py-8 text-slate-400 text-sm">
+                  Nenhuma pesagem coletiva registrada para este lote ainda.
+                </div>
+              ) : (
+                currentLot.history.slice().reverse().map((rec, idx) => (
+                  <div key={rec.id || idx} className="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-bold text-slate-800">
+                          {new Date(rec.date + 'T00:00:00').toLocaleDateString('pt-BR')}
+                        </span>
+                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-extrabold">
+                          +{Number(rec.gmd || 0).toFixed(3)} kg/d
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-500 font-medium mt-1">
+                        {rec.headCount} animais · {rec.notes || 'Pesagem de rotina'}
+                      </p>
+                    </div>
+                    <div className="text-right font-nums">
+                      <span className="text-base font-black text-slate-900">{rec.avgWeightKg.toFixed(1)} kg</span>
+                      <span className="text-xs font-bold text-slate-400 block font-nums">({(rec.avgWeightKg / 30).toFixed(1)} @)</span>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+
+            <div className="p-4 bg-slate-50 border-t border-slate-100 flex justify-end">
+              <button 
+                type="button" 
+                onClick={closeModal} 
+                className="px-5 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-800 rounded-xl font-bold text-xs uppercase cursor-pointer"
+              >
+                Fechar
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -274,7 +414,7 @@ const LotManager: React.FC<LotManagerProps> = ({
       {/* MODAL PESAGEM DO LOTE */}
       {isWeighModalOpen && currentLot.id && (() => {
         const lotAnimals = animals.filter(a => a.lotId === currentLot.id && a.status === AnimalStatus.ACTIVE);
-        const stats = calculateLotWeighingStats(lotAnimals, todayStr);
+        const stats = calculateLotWeighingStats(lotAnimals, todayStr, currentLot);
         const inputAvgKg = lotWeighUnit === 'kg' ? Number(lotWeighAvgValue || 0) : Number(lotWeighAvgValue || 0) * 30;
         const autoCalc = calculateGMDFromWeighing(stats.avgRecordedWeightKg, inputAvgKg, stats.mostRecentWeighingDate, lotWeighDate);
         const activeGmd = isLotWeighGmdManual ? lotWeighGmd : autoCalc.gmd;
@@ -294,7 +434,7 @@ const LotManager: React.FC<LotManagerProps> = ({
                     <p className="text-xs text-emerald-200 font-medium">{stats.headCount} animais no lote</p>
                   </div>
                 </div>
-                <button onClick={closeModal} className="hover:bg-white/10 p-2 rounded-full"><X size={20} /></button>
+                <button onClick={closeModal} className="hover:bg-white/10 p-2 rounded-full cursor-pointer"><X size={20} /></button>
               </div>
 
               <form onSubmit={handleWeighSubmit} className="p-7 space-y-5">
@@ -312,7 +452,7 @@ const LotManager: React.FC<LotManagerProps> = ({
                     </p>
                   </div>
                   <div>
-                    <p className="text-[10px] font-bold text-emerald-700 uppercase tracking-wider">GMD Anterior</p>
+                    <p className="text-[10px] font-bold text-emerald-700 uppercase tracking-wider">GMD Anterior Lote</p>
                     <p className="text-sm font-black text-emerald-800 font-nums mt-0.5">+{stats.avgGmd.toFixed(3)} kg/d</p>
                   </div>
                 </div>
@@ -342,7 +482,7 @@ const LotManager: React.FC<LotManagerProps> = ({
                               setLotWeighUnit('kg');
                             }
                           }} 
-                          className={`px-2 py-0.5 text-[9px] font-black rounded ${lotWeighUnit === 'kg' ? 'bg-white text-emerald-700 shadow-2xs' : 'text-slate-500'}`}
+                          className={`px-2 py-0.5 text-[9px] font-black rounded cursor-pointer ${lotWeighUnit === 'kg' ? 'bg-white text-emerald-700 shadow-2xs' : 'text-slate-500'}`}
                         >
                           KG
                         </button>
@@ -354,7 +494,7 @@ const LotManager: React.FC<LotManagerProps> = ({
                               setLotWeighUnit('arroba');
                             }
                           }} 
-                          className={`px-2 py-0.5 text-[9px] font-black rounded ${lotWeighUnit === 'arroba' ? 'bg-white text-emerald-700 shadow-2xs' : 'text-slate-500'}`}
+                          className={`px-2 py-0.5 text-[9px] font-black rounded cursor-pointer ${lotWeighUnit === 'arroba' ? 'bg-white text-emerald-700 shadow-2xs' : 'text-slate-500'}`}
                         >
                           @
                         </button>
@@ -396,15 +536,19 @@ const LotManager: React.FC<LotManagerProps> = ({
 
                   <div className="pt-2 border-t border-emerald-200/60 flex items-center justify-between gap-3">
                     <div className="flex-1">
-                      <label className="text-[10px] font-bold text-slate-600 uppercase tracking-wider block">GMD Base Para o Peso Previsto</label>
-                      <p className="text-[10px] text-slate-500">Adicionado diariamente para cada animal</p>
+                      <label className="text-[10px] font-bold text-slate-700 uppercase tracking-wider block">
+                        GMD a ser guardado para o lote
+                      </label>
+                      <p className="text-[10px] text-slate-500">
+                        Será armazenado no lote e guiará a projeção diária dos animais
+                      </p>
                     </div>
-                    <div className="w-28 relative">
+                    <div className="w-32 relative">
                       <input 
                         type="number" 
                         step="0.001" 
                         onFocus={handleFocus}
-                        className="w-full border border-emerald-300 rounded-lg px-2.5 py-1.5 font-black text-sm text-emerald-950 bg-white text-right font-nums focus:ring-2 focus:ring-emerald-500 outline-none"
+                        className="w-full border border-emerald-400 rounded-lg px-2.5 py-1.5 font-black text-sm text-emerald-950 bg-white text-right font-nums focus:ring-2 focus:ring-emerald-500 outline-none"
                         value={isLotWeighGmdManual ? lotWeighGmd : autoCalc.gmd}
                         onChange={e => {
                           setIsLotWeighGmdManual(true);
@@ -415,12 +559,12 @@ const LotManager: React.FC<LotManagerProps> = ({
                   </div>
 
                   <div className="pt-2 border-t border-emerald-200/60 space-y-1.5">
-                    <label className="text-[10px] font-extrabold text-slate-700 uppercase tracking-wider block">Modo de Aplicação</label>
+                    <label className="text-[10px] font-extrabold text-slate-700 uppercase tracking-wider block">Modo de Aplicação nos Animais</label>
                     <div className="grid grid-cols-2 gap-2">
                       <button 
                         type="button"
                         onClick={() => setLotWeighApplyMode('uniform')}
-                        className={`p-2 rounded-xl text-left border transition-all ${
+                        className={`p-2 rounded-xl text-left border transition-all cursor-pointer ${
                           lotWeighApplyMode === 'uniform' 
                             ? 'bg-white border-emerald-500 shadow-xs' 
                             : 'bg-emerald-50/50 border-emerald-200 text-slate-600'
@@ -433,7 +577,7 @@ const LotManager: React.FC<LotManagerProps> = ({
                       <button 
                         type="button"
                         onClick={() => setLotWeighApplyMode('gain_delta')}
-                        className={`p-2 rounded-xl text-left border transition-all ${
+                        className={`p-2 rounded-xl text-left border transition-all cursor-pointer ${
                           lotWeighApplyMode === 'gain_delta' 
                             ? 'bg-white border-emerald-500 shadow-xs' 
                             : 'bg-emerald-50/50 border-emerald-200 text-slate-600'
@@ -452,7 +596,7 @@ const LotManager: React.FC<LotManagerProps> = ({
                     <Sparkles className="text-emerald-400 shrink-0" size={18} />
                     <div>
                       <p className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider">Novo Peso Previsto Médio</p>
-                      <p className="text-xs text-slate-300 font-medium">Projeção diária por cabeça</p>
+                      <p className="text-xs text-slate-300 font-medium">Calculado com o novo GMD do lote</p>
                     </div>
                   </div>
                   <div className="text-right font-nums">
@@ -462,8 +606,8 @@ const LotManager: React.FC<LotManagerProps> = ({
                 </div>
 
                 <div className="flex gap-3 pt-2">
-                  <button type="button" onClick={closeModal} className="flex-1 py-3 text-slate-500 font-bold text-xs hover:bg-slate-100 rounded-xl uppercase">Cancelar</button>
-                  <button type="submit" className="flex-2 py-3 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl font-extrabold text-xs uppercase tracking-wider shadow-md">Confirmar Pesagem do Lote</button>
+                  <button type="button" onClick={closeModal} className="flex-1 py-3 text-slate-500 font-bold text-xs hover:bg-slate-100 rounded-xl uppercase cursor-pointer">Cancelar</button>
+                  <button type="submit" className="flex-2 py-3 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl font-extrabold text-xs uppercase tracking-wider shadow-md cursor-pointer">Confirmar Pesagem do Lote</button>
                 </div>
               </form>
             </div>
@@ -477,7 +621,7 @@ const LotManager: React.FC<LotManagerProps> = ({
           <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden border border-slate-100">
             <div className="px-7 py-5 bg-green-700 text-white flex justify-between items-center">
               <h3 className="text-base font-black uppercase tracking-tight">Liquidação de Lote</h3>
-              <button onClick={closeModal} className="hover:bg-white/10 p-2 rounded-full"><X size={20} /></button>
+              <button onClick={closeModal} className="hover:bg-white/10 p-2 rounded-full cursor-pointer"><X size={20} /></button>
             </div>
             <form onSubmit={handleSellSubmit} className="p-7 space-y-5">
               <div className="space-y-1.5">
@@ -505,7 +649,7 @@ const LotManager: React.FC<LotManagerProps> = ({
                   />
                 </div>
               </div>
-              <button type="submit" className="w-full bg-green-700 hover:bg-green-800 text-white py-3.5 rounded-xl font-black text-xs uppercase tracking-wider shadow-md">Confirmar Liquidação</button>
+              <button type="submit" className="w-full bg-green-700 hover:bg-green-800 text-white py-3.5 rounded-xl font-black text-xs uppercase tracking-wider shadow-md cursor-pointer">Confirmar Liquidação</button>
             </form>
           </div>
         </div>

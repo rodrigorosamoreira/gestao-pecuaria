@@ -2,7 +2,7 @@
 import React from 'react';
 import ScotQuoteBar from './ScotQuoteBar';
 import PartnersBanner from './PartnersBanner';
-import { Animal, Transaction, AnimalStatus, TransactionType, InventoryItem, HealthRecord, HealthSeverity, AnimalGender, User } from '../types';
+import { Animal, Transaction, AnimalStatus, TransactionType, InventoryItem, HealthRecord, HealthSeverity, AnimalGender, User, Lot } from '../types';
 import { 
   TrendingUp, 
   Users, 
@@ -40,13 +40,14 @@ interface DashboardProps {
   transactions: Transaction[];
   inventory: InventoryItem[];
   healthRecords?: HealthRecord[];
+  lots?: Lot[];
   onChangeView?: (view: string) => void;
   currentUser?: User | null;
 }
 
 const COLORS = ['#10B981', '#F59E0B', '#EF4444', '#3B82F6', '#8B5CF6', '#EC4899', '#06B6D4'];
 
-const Dashboard: React.FC<DashboardProps> = ({ animals, transactions, inventory, healthRecords = [], onChangeView, currentUser }) => {
+const Dashboard: React.FC<DashboardProps> = ({ animals, transactions, inventory, healthRecords = [], lots = [], onChangeView, currentUser }) => {
   // Calculate Stats
   const activeAnimals = animals.filter(a => a.status === AnimalStatus.ACTIVE);
   const totalAnimals = activeAnimals.length;
@@ -55,7 +56,7 @@ const Dashboard: React.FC<DashboardProps> = ({ animals, transactions, inventory,
   const females = activeAnimals.filter(a => a.gender === AnimalGender.FEMALE).length;
   
   const todayStr = getTodayDateString();
-  const herdStats = calculateLotWeighingStats(activeAnimals, todayStr);
+  const herdStats = calculateLotWeighingStats(activeAnimals, todayStr, lots);
   const avgWeightKg = herdStats.avgRecordedWeightKg;
   const avgGmd = herdStats.avgGmd;
 

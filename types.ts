@@ -83,11 +83,25 @@ export interface Animal {
   fatherId?: string;
 }
 
+export interface LotWeighingRecord {
+  id: string;
+  date: string;
+  avgWeightKg: number;
+  avgArroba: number;
+  gmd: number;
+  headCount: number;
+  notes?: string;
+}
+
 export interface Lot {
   id: string;
   name: string;
   description?: string;
   dailyCost?: number; 
+  averageGmd?: number; // GMD médio cadastrado e guardado separadamente para o lote
+  lastWeighingDate?: string; // Data da última pesagem do lote
+  lastRecordedAvgWeightKg?: number; // Último peso médio apurado
+  history?: LotWeighingRecord[]; // Histórico de pesagens do lote
   calculatorConfig?: CalculatorConfig;
 }
 

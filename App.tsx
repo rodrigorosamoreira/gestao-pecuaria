@@ -337,6 +337,7 @@ const App: React.FC = () => {
       case 'dashboard': return (
         <Dashboard 
           animals={farmData.animals} 
+          lots={farmData.lots}
           transactions={farmData.transactions} 
           inventory={farmData.inventory} 
           healthRecords={farmData.healthRecords} 
@@ -431,7 +432,28 @@ const App: React.FC = () => {
                 };
               });
 
-              return { ...d, animals: updatedAnimals };
+              const lotRecord = {
+                id: `lot-w-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+                date,
+                avgWeightKg: newAvgWeight,
+                avgArroba: Number((newAvgWeight / 30).toFixed(2)),
+                gmd,
+                headCount: lotAnimals.length,
+                notes: `Pesagem do lote (${lotAnimals.length} cab.)`
+              };
+
+              const updatedLots = d.lots.map(l => {
+                if (l.id !== lotId) return l;
+                return {
+                  ...l,
+                  averageGmd: gmd,
+                  lastWeighingDate: date,
+                  lastRecordedAvgWeightKg: newAvgWeight,
+                  history: [...(l.history || []), lotRecord]
+                };
+              });
+
+              return { ...d, animals: updatedAnimals, lots: updatedLots };
             });
           }}
           savedDailyCost={farmData.globalDailyCost} 
@@ -467,7 +489,28 @@ const App: React.FC = () => {
                 };
               });
 
-              return { ...d, animals: updatedAnimals };
+              const lotRecord = {
+                id: `lot-w-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+                date,
+                avgWeightKg: newAvgWeight,
+                avgArroba: Number((newAvgWeight / 30).toFixed(2)),
+                gmd,
+                headCount: lotAnimals.length,
+                notes: `Pesagem do lote (${lotAnimals.length} cab.)`
+              };
+
+              const updatedLots = d.lots.map(l => {
+                if (l.id !== lotId) return l;
+                return {
+                  ...l,
+                  averageGmd: gmd,
+                  lastWeighingDate: date,
+                  lastRecordedAvgWeightKg: newAvgWeight,
+                  history: [...(l.history || []), lotRecord]
+                };
+              });
+
+              return { ...d, animals: updatedAnimals, lots: updatedLots };
             });
           }}
           onSellLot={(id, date, total) => alert('Utilize a venda por lote no Rebanho para cálculo de lucro')} 
@@ -600,7 +643,7 @@ const App: React.FC = () => {
             initialConfig={farmData.calculatorConfig}
           />
         );
-      default: return <Dashboard animals={farmData.animals} transactions={farmData.transactions} inventory={farmData.inventory} healthRecords={farmData.healthRecords} onChangeView={setCurrentView} />;
+      default: return <Dashboard animals={farmData.animals} transactions={farmData.transactions} inventory={farmData.inventory} healthRecords={farmData.healthRecords} lots={farmData.lots} onChangeView={setCurrentView} currentUser={user} />;
     }
   };
 
