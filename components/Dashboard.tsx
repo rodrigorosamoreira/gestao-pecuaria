@@ -2,6 +2,7 @@
 import React from 'react';
 import ScotQuoteBar from './ScotQuoteBar';
 import PartnersBanner from './PartnersBanner';
+import AdSenseBanner from './AdSenseBanner';
 import { Animal, Transaction, AnimalStatus, TransactionType, InventoryItem, HealthRecord, HealthSeverity, AnimalGender, User, Lot } from '../types';
 import { 
   TrendingUp, 
@@ -275,6 +276,9 @@ const Dashboard: React.FC<DashboardProps> = ({ animals, transactions, inventory,
           </div>
         </div>
       </div>
+
+      {/* Intervalo com Bloco AdSense Responsivo */}
+      <AdSenseBanner className="my-1" />
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Gráfico de Fluxo de Caixa */}
