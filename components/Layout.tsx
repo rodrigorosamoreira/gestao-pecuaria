@@ -28,6 +28,7 @@ import {
 } from 'lucide-react';
 import { User, Animal, InventoryItem, HealthRecord, HealthSeverity, Task, Farm } from '../types';
 import { APP_LOGO_DATA_URI } from '../src/assets/logoData';
+import AdSenseBanner from './AdSenseBanner';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -388,8 +389,13 @@ const Layout: React.FC<LayoutProps> = ({
           </div>
         </header>
 
-        <main className="flex-1 overflow-auto p-4 sm:p-6 bg-slate-50">
-          {children}
+        <main className="flex-1 overflow-auto p-4 sm:p-6 bg-slate-50 flex flex-col justify-between">
+          <div className="flex-1">
+            {children}
+          </div>
+          <div className="mt-8 shrink-0">
+            <AdSenseBanner />
+          </div>
         </main>
       </div>
     </div>
