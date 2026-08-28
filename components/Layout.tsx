@@ -5,26 +5,28 @@ import {
   Beef, 
   Wallet, 
   Menu, 
-  X,
-  LogOut,
-  Warehouse,
-  Layers,
-  Calculator,
-  HeartPulse,
-  Bell,
-  AlertTriangle,
-  CheckCircle2,
-  CheckSquare,
-  Instagram,
-  DollarSign,
-  Zap,
-  ChevronDown,
-  Tractor,
-  Plus,
-  Trash2,
-  KeyRound,
-  BarChart4,
-  Sparkles
+  X, 
+  LogOut, 
+  LogIn,
+  Warehouse, 
+  Layers, 
+  Calculator, 
+  HeartPulse, 
+  Bell, 
+  AlertTriangle, 
+  CheckCircle2, 
+  CheckSquare, 
+  Instagram, 
+  DollarSign, 
+  Zap, 
+  ChevronDown, 
+  Tractor, 
+  Plus, 
+  Trash2, 
+  KeyRound, 
+  BarChart4, 
+  Sparkles,
+  UserCheck
 } from 'lucide-react';
 import { User, Animal, InventoryItem, HealthRecord, HealthSeverity, Task, Farm } from '../types';
 import { APP_LOGO_DATA_URI } from '../src/assets/logoData';
@@ -46,6 +48,7 @@ interface LayoutProps {
   onDeleteFarm?: (id: string) => void;
   onCreateFarm?: () => void;
   onOpenResetPassword?: () => void;
+  onOpenLogin?: () => void;
 }
 
 const Layout: React.FC<LayoutProps> = ({ 
@@ -63,7 +66,8 @@ const Layout: React.FC<LayoutProps> = ({
   onSelectFarm,
   onDeleteFarm,
   onCreateFarm,
-  onOpenResetPassword
+  onOpenResetPassword,
+  onOpenLogin
 }) => {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
@@ -275,7 +279,7 @@ const Layout: React.FC<LayoutProps> = ({
             <Instagram size={18} className="group-hover:scale-110 transition-transform text-pink-400 group-hover:text-white" />
             <span className="truncate">@vivendoapecuaria</span>
           </a>
-          {onOpenResetPassword && (
+          {onOpenResetPassword && user.provider !== 'guest' && (
             <button 
               onClick={onOpenResetPassword}
               className="flex items-center space-x-3 text-emerald-300 hover:text-white px-3.5 py-2 w-full transition-colors font-medium text-xs"
@@ -284,13 +288,24 @@ const Layout: React.FC<LayoutProps> = ({
               <span>Alterar Senha</span>
             </button>
           )}
-          <button 
-            onClick={onLogout}
-            className="flex items-center space-x-3 text-emerald-300/80 hover:text-rose-400 px-3.5 py-2 w-full transition-colors font-medium text-xs"
-          >
-            <LogOut size={17} />
-            <span>Sair da Conta</span>
-          </button>
+
+          {user.provider === 'guest' ? (
+            <button 
+              onClick={onOpenLogin}
+              className="flex items-center space-x-3 bg-emerald-600 hover:bg-emerald-500 text-white px-3.5 py-2.5 rounded-xl w-full transition-all font-bold text-xs shadow-md shadow-emerald-950/40"
+            >
+              <LogIn size={17} />
+              <span>Acessar Minha Conta</span>
+            </button>
+          ) : (
+            <button 
+              onClick={onLogout}
+              className="flex items-center space-x-3 text-emerald-300/80 hover:text-rose-400 px-3.5 py-2 w-full transition-colors font-medium text-xs"
+            >
+              <LogOut size={17} />
+              <span>Sair da Conta</span>
+            </button>
+          )}
         </div>
       </aside>
 
@@ -376,15 +391,30 @@ const Layout: React.FC<LayoutProps> = ({
                 )}
               </div>
 
-              <div className="flex items-center space-x-3 pl-2 border-l border-slate-200">
-                <div className="hidden sm:block text-right">
-                  <p className="text-xs font-bold text-slate-900">{user.name}</p>
-                  <p className="text-[10px] text-emerald-700 font-semibold uppercase tracking-wider">Proprietário</p>
+              {user.provider === 'guest' ? (
+                <div className="flex items-center gap-2.5 pl-2 border-l border-slate-200">
+                  <span className="hidden sm:inline-block text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
+                    Modo Público
+                  </span>
+                  <button 
+                    onClick={onOpenLogin}
+                    className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-2 rounded-xl text-xs font-bold transition-all shadow-xs active:scale-95"
+                  >
+                    <LogIn size={15} />
+                    <span>Entrar</span>
+                  </button>
                 </div>
-                <div className="h-9 w-9 rounded-xl bg-emerald-700 border border-emerald-600 flex items-center justify-center text-white font-extrabold text-xs shadow-xs overflow-hidden">
-                  {user.photo ? <img src={user.photo} className="w-full h-full object-cover" alt="User" /> : user.name.substring(0, 2).toUpperCase()}
+              ) : (
+                <div className="flex items-center space-x-3 pl-2 border-l border-slate-200">
+                  <div className="hidden sm:block text-right">
+                    <p className="text-xs font-bold text-slate-900">{user.name}</p>
+                    <p className="text-[10px] text-emerald-700 font-semibold uppercase tracking-wider">Proprietário</p>
+                  </div>
+                  <div className="h-9 w-9 rounded-xl bg-emerald-700 border border-emerald-600 flex items-center justify-center text-white font-extrabold text-xs shadow-xs overflow-hidden">
+                    {user.photo ? <img src={user.photo} className="w-full h-full object-cover" alt="User" /> : user.name.substring(0, 2).toUpperCase()}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
         </header>

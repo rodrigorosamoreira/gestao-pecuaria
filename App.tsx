@@ -14,6 +14,7 @@ import HealthManager from './components/HealthManager';
 import TaskManager from './components/TaskManager';
 import ResetPasswordModal from './components/ResetPasswordModal';
 import { supabase, clearSupabaseAuth } from './lib/supabase';
+import { DEMO_USER, DEMO_FARM_DATA } from './src/data/demoData';
 import { 
   Animal, 
   AnimalStatus, 
@@ -31,18 +32,19 @@ import {
 import { Database, Copy, CheckCircle, AlertTriangle, Tractor, X, Loader2 } from 'lucide-react';
 
 const App: React.FC = () => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<User>(DEMO_USER);
   const [currentView, setCurrentView] = useState('dashboard');
   const [isSyncing, setIsSyncing] = useState(false);
-  const [isLoaded, setIsLoaded] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(true);
   const [dbError, setDbError] = useState<string | null>(null);
   const [showWelcome, setShowWelcome] = useState(false);
   
-  const [farms, setFarms] = useState<Farm[]>([]);
-  const [activeFarmId, setActiveFarmId] = useState<string | null>(null);
+  const [farms, setFarms] = useState<Farm[]>([DEMO_FARM_DATA]);
+  const [activeFarmId, setActiveFarmId] = useState<string | null>(DEMO_FARM_DATA.id);
   const [isCreatingFarm, setIsCreatingFarm] = useState(false);
   const [newFarmName, setNewFarmName] = useState('');
   const [isResetPasswordOpen, setIsResetPasswordOpen] = useState(false);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
   const DEFAULT_FAZENDA_LOT: Lot = {
     id: 'lot-fazenda-default',
@@ -50,7 +52,7 @@ const App: React.FC = () => {
     description: 'Lote principal da fazenda'
   };
 
-  const activeFarm = farms.find(f => f.id === activeFarmId);
+  const activeFarm = farms.find(f => f.id === activeFarmId) || farms[0];
   const rawFarmData = activeFarm?.data || {
     animals: [],
     transactions: [],
@@ -84,7 +86,9 @@ const App: React.FC = () => {
         console.warn('Refresh token inválido detectado. Limpando armazenamento local...');
         clearSupabaseAuth();
         supabase.auth.signOut().catch(() => {});
-        setUser(null);
+        setUser(DEMO_USER);
+        setFarms([DEMO_FARM_DATA]);
+        setActiveFarmId(DEMO_FARM_DATA.id);
       }
     };
 
@@ -119,11 +123,12 @@ const App: React.FC = () => {
           email: session.user.email || '',
           provider: 'email'
         });
+        setIsLoginModalOpen(false);
       } else {
-        setUser(null);
-        setIsLoaded(false);
-        setFarms([]);
-        setActiveFarmId(null);
+        setUser(DEMO_USER);
+        setFarms([DEMO_FARM_DATA]);
+        setActiveFarmId(DEMO_FARM_DATA.id);
+        setIsLoaded(true);
         setDbError(null);
       }
     });
@@ -132,8 +137,9 @@ const App: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (user) {
+    if (user && user.provider !== 'guest') {
       const fetchFarms = async () => {
+        setIsLoaded(false);
         try {
           const { data, error } = await supabase
             .from('user_data')
@@ -154,6 +160,8 @@ const App: React.FC = () => {
             } else {
               setActiveFarmId(data[0].id);
             }
+          } else {
+            setActiveFarmId(null);
           }
           setDbError(null);
         } catch (err: any) {
@@ -165,20 +173,27 @@ const App: React.FC = () => {
       };
 
       fetchFarms();
+    } else {
+      setFarms([DEMO_FARM_DATA]);
+      setActiveFarmId(DEMO_FARM_DATA.id);
+      setIsLoaded(true);
+      setDbError(null);
     }
   }, [user]);
 
   useEffect(() => {
-    if (user && isLoaded) {
+    if (user && user.provider !== 'guest' && isLoaded) {
       const hasSeen = localStorage.getItem(`welcome_seen_${user.id}`);
       if (!hasSeen) {
         setShowWelcome(true);
       }
+    } else {
+      setShowWelcome(false);
     }
   }, [user, isLoaded]);
 
   useEffect(() => {
-    if (user && isLoaded && !dbError && activeFarmId && activeFarm) {
+    if (user && user.provider !== 'guest' && isLoaded && !dbError && activeFarmId && activeFarm) {
       const syncData = async () => {
         setIsSyncing(true);
         try {
@@ -201,19 +216,44 @@ const App: React.FC = () => {
       const timer = setTimeout(() => syncData(), 2000);
       return () => clearTimeout(timer);
     }
-  }, [farms, activeFarmId]);
+  }, [farms, activeFarmId, user]);
 
   const handleCreateFarm = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    if (!newFarmName.trim() || !user) return;
+    if (!newFarmName.trim()) return;
+
+    const defaultFazendaLot: Lot = {
+      id: `lot-fazenda-${Date.now()}`,
+      name: 'Fazenda',
+      description: 'Lote principal da fazenda'
+    };
+
+    if (user.provider === 'guest') {
+      const localFarm: Farm = {
+        id: `farm-local-${Date.now()}`,
+        user_id: user.id,
+        name: newFarmName,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        data: {
+          animals: [],
+          transactions: [],
+          inventory: [],
+          lots: [defaultFazendaLot],
+          healthRecords: [],
+          tasks: [],
+          globalDailyCost: 0,
+          calculatorConfig: undefined
+        }
+      };
+      setFarms(prev => [...prev, localFarm]);
+      setActiveFarmId(localFarm.id);
+      setIsCreatingFarm(false);
+      setNewFarmName('');
+      return;
+    }
 
     try {
-      const defaultFazendaLot: Lot = {
-        id: `lot-fazenda-${Date.now()}`,
-        name: 'Fazenda',
-        description: 'Lote principal da fazenda'
-      };
-
       const { data, error } = await supabase
         .from('user_data')
         .insert({
@@ -246,11 +286,20 @@ const App: React.FC = () => {
 
   const handleDeleteFarm = async (id: string) => {
     const farmToDelete = farms.find(f => f.id === id);
-    if (!farmToDelete || !user) return;
+    if (!farmToDelete) return;
 
     const confirmMsg = `⚠️ EXCLUIR FAZENDA: "${farmToDelete.name.toUpperCase()}"?\n\nEsta ação é IRREVERSÍVEL. Todos os dados de animais, finanças e estoque desta fazenda serão apagados para sempre.`;
     
     if (!window.confirm(confirmMsg)) return;
+
+    if (user.provider === 'guest') {
+      const updatedFarms = farms.filter(f => f.id !== id);
+      setFarms(updatedFarms);
+      if (activeFarmId === id) {
+        setActiveFarmId(updatedFarms.length > 0 ? updatedFarms[0].id : null);
+      }
+      return;
+    }
 
     try {
       const { error } = await supabase
@@ -308,11 +357,13 @@ const App: React.FC = () => {
 
   const handleSelectFarm = (id: string) => {
     setActiveFarmId(id);
-    if (user) localStorage.setItem(`activeFarm_${user.id}`, id);
+    if (user && user.provider !== 'guest') {
+      localStorage.setItem(`activeFarm_${user.id}`, id);
+    }
   };
 
   const closeWelcome = () => {
-    if (user) {
+    if (user && user.provider !== 'guest') {
       localStorage.setItem(`welcome_seen_${user.id}`, 'true');
     }
     setShowWelcome(false);
@@ -325,8 +376,10 @@ const App: React.FC = () => {
       console.warn('Erro ao encerrar sessão:', e);
     } finally {
       clearSupabaseAuth();
-      setUser(null);
-      setIsLoaded(false);
+      setUser(DEMO_USER);
+      setFarms([DEMO_FARM_DATA]);
+      setActiveFarmId(DEMO_FARM_DATA.id);
+      setIsLoaded(true);
       setCurrentView('dashboard');
     }
   };
@@ -647,41 +700,31 @@ const App: React.FC = () => {
     }
   };
 
-  if (!user) {
-    return (
-      <>
-        <Login onLogin={setUser} />
+  return (
+    <>
+      <Layout 
+        currentView={currentView} 
+        onChangeView={setCurrentView} 
+        onLogout={handleLogout} 
+        user={user} 
+        animals={farmData.animals} 
+        inventory={farmData.inventory} 
+        healthRecords={farmData.healthRecords} 
+        tasks={farmData.tasks}
+        farms={farms}
+        activeFarmId={activeFarmId}
+        onSelectFarm={handleSelectFarm}
+        onDeleteFarm={handleDeleteFarm}
+        onCreateFarm={() => setIsCreatingFarm(true)}
+        onOpenResetPassword={() => setIsResetPasswordOpen(true)}
+        onOpenLogin={() => setIsLoginModalOpen(true)}
+      >
         <ResetPasswordModal 
           isOpen={isResetPasswordOpen} 
           onClose={() => setIsResetPasswordOpen(false)} 
         />
-      </>
-    );
-  }
-
-  return (
-    <Layout 
-      currentView={currentView} 
-      onChangeView={setCurrentView} 
-      onLogout={handleLogout} 
-      user={user} 
-      animals={farmData.animals} 
-      inventory={farmData.inventory} 
-      healthRecords={farmData.healthRecords} 
-      tasks={farmData.tasks}
-      farms={farms}
-      activeFarmId={activeFarmId}
-      onSelectFarm={handleSelectFarm}
-      onDeleteFarm={handleDeleteFarm}
-      onCreateFarm={() => setIsCreatingFarm(true)}
-      onOpenResetPassword={() => setIsResetPasswordOpen(true)}
-    >
-      <ResetPasswordModal 
-        isOpen={isResetPasswordOpen} 
-        onClose={() => setIsResetPasswordOpen(false)} 
-      />
-      {isSyncing && <div className="fixed bottom-4 right-4 bg-emerald-600 text-white text-[10px] font-black px-4 py-2 rounded-full shadow-lg z-50 animate-pulse">Sincronizando...</div>}
-      {!isLoaded && <div className="fixed inset-0 bg-white/50 backdrop-blur-sm z-50 flex items-center justify-center font-black uppercase tracking-widest text-xs">Acessando Banco...</div>}
+        {isSyncing && <div className="fixed bottom-4 right-4 bg-emerald-600 text-white text-[10px] font-black px-4 py-2 rounded-full shadow-lg z-50 animate-pulse">Sincronizando...</div>}
+        {!isLoaded && <div className="fixed inset-0 bg-white/50 backdrop-blur-sm z-50 flex items-center justify-center font-black uppercase tracking-widest text-xs">Acessando Banco...</div>}
       
       {showWelcome && (
         <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
@@ -754,6 +797,21 @@ const App: React.FC = () => {
 
       {renderContent()}
     </Layout>
+
+    {isLoginModalOpen && (
+      <div className="fixed inset-0 z-[80] overflow-y-auto bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div className="relative w-full max-w-md">
+          <Login 
+            onLogin={(u) => {
+              setUser(u);
+              setIsLoginModalOpen(false);
+            }} 
+            onClose={() => setIsLoginModalOpen(false)} 
+          />
+        </div>
+      </div>
+    )}
+  </>
   );
 };
 

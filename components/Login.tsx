@@ -18,7 +18,8 @@ import {
   Cpu, 
   Sparkles,
   BarChart3,
-  Check
+  Check,
+  X
 } from 'lucide-react';
 import { User } from '../types';
 import { supabase } from '../lib/supabase';
@@ -27,9 +28,10 @@ import { APP_LOGO_DATA_URI } from '../src/assets/logoData';
 
 interface LoginProps {
   onLogin: (user: User) => void;
+  onClose?: () => void;
 }
 
-const Login: React.FC<LoginProps> = ({ onLogin }) => {
+const Login: React.FC<LoginProps> = ({ onLogin, onClose }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [mode, setMode] = useState<'login' | 'register' | 'forgot'>('login');
   
@@ -213,6 +215,16 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
 
       {/* Right Panel - Authentication Form Container */}
       <div className="lg:w-5/12 flex items-center justify-center p-6 lg:p-12 bg-slate-900/90 relative">
+        {onClose && (
+          <button 
+            onClick={onClose}
+            className="absolute top-6 right-6 p-2 rounded-xl bg-slate-800/80 text-slate-400 hover:text-white hover:bg-slate-700 transition-all flex items-center gap-1.5 text-xs font-bold"
+            title="Voltar ao App"
+          >
+            <span>Fechar</span>
+            <X size={18} />
+          </button>
+        )}
         <div className="w-full max-w-md space-y-6">
           
           {/* Header Switcher Tabs */}
