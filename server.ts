@@ -387,6 +387,12 @@ Consultor IA:`;
   }
 });
 
+// Google Search Console / Site Verification
+app.get("/google1df4394885413518.html", (req, res) => {
+  res.setHeader("Content-Type", "text/html; charset=utf-8");
+  res.send("google-site-verification: google1df4394885413518.html");
+});
+
 // Configuração do Vite middleware em desenvolvimento / arquivos estáticos em produção
 async function startServer() {
   if (process.env.NODE_ENV !== "production") {
