@@ -153,20 +153,20 @@ const Dashboard: React.FC<DashboardProps> = ({ animals, transactions, inventory,
 
       {/* Resumo do Rebanho & KPIs Principais */}
       <div className="space-y-5">
-        <div className="agro-card p-6">
-          <div className="flex items-center justify-between mb-5 pb-4 border-b border-slate-100">
+        <div className="agro-card p-4 sm:p-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5 pb-4 border-b border-slate-100">
             <div className="flex items-center gap-2.5">
-              <div className="p-2 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-100">
+              <div className="p-2 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-100 shrink-0">
                 <Users size={18} />
               </div>
               <div>
-                <h3 className="text-base font-extrabold text-slate-900 tracking-tight">Resumo Detalhado do Rebanho</h3>
+                <h3 className="text-sm sm:text-base font-extrabold text-slate-900 tracking-tight">Resumo Detalhado do Rebanho</h3>
                 <p className="text-xs text-slate-500">Métricas consolidadas de contagem, peso e GMD</p>
               </div>
             </div>
             <button 
               onClick={() => onChangeView?.('animals')}
-              className="text-xs font-bold text-emerald-700 hover:text-emerald-800 bg-emerald-50 hover:bg-emerald-100 px-3.5 py-1.5 rounded-lg transition-colors"
+              className="self-start sm:self-auto text-xs font-bold text-emerald-700 hover:text-emerald-800 bg-emerald-50 hover:bg-emerald-100 px-3.5 py-1.5 rounded-lg transition-colors cursor-pointer"
             >
               Ver Rebanho Completo →
             </button>
@@ -282,15 +282,15 @@ const Dashboard: React.FC<DashboardProps> = ({ animals, transactions, inventory,
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Gráfico de Fluxo de Caixa */}
-        <div className="lg:col-span-8 agro-card p-6">
-          <div className="flex items-center justify-between mb-6 pb-3 border-b border-slate-100">
+        <div className="lg:col-span-8 agro-card p-4 sm:p-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 pb-3 border-b border-slate-100">
             <div>
-              <h3 className="text-base font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
-                <BarChart3 size={18} className="text-emerald-600" /> Evolução Financeira
+              <h3 className="text-sm sm:text-base font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
+                <BarChart3 size={18} className="text-emerald-600 shrink-0" /> Evolução Financeira
               </h3>
               <p className="text-xs text-slate-500">Receitas x Despesas nos últimos 6 meses</p>
             </div>
-            <div className="flex items-center gap-4 text-xs font-bold">
+            <div className="flex items-center gap-4 text-xs font-bold self-start sm:self-auto">
               <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-full bg-emerald-500"></div> <span className="text-slate-600">Receita</span></div>
               <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-full bg-rose-500"></div> <span className="text-slate-600">Despesa</span></div>
             </div>
@@ -375,9 +375,9 @@ const Dashboard: React.FC<DashboardProps> = ({ animals, transactions, inventory,
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Distribuição de Gastos */}
-        <div className="agro-card p-6">
+        <div className="agro-card p-4 sm:p-6">
           <h3 className="text-base font-extrabold text-slate-900 tracking-tight mb-5 pb-3 border-b border-slate-100 flex items-center gap-2">
-            <PieChartIcon size={18} className="text-emerald-600" /> Gastos por Categoria
+            <PieChartIcon size={18} className="text-emerald-600 shrink-0" /> Gastos por Categoria
           </h3>
           <div className="h-60">
             <ResponsiveContainer width="100%" height="100%">
@@ -400,21 +400,21 @@ const Dashboard: React.FC<DashboardProps> = ({ animals, transactions, inventory,
               </PieChart>
             </ResponsiveContainer>
           </div>
-          <div className="grid grid-cols-2 gap-2 mt-2 pt-3 border-t border-slate-100">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2 pt-3 border-t border-slate-100">
             {categoryData.map((entry, index) => (
               <div key={index} className="flex items-center gap-2 text-xs font-medium text-slate-600">
                 <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: COLORS[index % COLORS.length] }}></div>
                 <span className="truncate">{entry.name}</span>
-                <span className="ml-auto font-bold text-slate-900 font-nums">R$ {entry.value.toLocaleString('pt-BR')}</span>
+                <span className="ml-auto font-bold text-slate-900 font-nums shrink-0">R$ {entry.value.toLocaleString('pt-BR')}</span>
               </div>
             ))}
           </div>
         </div>
 
         {/* Lembretes Próximos */}
-        <div className="agro-card p-6">
+        <div className="agro-card p-4 sm:p-6">
           <h3 className="text-base font-extrabold text-slate-900 tracking-tight mb-5 pb-3 border-b border-slate-100 flex items-center gap-2">
-            <Calendar size={18} className="text-emerald-600" /> Agenda de Manejos
+            <Calendar size={18} className="text-emerald-600 shrink-0" /> Agenda de Manejos
           </h3>
           <div className="space-y-3">
             {healthRecords.filter(r => r.status === 'Em Tratamento').slice(0, 5).map((r, idx) => (

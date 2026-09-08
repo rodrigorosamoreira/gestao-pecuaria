@@ -5,28 +5,26 @@ import {
   Beef, 
   Wallet, 
   Menu, 
-  X, 
-  LogOut, 
-  LogIn,
-  Warehouse, 
-  Layers, 
-  Calculator, 
-  HeartPulse, 
-  Bell, 
-  AlertTriangle, 
-  CheckCircle2, 
-  CheckSquare, 
-  Instagram, 
-  DollarSign, 
-  Zap, 
-  ChevronDown, 
-  Tractor, 
-  Plus, 
-  Trash2, 
-  KeyRound, 
-  BarChart4, 
-  Sparkles,
-  UserCheck
+  X,
+  LogOut,
+  Warehouse,
+  Layers,
+  Calculator,
+  HeartPulse,
+  Bell,
+  AlertTriangle,
+  CheckCircle2,
+  CheckSquare,
+  Instagram,
+  DollarSign,
+  Zap,
+  ChevronDown,
+  Tractor,
+  Plus,
+  Trash2,
+  KeyRound,
+  BarChart4,
+  Sparkles
 } from 'lucide-react';
 import { User, Animal, InventoryItem, HealthRecord, HealthSeverity, Task, Farm } from '../types';
 import { APP_LOGO_DATA_URI } from '../src/assets/logoData';
@@ -48,7 +46,6 @@ interface LayoutProps {
   onDeleteFarm?: (id: string) => void;
   onCreateFarm?: () => void;
   onOpenResetPassword?: () => void;
-  onOpenLogin?: () => void;
 }
 
 const Layout: React.FC<LayoutProps> = ({ 
@@ -66,8 +63,7 @@ const Layout: React.FC<LayoutProps> = ({
   onSelectFarm,
   onDeleteFarm,
   onCreateFarm,
-  onOpenResetPassword,
-  onOpenLogin
+  onOpenResetPassword
 }) => {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
@@ -137,6 +133,19 @@ const Layout: React.FC<LayoutProps> = ({
   ];
 
   const toggleSidebar = () => setSidebarOpen(!isSidebarOpen);
+
+  // Efeito para fechar notificações com a tecla Escape
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsNotifOpen(false);
+      }
+    };
+    if (isNotifOpen) {
+      window.addEventListener('keydown', handleKeyDown);
+    }
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isNotifOpen]);
 
   return (
     <div className="flex h-screen bg-slate-50 text-slate-900 overflow-hidden font-sans">
@@ -279,7 +288,7 @@ const Layout: React.FC<LayoutProps> = ({
             <Instagram size={18} className="group-hover:scale-110 transition-transform text-pink-400 group-hover:text-white" />
             <span className="truncate">@vivendoapecuaria</span>
           </a>
-          {onOpenResetPassword && user.provider !== 'guest' && (
+          {onOpenResetPassword && (
             <button 
               onClick={onOpenResetPassword}
               className="flex items-center space-x-3 text-emerald-300 hover:text-white px-3.5 py-2 w-full transition-colors font-medium text-xs"
@@ -288,57 +297,58 @@ const Layout: React.FC<LayoutProps> = ({
               <span>Alterar Senha</span>
             </button>
           )}
-
-          {user.provider === 'guest' ? (
-            <button 
-              onClick={onOpenLogin}
-              className="flex items-center space-x-3 bg-emerald-600 hover:bg-emerald-500 text-white px-3.5 py-2.5 rounded-xl w-full transition-all font-bold text-xs shadow-md shadow-emerald-950/40"
-            >
-              <LogIn size={17} />
-              <span>Acessar Minha Conta</span>
-            </button>
-          ) : (
-            <button 
-              onClick={onLogout}
-              className="flex items-center space-x-3 text-emerald-300/80 hover:text-rose-400 px-3.5 py-2 w-full transition-colors font-medium text-xs"
-            >
-              <LogOut size={17} />
-              <span>Sair da Conta</span>
-            </button>
-          )}
+          <button 
+            onClick={onLogout}
+            className="flex items-center space-x-3 text-emerald-300/80 hover:text-rose-400 px-3.5 py-2 w-full transition-colors font-medium text-xs"
+          >
+            <LogOut size={17} />
+            <span>Sair da Conta</span>
+          </button>
         </div>
       </aside>
 
-      <div className="flex-1 flex flex-col overflow-hidden bg-slate-50">
-        <header className="bg-white border-b border-slate-200 shadow-xs z-10">
-          <div className="flex items-center justify-between px-6 py-3.5">
-            <div className="flex items-center gap-3">
-              <button onClick={toggleSidebar} className="lg:hidden text-slate-600 hover:text-slate-900 p-1.5 rounded-lg hover:bg-slate-100">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden bg-slate-50">
+        <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-xs">
+          <div className="flex items-center justify-between px-3.5 sm:px-6 py-2.5 sm:py-3.5 gap-2">
+            <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+              <button 
+                onClick={toggleSidebar} 
+                className="lg:hidden text-slate-600 hover:text-slate-900 p-2 rounded-xl hover:bg-slate-100 shrink-0 transition-colors"
+                aria-label="Abrir Menu de Navegação"
+              >
                 <Menu size={22} />
               </button>
-              <div>
-                <h1 className="text-base font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
-                  <span>{navItems.find(i => i.id === currentView)?.label || 'Painel'}</span>
+              <div className="min-w-0">
+                <h1 className="text-sm sm:text-base font-extrabold text-slate-900 tracking-tight flex items-center gap-1.5 sm:gap-2 truncate">
+                  <span className="truncate">{navItems.find(i => i.id === currentView)?.label || 'Painel'}</span>
                   {activeFarm && (
                     <>
-                      <span className="text-slate-300 font-light">|</span>
-                      <span className="text-xs font-semibold text-emerald-800 bg-emerald-50 border border-emerald-200/80 px-2.5 py-0.5 rounded-full">{activeFarm.name}</span>
+                      <span className="text-slate-300 font-light hidden xs:inline shrink-0">|</span>
+                      <span className="text-[10px] sm:text-xs font-semibold text-emerald-800 bg-emerald-50 border border-emerald-200/80 px-2 sm:px-2.5 py-0.5 rounded-full truncate max-w-[120px] xs:max-w-[160px] sm:max-w-[220px] shrink-0">
+                        {activeFarm.name}
+                      </span>
                     </>
                   )}
                 </h1>
               </div>
             </div>
 
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2 sm:space-x-4 shrink-0">
               <div className="relative">
                 <button 
                   onClick={() => setIsNotifOpen(!isNotifOpen)}
-                  className={`p-2 rounded-xl border transition-all relative ${isNotifOpen ? 'bg-slate-100 border-slate-300 text-emerald-700' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}
+                  className={`p-2 rounded-xl border transition-all relative ${
+                    isNotifOpen 
+                      ? 'bg-slate-100 border-slate-300 text-emerald-700 shadow-inner' 
+                      : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                  }`}
                   title="Alertas & Notificações"
+                  aria-label="Alertas e Notificações"
+                  aria-expanded={isNotifOpen}
                 >
                   <Bell size={19} />
                   {notifications.length > 0 && (
-                    <span className="absolute -top-1 -right-1 w-5 h-5 bg-rose-600 text-white text-[10px] font-extrabold rounded-full flex items-center justify-center ring-2 ring-white">
+                    <span className="absolute -top-1 -right-1 w-5 h-5 bg-rose-600 text-white text-[10px] font-extrabold rounded-full flex items-center justify-center ring-2 ring-white animate-pulse">
                       {notifications.length}
                     </span>
                   )}
@@ -346,13 +356,37 @@ const Layout: React.FC<LayoutProps> = ({
 
                 {isNotifOpen && (
                   <>
-                    <div className="fixed inset-0 z-10" onClick={() => setIsNotifOpen(false)}></div>
-                    <div className="absolute right-0 mt-3 w-80 md:w-96 bg-white rounded-2xl shadow-xl border border-slate-200 z-20 overflow-hidden animate-in fade-in slide-in-from-top-2">
+                    {/* Backdrop cobrindo a tela inteira para evitar toques acidentais em elementos de fundo */}
+                    <div 
+                      className="fixed inset-0 z-40 bg-slate-950/40 backdrop-blur-xs transition-opacity" 
+                      onClick={() => setIsNotifOpen(false)}
+                      aria-hidden="true"
+                    />
+                    
+                    {/* Dropdown de Notificações com z-index alto e responsividade móvel */}
+                    <div 
+                      id="notifications-dropdown-panel"
+                      className="fixed inset-x-3 top-16 sm:absolute sm:inset-x-auto sm:right-0 sm:top-full sm:mt-2.5 w-auto sm:w-96 max-w-[calc(100vw-1.5rem)] bg-white rounded-2xl shadow-2xl border border-slate-200 z-50 overflow-hidden animate-in fade-in slide-in-from-top-2"
+                    >
                       <div className="p-3.5 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
-                        <span className="font-bold text-xs text-slate-800">Alertas Operacionais</span>
-                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{notifications.length} Pendentes</span>
+                        <div className="flex items-center gap-2">
+                          <Bell size={16} className="text-emerald-700" />
+                          <span className="font-bold text-xs text-slate-800">Alertas Operacionais</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] font-bold text-slate-600 uppercase tracking-widest bg-slate-200/80 px-2 py-0.5 rounded-full">
+                            {notifications.length} {notifications.length === 1 ? 'Pendente' : 'Pendentes'}
+                          </span>
+                          <button 
+                            onClick={() => setIsNotifOpen(false)}
+                            className="p-1 text-slate-400 hover:text-slate-700 hover:bg-slate-200/80 rounded-lg transition-colors cursor-pointer"
+                            aria-label="Fechar notificações"
+                          >
+                            <X size={16} />
+                          </button>
+                        </div>
                       </div>
-                      <div className="max-h-80 overflow-y-auto divide-y divide-slate-100">
+                      <div className="max-h-[60vh] sm:max-h-80 overflow-y-auto divide-y divide-slate-100">
                         {notifications.length > 0 ? (
                           notifications.map((n, idx) => (
                             <button 
@@ -361,7 +395,7 @@ const Layout: React.FC<LayoutProps> = ({
                                 onChangeView(n.view);
                                 setIsNotifOpen(false);
                               }}
-                              className="w-full p-3.5 flex gap-3 hover:bg-slate-50 transition-colors text-left"
+                              className="w-full p-3.5 flex gap-3 hover:bg-slate-50 transition-colors text-left group"
                             >
                               <div className={`mt-0.5 p-2 rounded-lg shrink-0 ${
                                 n.type === 'error' ? 'bg-rose-50 text-rose-600 border border-rose-200' :
@@ -370,9 +404,9 @@ const Layout: React.FC<LayoutProps> = ({
                               }`}>
                                 <AlertTriangle size={16} />
                               </div>
-                              <div>
-                                <p className="text-xs font-bold text-slate-900 leading-tight">{n.title}</p>
-                                <p className="text-[11px] text-slate-500 mt-0.5">{n.description}</p>
+                              <div className="min-w-0 flex-1">
+                                <p className="text-xs font-bold text-slate-900 leading-tight group-hover:text-emerald-700 transition-colors">{n.title}</p>
+                                <p className="text-[11px] text-slate-500 mt-0.5 line-clamp-2">{n.description}</p>
                               </div>
                             </button>
                           ))
@@ -384,42 +418,32 @@ const Layout: React.FC<LayoutProps> = ({
                         )}
                       </div>
                       <div className="p-2.5 bg-slate-50 border-t border-slate-100 text-center">
-                         <button onClick={() => setIsNotifOpen(false)} className="text-[11px] font-bold text-emerald-700 hover:underline uppercase tracking-wider">Fechar Notificações</button>
+                         <button 
+                           onClick={() => setIsNotifOpen(false)} 
+                           className="text-[11px] font-bold text-emerald-700 hover:text-emerald-800 hover:underline uppercase tracking-wider cursor-pointer"
+                         >
+                           Fechar Notificações
+                         </button>
                       </div>
                     </div>
                   </>
                 )}
               </div>
 
-              {user.provider === 'guest' ? (
-                <div className="flex items-center gap-2.5 pl-2 border-l border-slate-200">
-                  <span className="hidden sm:inline-block text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
-                    Modo Público
-                  </span>
-                  <button 
-                    onClick={onOpenLogin}
-                    className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-2 rounded-xl text-xs font-bold transition-all shadow-xs active:scale-95"
-                  >
-                    <LogIn size={15} />
-                    <span>Entrar</span>
-                  </button>
+              <div className="flex items-center space-x-2 sm:space-x-3 pl-2 sm:pl-3 border-l border-slate-200">
+                <div className="hidden sm:block text-right">
+                  <p className="text-xs font-bold text-slate-900 truncate max-w-[130px]">{user.name}</p>
+                  <p className="text-[10px] text-emerald-700 font-semibold uppercase tracking-wider">Proprietário</p>
                 </div>
-              ) : (
-                <div className="flex items-center space-x-3 pl-2 border-l border-slate-200">
-                  <div className="hidden sm:block text-right">
-                    <p className="text-xs font-bold text-slate-900">{user.name}</p>
-                    <p className="text-[10px] text-emerald-700 font-semibold uppercase tracking-wider">Proprietário</p>
-                  </div>
-                  <div className="h-9 w-9 rounded-xl bg-emerald-700 border border-emerald-600 flex items-center justify-center text-white font-extrabold text-xs shadow-xs overflow-hidden">
-                    {user.photo ? <img src={user.photo} className="w-full h-full object-cover" alt="User" /> : user.name.substring(0, 2).toUpperCase()}
-                  </div>
+                <div className="h-8 w-8 sm:h-9 sm:w-9 rounded-xl bg-emerald-700 border border-emerald-600 flex items-center justify-center text-white font-extrabold text-xs shadow-xs overflow-hidden shrink-0">
+                  {user.photo ? <img src={user.photo} className="w-full h-full object-cover" alt="User" /> : user.name.substring(0, 2).toUpperCase()}
                 </div>
-              )}
+              </div>
             </div>
           </div>
         </header>
 
-        <main className="flex-1 overflow-auto p-4 sm:p-6 bg-slate-50 flex flex-col justify-between">
+        <main className="flex-1 overflow-y-auto overflow-x-hidden p-3.5 sm:p-5 md:p-6 bg-slate-50 flex flex-col justify-between">
           <div className="flex-1">
             {children}
           </div>

@@ -122,12 +122,12 @@ const ScotQuoteBar: React.FC<ScotQuoteBarProps> = ({
           </div>
         </div>
 
-        <div className="flex items-center gap-2.5 w-full sm:w-auto justify-end">
-          <div className="relative">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full sm:w-auto justify-end">
+          <div className="relative flex-1 sm:flex-initial">
             <select
               value={selectedRegionId}
               onChange={handleRegionChange}
-              className="bg-emerald-900/90 border border-emerald-800 text-white text-xs font-bold py-2 pl-3 pr-8 rounded-lg outline-none focus:ring-1 focus:ring-emerald-400 cursor-pointer max-w-[200px] truncate"
+              className="w-full sm:w-auto bg-emerald-900/90 border border-emerald-800 text-white text-xs font-bold py-2 pl-3 pr-8 rounded-lg outline-none focus:ring-1 focus:ring-emerald-400 cursor-pointer sm:max-w-[200px] truncate"
             >
               {quotes.map(q => (
                 <option key={q.id} value={q.id} className="bg-emerald-950 text-white">
@@ -140,7 +140,7 @@ const ScotQuoteBar: React.FC<ScotQuoteBarProps> = ({
           <button
             type="button"
             onClick={handleApplyToCalc}
-            className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs py-2 px-3.5 rounded-lg transition-all flex items-center gap-1.5 shadow-xs whitespace-nowrap cursor-pointer border border-emerald-500/40"
+            className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs py-2 px-3.5 rounded-lg transition-all flex items-center justify-center gap-1.5 shadow-xs whitespace-nowrap cursor-pointer border border-emerald-500/40 shrink-0"
             title="Usar esta cotação nas calculadoras de margem e simulador"
           >
             <Calculator size={14} />

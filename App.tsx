@@ -14,7 +14,6 @@ import HealthManager from './components/HealthManager';
 import TaskManager from './components/TaskManager';
 import ResetPasswordModal from './components/ResetPasswordModal';
 import { supabase, clearSupabaseAuth } from './lib/supabase';
-import { DEMO_USER, DEMO_FARM_DATA } from './src/data/demoData';
 import { 
   Animal, 
   AnimalStatus, 
@@ -32,19 +31,18 @@ import {
 import { Database, Copy, CheckCircle, AlertTriangle, Tractor, X, Loader2 } from 'lucide-react';
 
 const App: React.FC = () => {
-  const [user, setUser] = useState<User>(DEMO_USER);
+  const [user, setUser] = useState<User | null>(null);
   const [currentView, setCurrentView] = useState('dashboard');
   const [isSyncing, setIsSyncing] = useState(false);
-  const [isLoaded, setIsLoaded] = useState(true);
+  const [isLoaded, setIsLoaded] = useState(false);
   const [dbError, setDbError] = useState<string | null>(null);
   const [showWelcome, setShowWelcome] = useState(false);
   
-  const [farms, setFarms] = useState<Farm[]>([DEMO_FARM_DATA]);
-  const [activeFarmId, setActiveFarmId] = useState<string | null>(DEMO_FARM_DATA.id);
+  const [farms, setFarms] = useState<Farm[]>([]);
+  const [activeFarmId, setActiveFarmId] = useState<string | null>(null);
   const [isCreatingFarm, setIsCreatingFarm] = useState(false);
   const [newFarmName, setNewFarmName] = useState('');
   const [isResetPasswordOpen, setIsResetPasswordOpen] = useState(false);
-  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
   const DEFAULT_FAZENDA_LOT: Lot = {
     id: 'lot-fazenda-default',
@@ -52,7 +50,7 @@ const App: React.FC = () => {
     description: 'Lote principal da fazenda'
   };
 
-  const activeFarm = farms.find(f => f.id === activeFarmId) || farms[0];
+  const activeFarm = farms.find(f => f.id === activeFarmId);
   const rawFarmData = activeFarm?.data || {
     animals: [],
     transactions: [],
@@ -86,9 +84,7 @@ const App: React.FC = () => {
         console.warn('Refresh token inválido detectado. Limpando armazenamento local...');
         clearSupabaseAuth();
         supabase.auth.signOut().catch(() => {});
-        setUser(DEMO_USER);
-        setFarms([DEMO_FARM_DATA]);
-        setActiveFarmId(DEMO_FARM_DATA.id);
+        setUser(null);
       }
     };
 
@@ -123,12 +119,11 @@ const App: React.FC = () => {
           email: session.user.email || '',
           provider: 'email'
         });
-        setIsLoginModalOpen(false);
       } else {
-        setUser(DEMO_USER);
-        setFarms([DEMO_FARM_DATA]);
-        setActiveFarmId(DEMO_FARM_DATA.id);
-        setIsLoaded(true);
+        setUser(null);
+        setIsLoaded(false);
+        setFarms([]);
+        setActiveFarmId(null);
         setDbError(null);
       }
     });
@@ -137,9 +132,8 @@ const App: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (user && user.provider !== 'guest') {
+    if (user) {
       const fetchFarms = async () => {
-        setIsLoaded(false);
         try {
           const { data, error } = await supabase
             .from('user_data')
@@ -160,8 +154,6 @@ const App: React.FC = () => {
             } else {
               setActiveFarmId(data[0].id);
             }
-          } else {
-            setActiveFarmId(null);
           }
           setDbError(null);
         } catch (err: any) {
@@ -173,27 +165,20 @@ const App: React.FC = () => {
       };
 
       fetchFarms();
-    } else {
-      setFarms([DEMO_FARM_DATA]);
-      setActiveFarmId(DEMO_FARM_DATA.id);
-      setIsLoaded(true);
-      setDbError(null);
     }
   }, [user]);
 
   useEffect(() => {
-    if (user && user.provider !== 'guest' && isLoaded) {
+    if (user && isLoaded) {
       const hasSeen = localStorage.getItem(`welcome_seen_${user.id}`);
       if (!hasSeen) {
         setShowWelcome(true);
       }
-    } else {
-      setShowWelcome(false);
     }
   }, [user, isLoaded]);
 
   useEffect(() => {
-    if (user && user.provider !== 'guest' && isLoaded && !dbError && activeFarmId && activeFarm) {
+    if (user && isLoaded && !dbError && activeFarmId && activeFarm) {
       const syncData = async () => {
         setIsSyncing(true);
         try {
@@ -216,44 +201,19 @@ const App: React.FC = () => {
       const timer = setTimeout(() => syncData(), 2000);
       return () => clearTimeout(timer);
     }
-  }, [farms, activeFarmId, user]);
+  }, [farms, activeFarmId]);
 
   const handleCreateFarm = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    if (!newFarmName.trim()) return;
-
-    const defaultFazendaLot: Lot = {
-      id: `lot-fazenda-${Date.now()}`,
-      name: 'Fazenda',
-      description: 'Lote principal da fazenda'
-    };
-
-    if (user.provider === 'guest') {
-      const localFarm: Farm = {
-        id: `farm-local-${Date.now()}`,
-        user_id: user.id,
-        name: newFarmName,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        data: {
-          animals: [],
-          transactions: [],
-          inventory: [],
-          lots: [defaultFazendaLot],
-          healthRecords: [],
-          tasks: [],
-          globalDailyCost: 0,
-          calculatorConfig: undefined
-        }
-      };
-      setFarms(prev => [...prev, localFarm]);
-      setActiveFarmId(localFarm.id);
-      setIsCreatingFarm(false);
-      setNewFarmName('');
-      return;
-    }
+    if (!newFarmName.trim() || !user) return;
 
     try {
+      const defaultFazendaLot: Lot = {
+        id: `lot-fazenda-${Date.now()}`,
+        name: 'Fazenda',
+        description: 'Lote principal da fazenda'
+      };
+
       const { data, error } = await supabase
         .from('user_data')
         .insert({
@@ -286,20 +246,11 @@ const App: React.FC = () => {
 
   const handleDeleteFarm = async (id: string) => {
     const farmToDelete = farms.find(f => f.id === id);
-    if (!farmToDelete) return;
+    if (!farmToDelete || !user) return;
 
     const confirmMsg = `⚠️ EXCLUIR FAZENDA: "${farmToDelete.name.toUpperCase()}"?\n\nEsta ação é IRREVERSÍVEL. Todos os dados de animais, finanças e estoque desta fazenda serão apagados para sempre.`;
     
     if (!window.confirm(confirmMsg)) return;
-
-    if (user.provider === 'guest') {
-      const updatedFarms = farms.filter(f => f.id !== id);
-      setFarms(updatedFarms);
-      if (activeFarmId === id) {
-        setActiveFarmId(updatedFarms.length > 0 ? updatedFarms[0].id : null);
-      }
-      return;
-    }
 
     try {
       const { error } = await supabase
@@ -357,13 +308,11 @@ const App: React.FC = () => {
 
   const handleSelectFarm = (id: string) => {
     setActiveFarmId(id);
-    if (user && user.provider !== 'guest') {
-      localStorage.setItem(`activeFarm_${user.id}`, id);
-    }
+    if (user) localStorage.setItem(`activeFarm_${user.id}`, id);
   };
 
   const closeWelcome = () => {
-    if (user && user.provider !== 'guest') {
+    if (user) {
       localStorage.setItem(`welcome_seen_${user.id}`, 'true');
     }
     setShowWelcome(false);
@@ -376,10 +325,8 @@ const App: React.FC = () => {
       console.warn('Erro ao encerrar sessão:', e);
     } finally {
       clearSupabaseAuth();
-      setUser(DEMO_USER);
-      setFarms([DEMO_FARM_DATA]);
-      setActiveFarmId(DEMO_FARM_DATA.id);
-      setIsLoaded(true);
+      setUser(null);
+      setIsLoaded(false);
       setCurrentView('dashboard');
     }
   };
@@ -700,42 +647,52 @@ const App: React.FC = () => {
     }
   };
 
-  return (
-    <>
-      <Layout 
-        currentView={currentView} 
-        onChangeView={setCurrentView} 
-        onLogout={handleLogout} 
-        user={user} 
-        animals={farmData.animals} 
-        inventory={farmData.inventory} 
-        healthRecords={farmData.healthRecords} 
-        tasks={farmData.tasks}
-        farms={farms}
-        activeFarmId={activeFarmId}
-        onSelectFarm={handleSelectFarm}
-        onDeleteFarm={handleDeleteFarm}
-        onCreateFarm={() => setIsCreatingFarm(true)}
-        onOpenResetPassword={() => setIsResetPasswordOpen(true)}
-        onOpenLogin={() => setIsLoginModalOpen(true)}
-      >
+  if (!user) {
+    return (
+      <>
+        <Login onLogin={setUser} />
         <ResetPasswordModal 
           isOpen={isResetPasswordOpen} 
           onClose={() => setIsResetPasswordOpen(false)} 
         />
-        {isSyncing && <div className="fixed bottom-4 right-4 bg-emerald-600 text-white text-[10px] font-black px-4 py-2 rounded-full shadow-lg z-50 animate-pulse">Sincronizando...</div>}
-        {!isLoaded && <div className="fixed inset-0 bg-white/50 backdrop-blur-sm z-50 flex items-center justify-center font-black uppercase tracking-widest text-xs">Acessando Banco...</div>}
+      </>
+    );
+  }
+
+  return (
+    <Layout 
+      currentView={currentView} 
+      onChangeView={setCurrentView} 
+      onLogout={handleLogout} 
+      user={user} 
+      animals={farmData.animals} 
+      inventory={farmData.inventory} 
+      healthRecords={farmData.healthRecords} 
+      tasks={farmData.tasks}
+      farms={farms}
+      activeFarmId={activeFarmId}
+      onSelectFarm={handleSelectFarm}
+      onDeleteFarm={handleDeleteFarm}
+      onCreateFarm={() => setIsCreatingFarm(true)}
+      onOpenResetPassword={() => setIsResetPasswordOpen(true)}
+    >
+      <ResetPasswordModal 
+        isOpen={isResetPasswordOpen} 
+        onClose={() => setIsResetPasswordOpen(false)} 
+      />
+      {isSyncing && <div className="fixed bottom-4 right-4 bg-emerald-600 text-white text-[10px] font-black px-4 py-2 rounded-full shadow-lg z-50 animate-pulse">Sincronizando...</div>}
+      {!isLoaded && <div className="fixed inset-0 bg-white/50 backdrop-blur-sm z-50 flex items-center justify-center font-black uppercase tracking-widest text-xs">Acessando Banco...</div>}
       
       {showWelcome && (
-        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-white w-full max-w-2xl rounded-[2.5rem] p-10 shadow-2xl space-y-6 animate-in zoom-in duration-300 overflow-y-auto max-h-[90vh]">
+        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/60 backdrop-blur-sm p-3.5 sm:p-4">
+          <div className="bg-white w-full max-w-2xl rounded-3xl sm:rounded-[2.5rem] p-6 sm:p-10 shadow-2xl space-y-6 animate-in zoom-in duration-300 overflow-y-auto max-h-[90vh]">
             <div className="flex justify-between items-center border-b border-gray-50 pb-4">
-              <h3 className="text-2xl font-black text-emerald-700 uppercase tracking-tight">Bem-vindo!</h3>
-              <button onClick={closeWelcome} className="p-2 hover:bg-gray-100 rounded-full"><X /></button>
+              <h3 className="text-xl sm:text-2xl font-black text-emerald-700 uppercase tracking-tight">Bem-vindo!</h3>
+              <button onClick={closeWelcome} className="p-2 hover:bg-gray-100 rounded-full cursor-pointer"><X /></button>
             </div>
             
             <div className="space-y-6 text-gray-700">
-              <p className="text-lg font-bold leading-relaxed">
+              <p className="text-base sm:text-lg font-bold leading-relaxed">
                 Seja bem-vindo ao APP Gestão Pecuária! <br/>
                 Aqui, sua gestão e sua pecuária saem do amadorismo e alcançam um novo nível de organização e controle.
               </p>
@@ -743,7 +700,7 @@ const App: React.FC = () => {
               <div className="space-y-4">
                 <p className="font-black text-xs uppercase tracking-widest text-emerald-600">Para começar:</p>
                 
-                <div className="grid gap-4">
+                <div className="grid gap-3 sm:gap-4">
                   {[
                     { step: "1", text: 'Crie sua(s) fazenda(s) clicando em "Unidade selecionada", no canto superior esquerdo.' },
                     { step: "2", text: 'Cadastre seus lotes em "Gestão de Lotes".' },
@@ -751,17 +708,17 @@ const App: React.FC = () => {
                     { step: "4", text: 'Cadastre e gerencie seus animais e o financeiro de forma prática e organizada.' },
                     { step: "5", text: 'Bom proveito!' }
                   ].map((item) => (
-                    <div key={item.step} className="flex items-start gap-4 p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                    <div key={item.step} className="flex items-start gap-3 sm:gap-4 p-3.5 sm:p-4 bg-gray-50 rounded-2xl border border-gray-100">
                       <span className="flex-shrink-0 w-8 h-8 bg-emerald-600 text-white rounded-full flex items-center justify-center font-black text-sm">{item.step}</span>
-                      <p className="font-semibold text-sm leading-tight pt-1">{item.text}</p>
+                      <p className="font-semibold text-xs sm:text-sm leading-tight pt-1">{item.text}</p>
                     </div>
                   ))}
                 </div>
               </div>
 
-              <div className="pt-6 border-t border-gray-50">
+              <div className="pt-4 sm:pt-6 border-t border-gray-50">
                 <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Dicas, reclamações ou sugestões:</p>
-                <a href="https://instagram.com.br/vivendoapecuaria" target="_blank" rel="noopener noreferrer" className="text-emerald-600 font-black hover:underline flex items-center gap-2">
+                <a href="https://instagram.com.br/vivendoapecuaria" target="_blank" rel="noopener noreferrer" className="text-emerald-600 font-black hover:underline flex items-center gap-2 text-xs sm:text-sm break-all">
                   instagram.com.br/vivendoapecuaria
                 </a>
               </div>
@@ -769,7 +726,7 @@ const App: React.FC = () => {
 
             <button 
               onClick={closeWelcome}
-              className="w-full bg-emerald-600 text-white py-5 rounded-2xl font-black uppercase text-xs tracking-widest shadow-xl active:scale-95 transition-all mt-4"
+              className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-4 sm:py-5 rounded-2xl font-black uppercase text-xs tracking-widest shadow-xl active:scale-95 transition-all mt-4 cursor-pointer"
             >
               Entendi, vamos começar!
             </button>
@@ -778,18 +735,18 @@ const App: React.FC = () => {
       )}
 
       {isCreatingFarm && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-           <div className="bg-white w-full max-w-md rounded-[2.5rem] p-10 shadow-2xl space-y-6 animate-in zoom-in duration-300">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm p-3.5 sm:p-4">
+           <div className="bg-white w-full max-w-md rounded-3xl sm:rounded-[2.5rem] p-6 sm:p-10 shadow-2xl space-y-6 animate-in zoom-in duration-300">
               <div className="flex justify-between items-center border-b border-gray-50 pb-4">
-                 <h3 className="text-xl font-black text-gray-800 uppercase tracking-tight">Nova Unidade</h3>
-                 <button onClick={() => setIsCreatingFarm(false)} className="p-2 hover:bg-gray-100 rounded-full"><X /></button>
+                 <h3 className="text-lg sm:text-xl font-black text-gray-800 uppercase tracking-tight">Nova Unidade</h3>
+                 <button onClick={() => setIsCreatingFarm(false)} className="p-2 hover:bg-gray-100 rounded-full cursor-pointer"><X /></button>
               </div>
               <form onSubmit={handleCreateFarm} className="space-y-4">
                  <div className="space-y-1">
                     <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Nome da Fazenda</label>
-                    <input type="text" className="w-full border border-gray-100 rounded-2xl px-6 py-4 font-bold bg-gray-50 focus:bg-white focus:ring-2 focus:ring-emerald-500 outline-none transition-all" value={newFarmName} onChange={e => setNewFarmName(e.target.value)} required autoFocus />
+                    <input type="text" className="w-full border border-gray-100 rounded-2xl px-4 sm:px-6 py-3.5 sm:py-4 font-bold bg-gray-50 focus:bg-white focus:ring-2 focus:ring-emerald-500 outline-none transition-all text-sm" value={newFarmName} onChange={e => setNewFarmName(e.target.value)} required autoFocus />
                  </div>
-                 <button type="submit" className="w-full bg-emerald-600 text-white py-5 rounded-2xl font-black uppercase text-xs tracking-widest shadow-xl active:scale-95 transition-all">Cadastrar e Abrir</button>
+                 <button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-4 sm:py-5 rounded-2xl font-black uppercase text-xs tracking-widest shadow-xl active:scale-95 transition-all cursor-pointer">Cadastrar e Abrir</button>
               </form>
            </div>
         </div>
@@ -797,21 +754,6 @@ const App: React.FC = () => {
 
       {renderContent()}
     </Layout>
-
-    {isLoginModalOpen && (
-      <div className="fixed inset-0 z-[80] overflow-y-auto bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-        <div className="relative w-full max-w-md">
-          <Login 
-            onLogin={(u) => {
-              setUser(u);
-              setIsLoginModalOpen(false);
-            }} 
-            onClose={() => setIsLoginModalOpen(false)} 
-          />
-        </div>
-      </div>
-    )}
-  </>
   );
 };
 

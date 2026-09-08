@@ -213,37 +213,37 @@ const PartnersBanner: React.FC<PartnersBannerProps> = ({ currentUser }) => {
         <div className="absolute bottom-0 left-1/3 -mb-8 w-64 h-64 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
 
         {/* Top Header of Banner */}
-        <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 mb-4 border-b border-slate-800">
+        <div className="relative z-1 flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 mb-4 border-b border-slate-800">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-emerald-600/90 text-white flex items-center justify-center shadow-md shadow-emerald-950/40 border border-emerald-400/30">
+            <div className="w-10 h-10 rounded-xl bg-emerald-600/90 text-white flex items-center justify-center shadow-md shadow-emerald-950/40 border border-emerald-400/30 shrink-0">
               <Handshake size={22} className="text-emerald-100" />
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h3 className="text-base font-extrabold text-white tracking-tight">
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h3 className="text-sm sm:text-base font-extrabold text-white tracking-tight">
                   Vitrine de Parceiros & Soluções
                 </h3>
-                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 shrink-0">
                   3 Espaços
                 </span>
 
                 {isAdmin && (
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider bg-amber-500/20 text-amber-300 border border-amber-500/40">
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider bg-amber-500/20 text-amber-300 border border-amber-500/40 shrink-0">
                     <ShieldCheck size={10} />
                     <span>Admin</span>
                   </span>
                 )}
               </div>
-              <p className="text-xs text-slate-300">
+              <p className="text-xs text-slate-300 line-clamp-2 sm:line-clamp-none">
                 Insumos, equipamentos e cupons de desconto para pecuária de alta rentabilidade.
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
+          <div className="flex items-center gap-2 self-start sm:self-auto shrink-0 flex-wrap">
             <button
               onClick={() => handleOpenContact()}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-emerald-200 bg-emerald-950/80 hover:bg-emerald-900 rounded-xl border border-emerald-700/60 transition-all active:scale-95 shadow-sm"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-emerald-200 bg-emerald-950/80 hover:bg-emerald-900 rounded-xl border border-emerald-700/60 transition-all active:scale-95 shadow-sm cursor-pointer"
               title="Informações para anunciar sua empresa"
             >
               <Megaphone size={14} className="text-emerald-300" />
@@ -253,7 +253,7 @@ const PartnersBanner: React.FC<PartnersBannerProps> = ({ currentUser }) => {
             {isAdmin && (
               <button
                 onClick={() => openEditor(0)}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-amber-300 bg-amber-950/60 hover:bg-amber-900/80 hover:text-white rounded-xl border border-amber-700/50 transition-all active:scale-95 shadow-sm"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-amber-300 bg-amber-950/60 hover:bg-amber-900/80 hover:text-white rounded-xl border border-amber-700/50 transition-all active:scale-95 shadow-sm cursor-pointer"
                 title="Gerenciar e editar os 3 espaços de parceiros (Apenas Administrador)"
               >
                 <Settings size={14} className="text-amber-400" />
@@ -264,7 +264,7 @@ const PartnersBanner: React.FC<PartnersBannerProps> = ({ currentUser }) => {
         </div>
 
         {/* 3 Partner Slots */}
-        <div className="relative z-10 grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="relative z-1 grid grid-cols-1 md:grid-cols-3 gap-4">
           {partnerSlots.map((slot, index) => {
             const isOccupied = slot.isOccupied;
             const hasCoupon = Boolean(slot.couponCode && slot.couponCode.trim().length > 0);
@@ -464,7 +464,7 @@ const PartnersBanner: React.FC<PartnersBannerProps> = ({ currentUser }) => {
         </div>
 
         {/* Footer info & Admin lock */}
-        <div className="relative z-10 mt-4 pt-3 border-t border-slate-800/80 flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-400">
+        <div className="relative z-1 mt-4 pt-3 border-t border-slate-800/80 flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-400">
           <div className="flex items-center gap-4">
             <span className="flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-emerald-400" />
