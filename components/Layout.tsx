@@ -24,7 +24,8 @@ import {
   Trash2,
   KeyRound,
   BarChart4,
-  Sparkles
+  Sparkles,
+  Database
 } from 'lucide-react';
 import { User, Animal, InventoryItem, HealthRecord, HealthSeverity, Task, Farm } from '../types';
 import { APP_LOGO_DATA_URI } from '../src/assets/logoData';
@@ -46,6 +47,7 @@ interface LayoutProps {
   onDeleteFarm?: (id: string) => void;
   onCreateFarm?: () => void;
   onOpenResetPassword?: () => void;
+  onOpenSupabaseConfig?: () => void;
 }
 
 const Layout: React.FC<LayoutProps> = ({ 
@@ -63,7 +65,8 @@ const Layout: React.FC<LayoutProps> = ({
   onSelectFarm,
   onDeleteFarm,
   onCreateFarm,
-  onOpenResetPassword
+  onOpenResetPassword,
+  onOpenSupabaseConfig
 }) => {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
@@ -291,10 +294,19 @@ const Layout: React.FC<LayoutProps> = ({
           {onOpenResetPassword && (
             <button 
               onClick={onOpenResetPassword}
-              className="flex items-center space-x-3 text-emerald-300 hover:text-white px-3.5 py-2 w-full transition-colors font-medium text-xs"
+              className="flex items-center space-x-3 text-emerald-300 hover:text-white px-3.5 py-2 w-full transition-colors font-medium text-xs cursor-pointer"
             >
               <KeyRound size={17} />
               <span>Alterar Senha</span>
+            </button>
+          )}
+          {onOpenSupabaseConfig && (
+            <button 
+              onClick={onOpenSupabaseConfig}
+              className="flex items-center space-x-3 text-emerald-300 hover:text-white px-3.5 py-2 w-full transition-colors font-medium text-xs cursor-pointer"
+            >
+              <Database size={17} />
+              <span>Configurar Banco</span>
             </button>
           )}
           <button 
@@ -431,9 +443,30 @@ const Layout: React.FC<LayoutProps> = ({
               </div>
 
               <div className="flex items-center space-x-2 sm:space-x-3 pl-2 sm:pl-3 border-l border-slate-200">
+                {user.provider === 'guest' ? (
+                  <button
+                    onClick={onOpenSupabaseConfig}
+                    className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-[10px] font-bold text-emerald-800 transition-colors cursor-pointer"
+                    title="Modo Local: Dados salvos no seu dispositivo. Clique para configurar conexão com a nuvem."
+                  >
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    <span>Modo Local</span>
+                  </button>
+                ) : (
+                  <button
+                    onClick={onOpenSupabaseConfig}
+                    className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-100 hover:bg-slate-200 border border-slate-200 text-[10px] font-bold text-slate-700 transition-colors cursor-pointer"
+                    title="Sincronização em nuvem ativa."
+                  >
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                    <span>Nuvem</span>
+                  </button>
+                )}
                 <div className="hidden sm:block text-right">
                   <p className="text-xs font-bold text-slate-900 truncate max-w-[130px]">{user.name}</p>
-                  <p className="text-[10px] text-emerald-700 font-semibold uppercase tracking-wider">Proprietário</p>
+                  <p className="text-[10px] text-emerald-700 font-semibold uppercase tracking-wider">
+                    {user.provider === 'guest' ? 'Acesso Local' : 'Proprietário'}
+                  </p>
                 </div>
                 <div className="h-8 w-8 sm:h-9 sm:w-9 rounded-xl bg-emerald-700 border border-emerald-600 flex items-center justify-center text-white font-extrabold text-xs shadow-xs overflow-hidden shrink-0">
                   {user.photo ? <img src={user.photo} className="w-full h-full object-cover" alt="User" /> : user.name.substring(0, 2).toUpperCase()}

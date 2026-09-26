@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { 
   Beef, 
@@ -18,10 +17,15 @@ import {
   Cpu, 
   Sparkles,
   BarChart3,
-  Check
+  Check,
+  Database,
+  WifiOff,
+  Settings,
+  AlertTriangle
 } from 'lucide-react';
 import { User } from '../types';
 import { supabase } from '../lib/supabase';
+import { SupabaseConfigModal } from './SupabaseConfigModal';
 import ranchBg from '../src/assets/images/ranch_login_bg_1786582194800.jpg';
 import { APP_LOGO_DATA_URI } from '../src/assets/logoData';
 
@@ -32,6 +36,7 @@ interface LoginProps {
 const Login: React.FC<LoginProps> = ({ onLogin }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [mode, setMode] = useState<'login' | 'register' | 'forgot'>('login');
+  const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
   
   // Form States
   const [email, setEmail] = useState('');
@@ -41,11 +46,26 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState('');
+  const [isConnectionError, setIsConnectionError] = useState(false);
   const [forgotSuccessMessage, setForgotSuccessMessage] = useState('');
+
+  const handleLocalAccess = () => {
+    const localUser: User = {
+      id: 'produtor-local',
+      name: name.trim() || 'Produtor Rural (Modo Local)',
+      email: email.trim() || 'produtor@fazenda.local',
+      provider: 'guest'
+    };
+    if (typeof window !== 'undefined' && window.localStorage) {
+      window.localStorage.setItem('local_user', JSON.stringify(localUser));
+    }
+    onLogin(localUser);
+  };
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setIsConnectionError(false);
     setForgotSuccessMessage('');
     setIsLoading(true);
 
@@ -99,7 +119,19 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
         }
       }
     } catch (err: any) {
-      setError(err.message || 'Ocorreu um erro na autenticação');
+      const errMsg = String(err?.message || err || 'Ocorreu um erro na autenticação');
+      setError(errMsg);
+      
+      const isNetworkIssue = 
+        errMsg.toLowerCase().includes('supabase') || 
+        errMsg.toLowerCase().includes('indisponível') ||
+        errMsg.toLowerCase().includes('network') ||
+        errMsg.toLowerCase().includes('conexão') ||
+        errMsg.toLowerCase().includes('fetch');
+
+      if (isNetworkIssue) {
+        setIsConnectionError(true);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -116,30 +148,41 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
             src={ranchBg} 
             alt="Fazenda de Pecuária" 
             className="w-full h-full object-cover object-center scale-105 transition-transform duration-10000 hover:scale-100"
-            referrerPolicy="no-referrer"
+            referrerPolicy="no-referrer" 
           />
           <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/75 to-slate-900/40" />
           <div className="absolute inset-0 bg-emerald-950/30 mix-blend-multiply" />
         </div>
 
         {/* Top Header Logo */}
-        <div className="relative z-10 flex items-center gap-3.5">
-          <div className="w-14 h-14 bg-white p-1 rounded-2xl shadow-xl shadow-emerald-950/60 border border-emerald-400/40 overflow-hidden shrink-0 flex items-center justify-center">
-            <img 
-              src={APP_LOGO_DATA_URI} 
-              alt="Gestão Pecuária Logo" 
-              className="w-full h-full object-cover rounded-xl" 
-              referrerPolicy="no-referrer" 
-            />
+        <div className="relative z-10 flex items-center justify-between">
+          <div className="flex items-center gap-3.5">
+            <div className="w-14 h-14 bg-white p-1 rounded-2xl shadow-xl shadow-emerald-950/60 border border-emerald-400/40 overflow-hidden shrink-0 flex items-center justify-center">
+              <img 
+                src={APP_LOGO_DATA_URI} 
+                alt="Gestão Pecuária Logo" 
+                className="w-full h-full object-cover rounded-xl" 
+                referrerPolicy="no-referrer" 
+              />
+            </div>
+            <div>
+              <span className="text-2xl font-black tracking-tight text-white uppercase block leading-none">
+                Gestão <span className="text-emerald-400">Pecuária</span>
+              </span>
+              <span className="text-[11px] uppercase font-bold tracking-widest text-emerald-300/90 mt-1 block">
+                Sistema de Precisão Zootécnica
+              </span>
+            </div>
           </div>
-          <div>
-            <span className="text-2xl font-black tracking-tight text-white uppercase block leading-none">
-              Gestão <span className="text-emerald-400">Pecuária</span>
-            </span>
-            <span className="text-[11px] uppercase font-bold tracking-widest text-emerald-300/90 mt-1 block">
-              Sistema de Precisão Zootécnica
-            </span>
-          </div>
+
+          <button
+            onClick={() => setIsConfigModalOpen(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900/80 border border-slate-700/80 text-slate-300 hover:text-white hover:bg-slate-800 text-xs font-semibold backdrop-blur-md transition-all cursor-pointer"
+            title="Configurar servidor ou banco de dados"
+          >
+            <Settings size={14} className="text-emerald-400" />
+            <span className="hidden sm:inline">Configurar Conexão</span>
+          </button>
         </div>
 
         {/* Center Hero Message & Highlights */}
@@ -194,7 +237,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                 <ShieldCheck size={18} />
               </div>
               <div>
-                <p className="text-xs font-bold text-white">Multiusuário & Núcleos</p>
+                <p className="text-xs font-bold text-white">Multiusuário & Lotes</p>
                 <p className="text-[11px] text-slate-400">Múltiplas fazendas</p>
               </div>
             </div>
@@ -205,7 +248,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
         <div className="relative z-10 pt-6 border-t border-slate-800/60 flex items-center justify-between text-xs text-slate-400">
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-            <span className="text-slate-300 font-medium">Plataforma Ativa & Sincronizada</span>
+            <span className="text-slate-300 font-medium">Plataforma Ativa com Armazenamento Local Seguro</span>
           </div>
           <span className="text-slate-500 text-[11px]">v2.5 • Pecuária 4.0</span>
         </div>
@@ -218,8 +261,8 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
           {/* Header Switcher Tabs */}
           <div className="bg-slate-950/80 p-1.5 rounded-2xl border border-slate-800 flex items-center shadow-inner">
             <button
-              onClick={() => { setMode('login'); setError(''); setForgotSuccessMessage(''); }}
-              className={`flex-1 py-2.5 text-xs font-bold rounded-xl transition-all ${
+              onClick={() => { setMode('login'); setError(''); setIsConnectionError(false); setForgotSuccessMessage(''); }}
+              className={`flex-1 py-2.5 text-xs font-bold rounded-xl transition-all cursor-pointer ${
                 mode === 'login' 
                   ? 'bg-emerald-600 text-white shadow-md shadow-emerald-950/50' 
                   : 'text-slate-400 hover:text-white'
@@ -228,8 +271,8 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
               Acessar Conta
             </button>
             <button
-              onClick={() => { setMode('register'); setError(''); setForgotSuccessMessage(''); }}
-              className={`flex-1 py-2.5 text-xs font-bold rounded-xl transition-all ${
+              onClick={() => { setMode('register'); setError(''); setIsConnectionError(false); setForgotSuccessMessage(''); }}
+              className={`flex-1 py-2.5 text-xs font-bold rounded-xl transition-all cursor-pointer ${
                 mode === 'register' 
                   ? 'bg-emerald-600 text-white shadow-md shadow-emerald-950/50' 
                   : 'text-slate-400 hover:text-white'
@@ -247,17 +290,57 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
               {mode === 'forgot' && 'Recuperação de Senha'}
             </h2>
             <p className="text-slate-400 text-xs mt-1">
-              {mode === 'login' && 'Insira suas credenciais para entrar no painel zootécnico.'}
+              {mode === 'login' && 'Insira suas credenciais ou use o Acesso Local sem servidor.'}
               {mode === 'register' && 'Crie sua conta para começar a gerenciar seu rebanho.'}
               {mode === 'forgot' && 'Digite seu e-mail e enviaremos um link de redefinição.'}
             </p>
           </div>
 
-          {/* Alert Messages */}
+          {/* Connection Error Banner with Immediate Local Mode CTA */}
           {error && (
-            <div className="p-3.5 bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs rounded-2xl font-medium animate-in fade-in duration-200 flex items-start gap-2">
-              <span className="font-bold text-rose-400">Erro:</span>
-              <span className="leading-relaxed">{error}</span>
+            <div className={`p-4 border rounded-2xl text-xs font-medium space-y-3 animate-in fade-in duration-200 ${
+              isConnectionError 
+                ? 'bg-amber-500/10 border-amber-500/30 text-amber-200' 
+                : 'bg-rose-500/10 border-rose-500/30 text-rose-300'
+            }`}>
+              <div className="flex items-start gap-2.5">
+                {isConnectionError ? (
+                  <WifiOff size={18} className="text-amber-400 shrink-0 mt-0.5" />
+                ) : (
+                  <AlertTriangle size={18} className="text-rose-400 shrink-0 mt-0.5" />
+                )}
+                <div>
+                  <p className="font-bold text-sm">
+                    {isConnectionError ? 'Servidor de Nuvem Supabase Indisponível' : 'Erro de Autenticação'}
+                  </p>
+                  <p className="mt-1 leading-relaxed text-slate-300">
+                    {isConnectionError 
+                      ? 'Não foi possível alcançar o servidor Supabase configurado. Você pode continuar no Modo Local imediatamente com todos os dados salvos no seu navegador!'
+                      : error}
+                  </p>
+                </div>
+              </div>
+
+              {isConnectionError && (
+                <div className="pt-1 flex flex-col sm:flex-row gap-2">
+                  <button
+                    type="button"
+                    onClick={handleLocalAccess}
+                    className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 shadow-md transition-all cursor-pointer"
+                  >
+                    <Database size={14} />
+                    <span>Entrar no Modo Local Agora</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsConfigModalOpen(true)}
+                    className="bg-slate-800 hover:bg-slate-700 text-slate-300 py-2.5 px-3 rounded-xl font-semibold text-xs flex items-center justify-center gap-1 border border-slate-700 transition-all cursor-pointer"
+                  >
+                    <Settings size={14} />
+                    <span>Configurar URL</span>
+                  </button>
+                </div>
+              )}
             </div>
           )}
 
@@ -270,6 +353,39 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
               </div>
             </div>
           )}
+
+          {/* Quick Local Access Card (Recommended when offline or for fast evaluation) */}
+          <div className="p-4 bg-slate-950/70 border border-emerald-800/40 rounded-2xl space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Database size={16} className="text-emerald-400" />
+                <span className="text-xs font-bold text-white">Acesso Local & Demonstração</span>
+              </div>
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                100% Funcional
+              </span>
+            </div>
+            <p className="text-[11px] text-slate-400 leading-relaxed">
+              Use o sistema de forma instantânea sem necessidade de servidor externo. Seus dados ficam salvos com segurança no navegador.
+            </p>
+            <button
+              type="button"
+              onClick={handleLocalAccess}
+              className="w-full bg-slate-800 hover:bg-slate-700/90 text-emerald-300 hover:text-white py-3 px-4 rounded-xl font-bold border border-slate-700 flex items-center justify-center gap-2 transition-all text-xs shadow-md cursor-pointer hover:border-emerald-500/40"
+            >
+              <Database size={15} className="text-emerald-400" />
+              <span>Entrar no Modo Local (Sem Servidor)</span>
+              <ArrowRight size={15} className="ml-1 opacity-70" />
+            </button>
+          </div>
+
+          <div className="relative flex items-center justify-center my-4">
+            <div className="border-t border-slate-800 w-full" />
+            <span className="bg-slate-900 px-3 text-[10px] font-bold uppercase tracking-wider text-slate-500">
+              Ou acesse com conta na nuvem
+            </span>
+            <div className="border-t border-slate-800 w-full" />
+          </div>
 
           {/* Authentication Form */}
           <form onSubmit={handleAuth} className="space-y-4">
@@ -320,8 +436,8 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                     {mode === 'login' && (
                       <button
                         type="button"
-                        onClick={() => { setMode('forgot'); setError(''); setForgotSuccessMessage(''); }}
-                        className="text-xs text-emerald-400 font-semibold hover:underline"
+                        onClick={() => { setMode('forgot'); setError(''); setIsConnectionError(false); setForgotSuccessMessage(''); }}
+                        className="text-xs text-emerald-400 font-semibold hover:underline cursor-pointer"
                       >
                         Esqueci minha senha
                       </button>
@@ -340,7 +456,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
+                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors cursor-pointer"
                     >
                       {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                     </button>
@@ -365,7 +481,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                       <button
                         type="button"
                         onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
+                        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors cursor-pointer"
                       >
                         {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                       </button>
@@ -379,16 +495,16 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
             <button 
               type="submit"
               disabled={isLoading}
-              className="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-3.5 rounded-xl font-bold shadow-lg shadow-emerald-950/50 flex items-center justify-center gap-2 transition-all hover:scale-[1.01] active:scale-[0.99] disabled:opacity-70 text-sm mt-2"
+              className="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-3.5 rounded-xl font-bold shadow-lg shadow-emerald-950/50 flex items-center justify-center gap-2 transition-all hover:scale-[1.01] active:scale-[0.99] disabled:opacity-70 text-sm mt-2 cursor-pointer"
             >
               {isLoading ? (
                 <Loader2 className="animate-spin" size={20} />
               ) : (
                 <>
                   {mode === 'login' ? (
-                    <>Acessar Painel <ArrowRight size={18} /></>
+                    <>Entrar com Supabase <ArrowRight size={18} /></>
                   ) : mode === 'register' ? (
-                    <>Criar Minha Conta <ArrowRight size={18} /></>
+                    <>Criar Minha Conta na Nuvem <ArrowRight size={18} /></>
                   ) : (
                     <>Enviar E-mail de Recuperação <KeyRound size={18} /></>
                   )}
@@ -401,15 +517,15 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
           <div className="text-center pt-2">
             {mode === 'forgot' ? (
               <button 
-                onClick={() => { setMode('login'); setError(''); setForgotSuccessMessage(''); }}
-                className="text-xs text-emerald-400 font-semibold hover:text-emerald-300 transition-colors flex items-center justify-center gap-1 mx-auto"
+                onClick={() => { setMode('login'); setError(''); setIsConnectionError(false); setForgotSuccessMessage(''); }}
+                className="text-xs text-emerald-400 font-semibold hover:text-emerald-300 transition-colors flex items-center justify-center gap-1 mx-auto cursor-pointer"
               >
                 <ArrowLeft size={16} /> Voltar ao Login
               </button>
             ) : (
               <button 
-                onClick={() => { setMode(mode === 'login' ? 'register' : 'login'); setError(''); setForgotSuccessMessage(''); }}
-                className="text-xs text-slate-400 hover:text-slate-200 transition-colors flex items-center justify-center gap-1.5 mx-auto"
+                onClick={() => { setMode(mode === 'login' ? 'register' : 'login'); setError(''); setIsConnectionError(false); setForgotSuccessMessage(''); }}
+                className="text-xs text-slate-400 hover:text-slate-200 transition-colors flex items-center justify-center gap-1.5 mx-auto cursor-pointer"
               >
                 {mode === 'login' ? (
                   <>Ainda não possui uma conta? <span className="text-emerald-400 font-bold hover:underline">Cadastre-se grátis</span></>
@@ -420,11 +536,22 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
             )}
           </div>
 
-          {/* Security & Copyright Footer */}
-          <div className="pt-6 border-t border-slate-800/80 text-center space-y-2">
-            <div className="flex items-center justify-center gap-1.5 text-[11px] text-slate-500">
-              <ShieldCheck size={14} className="text-emerald-500" />
-              <span>Conexão Segura & Criptografada (Supabase Auth)</span>
+          {/* Security & Settings Footer */}
+          <div className="pt-6 border-t border-slate-800/80 text-center space-y-2.5">
+            <div className="flex items-center justify-center gap-4 text-[11px] text-slate-500">
+              <span className="flex items-center gap-1.5">
+                <ShieldCheck size={14} className="text-emerald-500" />
+                <span>Dados Seguros</span>
+              </span>
+              <span>•</span>
+              <button
+                type="button"
+                onClick={() => setIsConfigModalOpen(true)}
+                className="text-emerald-400/90 hover:text-emerald-300 underline flex items-center gap-1 cursor-pointer"
+              >
+                <Settings size={13} />
+                <span>Configurações do Banco</span>
+              </button>
             </div>
             <p className="text-[11px] text-slate-600">
               © {new Date().getFullYear()} Gestão Pecuária Systems. Todos os direitos reservados.
@@ -434,9 +561,13 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
         </div>
       </div>
 
+      <SupabaseConfigModal 
+        isOpen={isConfigModalOpen} 
+        onClose={() => setIsConfigModalOpen(false)} 
+      />
+
     </div>
   );
 };
 
 export default Login;
-
