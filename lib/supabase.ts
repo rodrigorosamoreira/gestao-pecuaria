@@ -6,6 +6,16 @@ export const SUPABASE_KEY_STORAGE_KEY = 'custom_supabase_anon_key';
 export const DEFAULT_SUPABASE_URL = 'https://aolmpvdlmmadcyfdfzul.supabase.co';
 export const DEFAULT_SUPABASE_ANON_KEY = 'sb_publishable_qQnLFVTy0cQZGt2uc8098g_GwanqTTH';
 
+export const normalizeSupabaseUrl = (inputUrl: string): string => {
+  if (!inputUrl) return '';
+  let url = inputUrl.trim().replace(/\/+$/, '');
+  // Se o usuário colou com /auth/v1, /rest/v1, /storage/v1 etc., remove para evitar "Invalid path specified in request URL"
+  url = url.replace(/\/auth(\/v1)?(\/.*)?$/i, '');
+  url = url.replace(/\/rest(\/v1)?(\/.*)?$/i, '');
+  url = url.replace(/\/storage(\/v1)?(\/.*)?$/i, '');
+  return url.replace(/\/+$/, '');
+};
+
 export const getSupabaseConfig = () => {
   let customUrl = '';
   let customKey = '';
@@ -19,7 +29,8 @@ export const getSupabaseConfig = () => {
   const envUrl = ((import.meta as any).env?.VITE_SUPABASE_URL as string)?.trim() || '';
   const envKey = ((import.meta as any).env?.VITE_SUPABASE_ANON_KEY as string)?.trim() || '';
 
-  const url = customUrl || envUrl || DEFAULT_SUPABASE_URL;
+  const rawUrl = customUrl || envUrl || DEFAULT_SUPABASE_URL;
+  const url = normalizeSupabaseUrl(rawUrl);
   const anonKey = customKey || envKey || DEFAULT_SUPABASE_ANON_KEY;
   const isCustom = Boolean(customUrl || envUrl);
 
@@ -51,7 +62,7 @@ export const clearSupabaseAuth = () => {
 
 export const saveCustomSupabaseConfig = (url: string, key: string) => {
   if (typeof window !== 'undefined' && window.localStorage) {
-    const cleanUrl = url.trim().replace(/\/+$/, '');
+    const cleanUrl = normalizeSupabaseUrl(url);
     const cleanKey = key.trim();
     if (cleanUrl) {
       window.localStorage.setItem(SUPABASE_URL_STORAGE_KEY, cleanUrl);
@@ -77,8 +88,9 @@ export const resetSupabaseConfig = () => {
 
 export const testSupabaseConnection = async (targetUrl?: string, targetKey?: string): Promise<{ success: boolean; message: string }> => {
   const config = getSupabaseConfig();
-  const url = (targetUrl || config.url).trim().replace(/\/+$/, '');
-  const key = (targetKey || config.anonKey).trim();
+  const rawUrl = targetUrl !== undefined ? targetUrl : config.url;
+  const url = normalizeSupabaseUrl(rawUrl);
+  const key = (targetKey !== undefined ? targetKey : config.anonKey).trim();
 
   if (!url || !url.startsWith('http')) {
     return { success: false, message: 'URL do Supabase inválida. Deve iniciar com https://' };

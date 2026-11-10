@@ -119,19 +119,40 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
         }
       }
     } catch (err: any) {
-      const errMsg = String(err?.message || err || 'Ocorreu um erro na autenticação');
-      setError(errMsg);
-      
-      const isNetworkIssue = 
-        errMsg.toLowerCase().includes('supabase') || 
-        errMsg.toLowerCase().includes('indisponível') ||
-        errMsg.toLowerCase().includes('network') ||
-        errMsg.toLowerCase().includes('conexão') ||
-        errMsg.toLowerCase().includes('fetch');
+      const rawMsg = String(err?.message || err || 'Ocorreu um erro na autenticação');
+      console.error('Erro de autenticação Supabase:', err);
 
-      if (isNetworkIssue) {
+      const lowerMsg = rawMsg.toLowerCase();
+      let userFriendlyMsg = rawMsg;
+
+      const isPathError = 
+        lowerMsg.includes('invalid path') || 
+        lowerMsg.includes('requested path is invalid') ||
+        lowerMsg.includes('pgrst125');
+
+      const isNetworkIssue = 
+        isPathError ||
+        lowerMsg.includes('supabase') || 
+        lowerMsg.includes('indisponível') ||
+        lowerMsg.includes('failed to fetch') ||
+        lowerMsg.includes('network') ||
+        lowerMsg.includes('conexão') ||
+        lowerMsg.includes('fetch');
+
+      if (isPathError) {
+        userFriendlyMsg = 'A URL do servidor Supabase configurada contém um caminho ou rota inválida (ex: "/auth/v1" ou "/rest/v1" incluído na raiz). Ajuste para apenas "https://seu-projeto.supabase.co" ou utilize o Modo Local.';
+        setIsConnectionError(true);
+      } else if (lowerMsg.includes('invalid login credentials') || lowerMsg.includes('invalid credentials')) {
+        userFriendlyMsg = 'E-mail ou senha incorretos. Verifique suas credenciais ou crie uma conta.';
+      } else if (lowerMsg.includes('email not confirmed')) {
+        userFriendlyMsg = 'E-mail ainda não confirmado. Verifique sua caixa de entrada no e-mail cadastrado.';
+      } else if (lowerMsg.includes('user already registered')) {
+        userFriendlyMsg = 'Este e-mail já está cadastrado. Alterne para a aba "Acessar Conta".';
+      } else if (isNetworkIssue) {
         setIsConnectionError(true);
       }
+
+      setError(userFriendlyMsg);
     } finally {
       setIsLoading(false);
     }
