@@ -72,6 +72,20 @@ const Layout: React.FC<LayoutProps> = ({
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [isFarmMenuOpen, setIsFarmMenuOpen] = useState(false);
 
+  // Verificação de administrador para funções de infraestrutura / banco
+  const MASTER_ADMIN_EMAILS = [
+    'rodrigorosamoreira@gmail.com',
+    'admin@gestaopeccuaria.com',
+    'vivendoapecuaria@gmail.com'
+  ];
+  const userEmail = (user?.email || '').toLowerCase().trim();
+  const isAdmin = Boolean(
+    user?.role === 'admin' ||
+    MASTER_ADMIN_EMAILS.includes(userEmail) ||
+    userEmail.includes('admin') ||
+    (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('gestao_pecuaria_admin_unlocked') === 'true')
+  );
+
   const activeFarm = farms.find(f => f.id === activeFarmId);
 
   const getNotifications = () => {
@@ -291,6 +305,23 @@ const Layout: React.FC<LayoutProps> = ({
             <Instagram size={18} className="group-hover:scale-110 transition-transform text-pink-400 group-hover:text-white" />
             <span className="truncate">@vivendoapecuaria</span>
           </a>
+          <a 
+            href="https://chat.whatsapp.com/HVA8xmp93HYJeCWQRs1g8x" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="flex items-center space-x-3 text-emerald-100 bg-emerald-800/50 hover:bg-emerald-600 hover:text-white px-3.5 py-2.5 rounded-xl w-full transition-all font-bold text-xs group border border-emerald-600/40 shadow-xs"
+            title="Acesse a Comunidade no WhatsApp"
+          >
+            <svg 
+              className="w-[18px] h-[18px] fill-[#25D366] group-hover:fill-white shrink-0 group-hover:scale-110 transition-transform" 
+              viewBox="0 0 24 24"
+              role="img"
+              aria-label="WhatsApp"
+            >
+              <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.59 15.36 3.45 16.86L2.05 22L7.3 20.62C8.75 21.41 10.38 21.83 12.04 21.83C17.5 21.83 21.95 17.38 21.95 11.92C21.95 9.27 20.92 6.78 19.05 4.91C17.18 3.03 14.69 2 12.04 2M12.05 3.67C14.25 3.67 16.31 4.53 17.87 6.09C19.42 7.65 20.28 9.72 20.28 11.92C20.28 16.46 16.58 20.15 12.04 20.15C10.56 20.15 9.11 19.76 7.85 19L7.55 18.83L4.43 19.65L5.26 16.61L5.06 16.29C4.24 15 3.8 13.47 3.8 11.91C3.81 7.37 7.5 3.67 12.05 3.67M8.53 7.33C8.37 7.33 8.1 7.39 7.87 7.64C7.65 7.89 7 8.5 7 9.71C7 10.93 7.89 12.1 8.01 12.27C8.14 12.44 9.76 14.94 12.25 16C12.84 16.27 13.3 16.42 13.66 16.53C14.25 16.72 14.79 16.69 15.22 16.63C15.7 16.56 16.68 16.03 16.89 15.45C17.1 14.87 17.1 14.38 17.04 14.27C16.97 14.17 16.81 14.11 16.56 13.99C16.32 13.86 15.12 13.27 14.9 13.19C14.68 13.1 14.52 13.06 14.36 13.3C14.19 13.55 13.73 14.11 13.59 14.27C13.45 14.44 13.31 14.46 13.07 14.34C12.82 14.21 11.79 13.88 10.57 12.79C9.62 11.94 8.98 10.89 8.85 10.65C8.73 10.4 8.83 10.28 8.96 10.15C9.07 10.04 9.21 9.85 9.33 9.71C9.46 9.57 9.5 9.47 9.58 9.31C9.66 9.14 9.62 9 9.56 8.88C9.5 8.76 9.03 7.6 8.84 7.13C8.65 6.67 8.46 6.73 8.31 6.72C8.18 6.72 8.02 6.72 7.87 6.72L8.53 7.33Z" />
+            </svg>
+            <span className="truncate">Acessa Comunidade</span>
+          </a>
           {onOpenResetPassword && (
             <button 
               onClick={onOpenResetPassword}
@@ -300,7 +331,7 @@ const Layout: React.FC<LayoutProps> = ({
               <span>Alterar Senha</span>
             </button>
           )}
-          {onOpenSupabaseConfig && (
+          {isAdmin && onOpenSupabaseConfig && (
             <button 
               onClick={onOpenSupabaseConfig}
               className="flex items-center space-x-3 text-emerald-300 hover:text-white px-3.5 py-2 w-full transition-colors font-medium text-xs cursor-pointer"
@@ -444,23 +475,43 @@ const Layout: React.FC<LayoutProps> = ({
 
               <div className="flex items-center space-x-2 sm:space-x-3 pl-2 sm:pl-3 border-l border-slate-200">
                 {user.provider === 'guest' ? (
-                  <button
-                    onClick={onOpenSupabaseConfig}
-                    className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-[10px] font-bold text-emerald-800 transition-colors cursor-pointer"
-                    title="Modo Local: Dados salvos no seu dispositivo. Clique para configurar conexão com a nuvem."
-                  >
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                    <span>Modo Local</span>
-                  </button>
+                  isAdmin ? (
+                    <button
+                      onClick={onOpenSupabaseConfig}
+                      className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-[10px] font-bold text-emerald-800 transition-colors cursor-pointer"
+                      title="Modo Local: Dados salvos no seu dispositivo. Clique para configurar conexão com a nuvem."
+                    >
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                      <span>Modo Local</span>
+                    </button>
+                  ) : (
+                    <div
+                      className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-[10px] font-bold text-emerald-800 select-none"
+                      title="Modo Local: Seus dados estão salvos com segurança neste dispositivo."
+                    >
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                      <span>Modo Local</span>
+                    </div>
+                  )
                 ) : (
-                  <button
-                    onClick={onOpenSupabaseConfig}
-                    className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-100 hover:bg-slate-200 border border-slate-200 text-[10px] font-bold text-slate-700 transition-colors cursor-pointer"
-                    title="Sincronização em nuvem ativa."
-                  >
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                    <span>Nuvem</span>
-                  </button>
+                  isAdmin ? (
+                    <button
+                      onClick={onOpenSupabaseConfig}
+                      className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-100 hover:bg-slate-200 border border-slate-200 text-[10px] font-bold text-slate-700 transition-colors cursor-pointer"
+                      title="Sincronização em nuvem ativa. Clique para gerenciar o banco."
+                    >
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                      <span>Nuvem</span>
+                    </button>
+                  ) : (
+                    <div
+                      className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-100 border border-slate-200 text-[10px] font-bold text-slate-700 select-none"
+                      title="Sincronização em nuvem ativa."
+                    >
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                      <span>Nuvem</span>
+                    </div>
+                  )
                 )}
                 <div className="hidden sm:block text-right">
                   <p className="text-xs font-bold text-slate-900 truncate max-w-[130px]">{user.name}</p>
