@@ -159,10 +159,10 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 flex flex-col lg:flex-row text-slate-100 overflow-hidden font-sans">
+    <div className="min-h-screen bg-[#F6F8F5] flex flex-col lg:flex-row text-[#20332C] overflow-hidden font-sans">
       
       {/* Left Panel - Visual Branding & Hero Showcase */}
-      <div className="relative lg:w-7/12 flex flex-col justify-between p-8 lg:p-14 overflow-hidden border-b lg:border-b-0 lg:border-r border-emerald-900/30">
+      <div className="relative lg:w-7/12 flex flex-col justify-between p-8 lg:p-14 overflow-hidden border-b lg:border-b-0 lg:border-r border-[#E3EAE6] text-white">
         {/* Background Image with Ambient Overlays */}
         <div className="absolute inset-0 z-0">
           <img 
@@ -171,14 +171,13 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
             className="w-full h-full object-cover object-center scale-105 transition-transform duration-10000 hover:scale-100"
             referrerPolicy="no-referrer" 
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/75 to-slate-900/40" />
-          <div className="absolute inset-0 bg-emerald-950/30 mix-blend-multiply" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0D261E] via-[#0D261E]/80 to-[#0D261E]/45" />
         </div>
 
         {/* Top Header Logo */}
         <div className="relative z-10 flex items-center justify-between">
           <div className="flex items-center gap-3.5">
-            <div className="w-14 h-14 bg-white p-1 rounded-2xl shadow-xl shadow-emerald-950/60 border border-emerald-400/40 overflow-hidden shrink-0 flex items-center justify-center">
+            <div className="w-14 h-14 bg-white p-1 rounded-2xl shadow-lg border border-white/30 overflow-hidden shrink-0 flex items-center justify-center">
               <img 
                 src={APP_LOGO_DATA_URI} 
                 alt="Gestão Pecuária Logo" 
@@ -187,10 +186,10 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
               />
             </div>
             <div>
-              <span className="text-2xl font-black tracking-tight text-white uppercase block leading-none">
-                Gestão <span className="text-emerald-400">Pecuária</span>
+              <span className="text-2xl font-semibold leading-snug text-white block">
+                Gestão <span className="text-[#8CE0BE]">Pecuária</span>
               </span>
-              <span className="text-[11px] uppercase font-bold tracking-widest text-emerald-300/90 mt-1 block">
+              <span className="text-xs font-medium leading-snug text-white/80 mt-0.5 block">
                 Sistema de Precisão Zootécnica
               </span>
             </div>
@@ -198,105 +197,105 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
 
           <button
             onClick={() => setIsConfigModalOpen(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900/80 border border-slate-700/80 text-slate-300 hover:text-white hover:bg-slate-800 text-xs font-semibold backdrop-blur-md transition-all cursor-pointer"
+            className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white/10 border border-white/20 text-white/90 hover:text-white hover:bg-white/20 text-xs font-medium backdrop-blur-md transition-all cursor-pointer"
             title="Configurar servidor ou banco de dados"
           >
-            <Settings size={14} className="text-emerald-400" />
+            <Settings size={15} className="text-[#8CE0BE]" />
             <span className="hidden sm:inline">Configurar Conexão</span>
           </button>
         </div>
 
         {/* Center Hero Message & Highlights */}
         <div className="relative z-10 my-10 lg:my-0 space-y-6 max-w-xl">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-xs font-semibold backdrop-blur-md">
-            <Sparkles size={14} className="text-emerald-400 animate-pulse" />
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-white/10 border border-white/20 text-[#8CE0BE] text-xs font-medium backdrop-blur-md">
+            <Sparkles size={14} className="text-[#8CE0BE]" />
             <span>Inteligência Artificial & Controle Total</span>
           </div>
 
-          <h1 className="text-3xl lg:text-5xl font-black text-white tracking-tight leading-tight">
-            Transforme a gestão do seu <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 via-teal-200 to-emerald-400">rebanho com dados reais</span>.
+          <h1 className="text-3xl lg:text-4xl font-semibold text-white leading-tight">
+            Transforme a gestão do seu <span className="text-[#8CE0BE]">rebanho com dados reais</span>.
           </h1>
 
-          <p className="text-slate-300 text-sm lg:text-base leading-relaxed">
+          <p className="text-white/85 text-sm lg:text-base font-normal leading-relaxed">
             Controle de ganho de peso, lotes de pastejo, custos diários e análises zootécnicas preditivas em uma plataforma simples e moderna.
           </p>
 
-          {/* Feature Grid Pills */}
-          <div className="grid grid-cols-2 gap-3 pt-2">
-            <div className="flex items-center gap-3 p-3 bg-slate-900/75 border border-slate-800/80 rounded-2xl backdrop-blur-md">
-              <div className="p-2 bg-emerald-500/20 text-emerald-400 rounded-xl">
+          {/* Feature Grid Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+            <div className="flex items-center gap-3 p-3.5 bg-white/10 border border-white/15 rounded-xl backdrop-blur-md">
+              <div className="p-2 bg-white/15 text-[#8CE0BE] rounded-lg shrink-0">
                 <TrendingUp size={18} />
               </div>
               <div>
-                <p className="text-xs font-bold text-white">GMD & Peso Preditivo</p>
-                <p className="text-[11px] text-slate-400">Evolução em tempo real</p>
+                <p className="text-sm font-semibold text-white leading-snug">GMD & Peso Preditivo</p>
+                <p className="text-xs font-normal text-white/75 leading-snug mt-0.5">Evolução em tempo real</p>
               </div>
             </div>
 
-            <div className="flex items-center gap-3 p-3 bg-slate-900/75 border border-slate-800/80 rounded-2xl backdrop-blur-md">
-              <div className="p-2 bg-teal-500/20 text-teal-400 rounded-xl">
+            <div className="flex items-center gap-3 p-3.5 bg-white/10 border border-white/15 rounded-xl backdrop-blur-md">
+              <div className="p-2 bg-white/15 text-[#8CE0BE] rounded-lg shrink-0">
                 <BarChart3 size={18} />
               </div>
               <div>
-                <p className="text-xs font-bold text-white">Financeiro por Cabeça</p>
-                <p className="text-[11px] text-slate-400">Calculadora de diária</p>
+                <p className="text-sm font-semibold text-white leading-snug">Financeiro por Cabeça</p>
+                <p className="text-xs font-normal text-white/75 leading-snug mt-0.5">Calculadora de diária</p>
               </div>
             </div>
 
-            <div className="flex items-center gap-3 p-3 bg-slate-900/75 border border-slate-800/80 rounded-2xl backdrop-blur-md">
-              <div className="p-2 bg-emerald-500/20 text-emerald-400 rounded-xl">
+            <div className="flex items-center gap-3 p-3.5 bg-white/10 border border-white/15 rounded-xl backdrop-blur-md">
+              <div className="p-2 bg-white/15 text-[#8CE0BE] rounded-lg shrink-0">
                 <Cpu size={18} />
               </div>
               <div>
-                <p className="text-xs font-bold text-white">Consultor IA Zootécnico</p>
-                <p className="text-[11px] text-slate-400">Nutrição & Recomendações</p>
+                <p className="text-sm font-semibold text-white leading-snug">Consultor IA Zootécnico</p>
+                <p className="text-xs font-normal text-white/75 leading-snug mt-0.5">Nutrição & Recomendações</p>
               </div>
             </div>
 
-            <div className="flex items-center gap-3 p-3 bg-slate-900/75 border border-slate-800/80 rounded-2xl backdrop-blur-md">
-              <div className="p-2 bg-teal-500/20 text-teal-400 rounded-xl">
+            <div className="flex items-center gap-3 p-3.5 bg-white/10 border border-white/15 rounded-xl backdrop-blur-md">
+              <div className="p-2 bg-white/15 text-[#8CE0BE] rounded-lg shrink-0">
                 <ShieldCheck size={18} />
               </div>
               <div>
-                <p className="text-xs font-bold text-white">Multiusuário & Lotes</p>
-                <p className="text-[11px] text-slate-400">Múltiplas fazendas</p>
+                <p className="text-sm font-semibold text-white leading-snug">Multiusuário & Lotes</p>
+                <p className="text-xs font-normal text-white/75 leading-snug mt-0.5">Múltiplas fazendas</p>
               </div>
             </div>
           </div>
         </div>
 
         {/* Bottom Proof / Footer Note */}
-        <div className="relative z-10 pt-6 border-t border-slate-800/60 flex items-center justify-between text-xs text-slate-400">
+        <div className="relative z-10 pt-6 border-t border-white/15 flex items-center justify-between text-xs font-normal text-white/75">
           <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-            <span className="text-slate-300 font-medium">Plataforma Ativa com Armazenamento Local Seguro</span>
+            <span className="w-2 h-2 rounded-full bg-[#8CE0BE]" />
+            <span className="text-white/90 font-medium">Plataforma Ativa com Armazenamento Local Seguro</span>
           </div>
-          <span className="text-slate-500 text-[11px]">v2.5 • Pecuária 4.0</span>
+          <span className="text-white/60 text-xs">v2.5 • Pecuária 4.0</span>
         </div>
       </div>
 
       {/* Right Panel - Authentication Form Container */}
-      <div className="lg:w-5/12 flex items-center justify-center p-6 lg:p-12 bg-slate-900/90 relative">
-        <div className="w-full max-w-md space-y-6">
+      <div className="lg:w-5/12 flex items-center justify-center p-6 lg:p-12 bg-[#F6F8F5] relative">
+        <div className="w-full max-w-md bg-white p-6 sm:p-8 rounded-2xl border border-[#E3EAE6] shadow-xs space-y-6">
           
           {/* Header Switcher Tabs */}
-          <div className="bg-slate-950/80 p-1.5 rounded-2xl border border-slate-800 flex items-center shadow-inner">
+          <div className="bg-[#F6F8F5] p-1 rounded-xl border border-[#E3EAE6] flex items-center">
             <button
               onClick={() => { setMode('login'); setError(''); setIsConnectionError(false); setForgotSuccessMessage(''); }}
-              className={`flex-1 py-2.5 text-xs font-bold rounded-xl transition-all cursor-pointer ${
+              className={`flex-1 py-2.5 text-sm font-semibold leading-snug rounded-lg transition-all cursor-pointer ${
                 mode === 'login' 
-                  ? 'bg-emerald-600 text-white shadow-md shadow-emerald-950/50' 
-                  : 'text-slate-400 hover:text-white'
+                  ? 'bg-[#145C46] text-white shadow-2xs' 
+                  : 'text-[#64766C] hover:text-[#20332C]'
               }`}
             >
               Acessar Conta
             </button>
             <button
               onClick={() => { setMode('register'); setError(''); setIsConnectionError(false); setForgotSuccessMessage(''); }}
-              className={`flex-1 py-2.5 text-xs font-bold rounded-xl transition-all cursor-pointer ${
+              className={`flex-1 py-2.5 text-sm font-semibold leading-snug rounded-lg transition-all cursor-pointer ${
                 mode === 'register' 
-                  ? 'bg-emerald-600 text-white shadow-md shadow-emerald-950/50' 
-                  : 'text-slate-400 hover:text-white'
+                  ? 'bg-[#145C46] text-white shadow-2xs' 
+                  : 'text-[#64766C] hover:text-[#20332C]'
               }`}
             >
               Criar Conta
@@ -305,12 +304,12 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
 
           {/* Form Card Title */}
           <div>
-            <h2 className="text-2xl font-bold text-white tracking-tight">
+            <h2 className="text-2xl font-semibold leading-snug text-[#20332C]">
               {mode === 'login' && 'Bem-vindo de volta!'}
               {mode === 'register' && 'Cadastre sua Fazenda'}
               {mode === 'forgot' && 'Recuperação de Senha'}
             </h2>
-            <p className="text-slate-400 text-xs mt-1">
+            <p className="text-[#64766C] text-[13px] font-normal leading-normal mt-1">
               {mode === 'login' && 'Insira suas credenciais ou use o Acesso Local sem servidor.'}
               {mode === 'register' && 'Crie sua conta para começar a gerenciar seu rebanho.'}
               {mode === 'forgot' && 'Digite seu e-mail e enviaremos um link de redefinição.'}
@@ -319,22 +318,22 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
 
           {/* Connection Error Banner with Immediate Local Mode CTA */}
           {error && (
-            <div className={`p-4 border rounded-2xl text-xs font-medium space-y-3 animate-in fade-in duration-200 ${
+            <div className={`p-4 border rounded-xl text-xs font-normal space-y-3 animate-in fade-in duration-200 ${
               isConnectionError 
-                ? 'bg-amber-500/10 border-amber-500/30 text-amber-200' 
-                : 'bg-rose-500/10 border-rose-500/30 text-rose-300'
+                ? 'bg-amber-50 border-amber-200 text-amber-900' 
+                : 'bg-red-50 border-red-200 text-red-800'
             }`}>
               <div className="flex items-start gap-2.5">
                 {isConnectionError ? (
-                  <WifiOff size={18} className="text-amber-400 shrink-0 mt-0.5" />
+                  <WifiOff size={18} className="text-amber-600 shrink-0 mt-0.5" />
                 ) : (
-                  <AlertTriangle size={18} className="text-rose-400 shrink-0 mt-0.5" />
+                  <AlertTriangle size={18} className="text-red-600 shrink-0 mt-0.5" />
                 )}
                 <div>
-                  <p className="font-bold text-sm">
+                  <p className="font-semibold text-sm leading-snug">
                     {isConnectionError ? 'Servidor de Nuvem Supabase Indisponível' : 'Erro de Autenticação'}
                   </p>
-                  <p className="mt-1 leading-relaxed text-slate-300">
+                  <p className="mt-1 leading-relaxed text-xs">
                     {isConnectionError 
                       ? 'Não foi possível alcançar o servidor Supabase configurado. Você pode continuar no Modo Local imediatamente com todos os dados salvos no seu navegador!'
                       : error}
@@ -347,17 +346,17 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                   <button
                     type="button"
                     onClick={handleLocalAccess}
-                    className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 shadow-md transition-all cursor-pointer"
+                    className="flex-1 bg-[#145C46] hover:bg-[#0E4434] text-white py-2.5 px-3 rounded-xl text-sm font-semibold leading-snug flex items-center justify-center gap-1.5 shadow-xs transition-all cursor-pointer"
                   >
-                    <Database size={14} />
-                    <span>Entrar no Modo Local Agora</span>
+                    <Database size={15} />
+                    <span>Entrar no Modo Local</span>
                   </button>
                   <button
                     type="button"
                     onClick={() => setIsConfigModalOpen(true)}
-                    className="bg-slate-800 hover:bg-slate-700 text-slate-300 py-2.5 px-3 rounded-xl font-semibold text-xs flex items-center justify-center gap-1 border border-slate-700 transition-all cursor-pointer"
+                    className="bg-white hover:bg-[#F6F8F5] text-[#20332C] py-2.5 px-3 rounded-xl text-sm font-semibold leading-snug flex items-center justify-center gap-1.5 border border-[#E3EAE6] transition-all cursor-pointer"
                   >
-                    <Settings size={14} />
+                    <Settings size={15} />
                     <span>Configurar URL</span>
                   </button>
                 </div>
@@ -366,46 +365,46 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
           )}
 
           {forgotSuccessMessage && (
-            <div className="p-4 bg-emerald-500/10 border border-emerald-500/30 text-emerald-200 text-xs rounded-2xl font-medium flex gap-3 items-start animate-in fade-in duration-200">
-              <CheckCircle2 className="text-emerald-400 shrink-0 mt-0.5" size={18} />
+            <div className="p-4 bg-[#DCEDE4]/60 border border-[#145C46]/25 text-[#20332C] text-xs rounded-xl font-normal flex gap-3 items-start animate-in fade-in duration-200">
+              <CheckCircle2 className="text-[#145C46] shrink-0 mt-0.5" size={18} />
               <div>
-                <p className="font-bold text-emerald-300">E-mail Enviado!</p>
-                <p className="text-slate-300 mt-1 leading-relaxed">{forgotSuccessMessage}</p>
+                <p className="font-semibold text-sm text-[#145C46] leading-snug">E-mail Enviado!</p>
+                <p className="text-[#64766C] mt-1 leading-relaxed">{forgotSuccessMessage}</p>
               </div>
             </div>
           )}
 
           {/* Quick Local Access Card (Recommended when offline or for fast evaluation) */}
-          <div className="p-4 bg-slate-950/70 border border-emerald-800/40 rounded-2xl space-y-3">
-            <div className="flex items-center justify-between">
+          <div className="p-4 bg-[#F6F8F5] border border-[#E3EAE6] rounded-xl space-y-3">
+            <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2">
-                <Database size={16} className="text-emerald-400" />
-                <span className="text-xs font-bold text-white">Acesso Local & Demonstração</span>
+                <Database size={16} className="text-[#145C46]" />
+                <span className="text-sm font-semibold text-[#20332C] leading-snug">Acesso Local & Demonstração</span>
               </div>
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+              <span className="px-2.5 py-0.5 rounded-md text-xs font-medium bg-[#DCEDE4] text-[#145C46]">
                 100% Funcional
               </span>
             </div>
-            <p className="text-[11px] text-slate-400 leading-relaxed">
+            <p className="text-xs font-normal text-[#64766C] leading-relaxed">
               Use o sistema de forma instantânea sem necessidade de servidor externo. Seus dados ficam salvos com segurança no navegador.
             </p>
             <button
               type="button"
               onClick={handleLocalAccess}
-              className="w-full bg-slate-800 hover:bg-slate-700/90 text-emerald-300 hover:text-white py-3 px-4 rounded-xl font-bold border border-slate-700 flex items-center justify-center gap-2 transition-all text-xs shadow-md cursor-pointer hover:border-emerald-500/40"
+              className="w-full bg-white hover:bg-[#E5F2EB] text-[#145C46] py-2.5 px-4 rounded-xl text-sm font-semibold leading-snug border border-[#145C46]/30 flex items-center justify-center gap-2 transition-all shadow-2xs cursor-pointer"
             >
-              <Database size={15} className="text-emerald-400" />
+              <Database size={16} className="text-[#145C46]" />
               <span>Entrar no Modo Local (Sem Servidor)</span>
-              <ArrowRight size={15} className="ml-1 opacity-70" />
+              <ArrowRight size={16} className="ml-1 opacity-75" />
             </button>
           </div>
 
-          <div className="relative flex items-center justify-center my-4">
-            <div className="border-t border-slate-800 w-full" />
-            <span className="bg-slate-900 px-3 text-[10px] font-bold uppercase tracking-wider text-slate-500">
+          <div className="relative flex items-center justify-center my-3">
+            <div className="border-t border-[#E3EAE6] w-full" />
+            <span className="bg-white px-3 text-xs font-medium text-[#64766C] whitespace-nowrap">
               Ou acesse com conta na nuvem
             </span>
-            <div className="border-t border-slate-800 w-full" />
+            <div className="border-t border-[#E3EAE6] w-full" />
           </div>
 
           {/* Authentication Form */}
@@ -413,15 +412,15 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
             
             {mode === 'register' && (
               <div className="space-y-1.5">
-                <label className="text-[11px] font-bold text-slate-300 uppercase tracking-wider ml-1">
+                <label className="block text-xs font-medium leading-snug text-[#64766C]">
                   Nome Completo / Produtor
                 </label>
                 <div className="relative">
-                  <UserIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
+                  <UserIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#64766C]" size={18} />
                   <input 
                     type="text" 
                     required
-                    className="w-full border border-slate-800 rounded-xl pl-10 pr-4 py-3 text-sm text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none bg-slate-950/80 placeholder-slate-600 transition-all"
+                    className="w-full border border-[#E3EAE6] rounded-xl pl-10 pr-4 py-2.5 text-sm font-normal leading-normal text-[#20332C] focus:border-[#145C46] focus:ring-2 focus:ring-[#145C46]/20 focus:bg-white outline-none bg-[#F6F8F5] placeholder-[#64766C]/70 transition-all"
                     placeholder="Ex: João da Silva ou Fazenda Santa Maria"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
@@ -431,15 +430,15 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
             )}
 
             <div className="space-y-1.5">
-              <label className="text-[11px] font-bold text-slate-300 uppercase tracking-wider ml-1">
+              <label className="block text-xs font-medium leading-snug text-[#64766C]">
                 E-mail
               </label>
               <div className="relative">
-                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
+                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#64766C]" size={18} />
                 <input 
                   type="email" 
                   required
-                  className="w-full border border-slate-800 rounded-xl pl-10 pr-4 py-3 text-sm text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none bg-slate-950/80 placeholder-slate-600 transition-all"
+                  className="w-full border border-[#E3EAE6] rounded-xl pl-10 pr-4 py-2.5 text-sm font-normal leading-normal text-[#20332C] focus:border-[#145C46] focus:ring-2 focus:ring-[#145C46]/20 focus:bg-white outline-none bg-[#F6F8F5] placeholder-[#64766C]/70 transition-all"
                   placeholder="exemplo@fazenda.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -451,25 +450,25 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
               <div className="space-y-4">
                 <div className="space-y-1.5">
                   <div className="flex justify-between items-center">
-                    <label className="text-[11px] font-bold text-slate-300 uppercase tracking-wider ml-1">
+                    <label className="block text-xs font-medium leading-snug text-[#64766C]">
                       Senha
                     </label>
                     {mode === 'login' && (
                       <button
                         type="button"
                         onClick={() => { setMode('forgot'); setError(''); setIsConnectionError(false); setForgotSuccessMessage(''); }}
-                        className="text-xs text-emerald-400 font-semibold hover:underline cursor-pointer"
+                        className="text-xs font-medium text-[#145C46] hover:underline cursor-pointer"
                       >
                         Esqueci minha senha
                       </button>
                     )}
                   </div>
                   <div className="relative">
-                    <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
+                    <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#64766C]" size={18} />
                     <input 
                       type={showPassword ? "text" : "password"} 
                       required
-                      className="w-full border border-slate-800 rounded-xl pl-10 pr-10 py-3 text-sm text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none bg-slate-950/80 placeholder-slate-600 transition-all"
+                      className="w-full border border-[#E3EAE6] rounded-xl pl-10 pr-10 py-2.5 text-sm font-normal leading-normal text-[#20332C] focus:border-[#145C46] focus:ring-2 focus:ring-[#145C46]/20 focus:bg-white outline-none bg-[#F6F8F5] placeholder-[#64766C]/70 transition-all"
                       placeholder="••••••••"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
@@ -477,7 +476,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors cursor-pointer"
+                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#64766C] hover:text-[#20332C] transition-colors cursor-pointer"
                     >
                       {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                     </button>
@@ -486,15 +485,15 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
 
                 {mode === 'register' && (
                   <div className="space-y-1.5">
-                    <label className="text-[11px] font-bold text-slate-300 uppercase tracking-wider ml-1">
+                    <label className="block text-xs font-medium leading-snug text-[#64766C]">
                       Confirmar Senha
                     </label>
                     <div className="relative">
-                      <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
+                      <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#64766C]" size={18} />
                       <input 
                         type={showConfirmPassword ? "text" : "password"} 
                         required
-                        className="w-full border border-slate-800 rounded-xl pl-10 pr-10 py-3 text-sm text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none bg-slate-950/80 placeholder-slate-600 transition-all"
+                        className="w-full border border-[#E3EAE6] rounded-xl pl-10 pr-10 py-2.5 text-sm font-normal leading-normal text-[#20332C] focus:border-[#145C46] focus:ring-2 focus:ring-[#145C46]/20 focus:bg-white outline-none bg-[#F6F8F5] placeholder-[#64766C]/70 transition-all"
                         placeholder="••••••••"
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
@@ -502,7 +501,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                       <button
                         type="button"
                         onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors cursor-pointer"
+                        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#64766C] hover:text-[#20332C] transition-colors cursor-pointer"
                       >
                         {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                       </button>
@@ -516,18 +515,18 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
             <button 
               type="submit"
               disabled={isLoading}
-              className="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-3.5 rounded-xl font-bold shadow-lg shadow-emerald-950/50 flex items-center justify-center gap-2 transition-all hover:scale-[1.01] active:scale-[0.99] disabled:opacity-70 text-sm mt-2 cursor-pointer"
+              className="w-full bg-[#145C46] hover:bg-[#0E4434] text-white py-3 rounded-xl text-sm font-semibold leading-snug shadow-xs flex items-center justify-center gap-2 transition-all active:scale-[0.99] disabled:opacity-70 mt-2 cursor-pointer"
             >
               {isLoading ? (
                 <Loader2 className="animate-spin" size={20} />
               ) : (
                 <>
                   {mode === 'login' ? (
-                    <>Entrar com Supabase <ArrowRight size={18} /></>
+                    <>Entrar com Supabase <ArrowRight size={17} /></>
                   ) : mode === 'register' ? (
-                    <>Criar Minha Conta na Nuvem <ArrowRight size={18} /></>
+                    <>Criar Minha Conta na Nuvem <ArrowRight size={17} /></>
                   ) : (
-                    <>Enviar E-mail de Recuperação <KeyRound size={18} /></>
+                    <>Enviar E-mail de Recuperação <KeyRound size={17} /></>
                   )}
                 </>
               )}
@@ -535,46 +534,46 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
           </form>
 
           {/* Bottom Mode Switcher Link */}
-          <div className="text-center pt-2">
+          <div className="text-center pt-1">
             {mode === 'forgot' ? (
               <button 
                 onClick={() => { setMode('login'); setError(''); setIsConnectionError(false); setForgotSuccessMessage(''); }}
-                className="text-xs text-emerald-400 font-semibold hover:text-emerald-300 transition-colors flex items-center justify-center gap-1 mx-auto cursor-pointer"
+                className="text-xs font-semibold text-[#145C46] hover:text-[#0E4434] transition-colors flex items-center justify-center gap-1.5 mx-auto cursor-pointer"
               >
-                <ArrowLeft size={16} /> Voltar ao Login
+                <ArrowLeft size={15} /> Voltar ao Login
               </button>
             ) : (
               <button 
                 onClick={() => { setMode(mode === 'login' ? 'register' : 'login'); setError(''); setIsConnectionError(false); setForgotSuccessMessage(''); }}
-                className="text-xs text-slate-400 hover:text-slate-200 transition-colors flex items-center justify-center gap-1.5 mx-auto cursor-pointer"
+                className="text-xs font-normal text-[#64766C] hover:text-[#20332C] transition-colors flex items-center justify-center gap-1.5 mx-auto cursor-pointer"
               >
                 {mode === 'login' ? (
-                  <>Ainda não possui uma conta? <span className="text-emerald-400 font-bold hover:underline">Cadastre-se grátis</span></>
+                  <>Ainda não possui uma conta? <span className="text-[#145C46] font-semibold hover:underline">Cadastre-se grátis</span></>
                 ) : (
-                  <><ArrowLeft size={15} /> Já possui conta? <span className="text-emerald-400 font-bold hover:underline">Fazer Login</span></>
+                  <><ArrowLeft size={15} /> Já possui conta? <span className="text-[#145C46] font-semibold hover:underline">Fazer Login</span></>
                 )}
               </button>
             )}
           </div>
 
           {/* Security & Settings Footer */}
-          <div className="pt-6 border-t border-slate-800/80 text-center space-y-2.5">
-            <div className="flex items-center justify-center gap-4 text-[11px] text-slate-500">
+          <div className="pt-5 border-t border-[#E3EAE6] text-center space-y-2">
+            <div className="flex items-center justify-center gap-4 text-xs font-normal text-[#64766C]">
               <span className="flex items-center gap-1.5">
-                <ShieldCheck size={14} className="text-emerald-500" />
+                <ShieldCheck size={14} className="text-[#145C46]" />
                 <span>Dados Seguros</span>
               </span>
               <span>•</span>
               <button
                 type="button"
                 onClick={() => setIsConfigModalOpen(true)}
-                className="text-emerald-400/90 hover:text-emerald-300 underline flex items-center gap-1 cursor-pointer"
+                className="text-[#145C46] font-medium hover:underline flex items-center gap-1 cursor-pointer"
               >
                 <Settings size={13} />
                 <span>Configurações do Banco</span>
               </button>
             </div>
-            <p className="text-[11px] text-slate-600">
+            <p className="text-xs font-normal text-[#64766C]">
               © {new Date().getFullYear()} Gestão Pecuária Systems. Todos os direitos reservados.
             </p>
           </div>

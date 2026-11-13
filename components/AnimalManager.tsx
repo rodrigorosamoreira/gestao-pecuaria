@@ -307,12 +307,12 @@ const AnimalManager: React.FC<AnimalManagerProps> = ({
     const pred = calculatePredictedWeight(animal, todayStr, lots);
 
     return (
-      <tr key={animal.id} className="hover:bg-emerald-50/20 transition-colors border-b border-slate-100/80">
+      <tr key={animal.id} className="hover:bg-[#F6F8F5] transition-colors border-b border-[#E3EAE6]">
         <td className="px-6 py-4">
           <div className="flex items-center gap-2">
-            <span className="text-base font-black text-slate-800 tracking-tight font-mono">{animal.earTag}</span>
+            <span className="text-sm font-semibold text-[#20332C] font-nums">{animal.earTag}</span>
             {animal.lotId && (
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-slate-100 text-slate-600">
+              <span className="text-xs font-normal px-2 py-0.5 rounded-md bg-[#F6F8F5] text-[#64766C] border border-[#E3EAE6]">
                 {lots.find(l => l.id === animal.lotId)?.name || 'Lote'}
               </span>
             )}
@@ -321,8 +321,8 @@ const AnimalManager: React.FC<AnimalManagerProps> = ({
         
         <td className="px-6 py-4">
           <div className="flex flex-col">
-            <span className="text-xs font-bold text-slate-700">{animal.breed}</span>
-            <span className={`text-[10px] font-extrabold uppercase ${animal.gender === AnimalGender.FEMALE ? 'text-rose-500' : 'text-sky-600'}`}>
+            <span className="text-sm font-medium text-[#20332C]">{animal.breed}</span>
+            <span className={`text-xs font-normal ${animal.gender === AnimalGender.FEMALE ? 'text-rose-600' : 'text-[#536579]'}`}>
               {animal.gender}
             </span>
           </div>
@@ -332,11 +332,11 @@ const AnimalManager: React.FC<AnimalManagerProps> = ({
         <td className="px-6 py-4">
           <div className="flex flex-col">
             <div className="flex items-baseline gap-1">
-              <span className="text-sm font-black text-slate-800 font-nums">{lastWeigh.weightKg.toFixed(1)}</span>
-              <span className="text-[10px] font-bold text-slate-400">kg</span>
-              <span className="text-xs font-bold text-slate-500 font-nums ml-1">({(lastWeigh.weightKg / 30).toFixed(1)} @)</span>
+              <span className="text-sm font-semibold text-[#20332C] font-nums">{lastWeigh.weightKg.toFixed(1)}</span>
+              <span className="text-xs font-normal text-[#64766C]">kg</span>
+              <span className="text-xs font-normal text-[#64766C] font-nums ml-1">({(lastWeigh.weightKg / 30).toFixed(1)} @)</span>
             </div>
-            <span className="text-[10px] text-slate-400 font-medium">
+            <span className="text-xs text-[#64766C] font-normal">
               Balança: {lastWeigh.date ? new Date(lastWeigh.date + 'T00:00:00').toLocaleDateString('pt-BR') : 'Entrada'}
             </span>
           </div>
@@ -345,15 +345,15 @@ const AnimalManager: React.FC<AnimalManagerProps> = ({
         {/* GMD Diário (Lote ou Individual) */}
         <td className="px-6 py-4">
           <div className="inline-flex flex-col gap-0.5">
-            <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-50 border border-emerald-200/60 text-emerald-800">
-              <TrendingUp size={12} className="text-emerald-600" />
-              <span className="text-xs font-black font-nums">
+            <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#DCEDE4] border border-[#145C46]/20 text-[#145C46]">
+              <TrendingUp size={13} className="text-[#145C46]" />
+              <span className="text-xs font-semibold font-nums">
                 {pred.gmd > 0 ? `+${pred.gmd.toFixed(3)}` : pred.gmd.toFixed(3)}
               </span>
-              <span className="text-[9px] font-bold text-emerald-600 uppercase">kg/d</span>
+              <span className="text-xs font-normal text-[#145C46] ml-0.5">kg/d</span>
             </div>
             {pred.gmdSource === 'lot' && (
-              <span className="text-[9px] font-bold text-emerald-700 px-1">
+              <span className="text-xs font-normal text-[#64766C] px-1">
                 Lote: {pred.lotName || 'Atribuído'}
               </span>
             )}
@@ -364,19 +364,19 @@ const AnimalManager: React.FC<AnimalManagerProps> = ({
         <td className="px-6 py-4">
           <div className="flex flex-col">
             <div className="flex items-baseline gap-1">
-              <span className="text-base font-black text-emerald-700 font-nums">{pred.predictedWeightKg.toFixed(1)}</span>
-              <span className="text-[10px] font-bold text-emerald-600 uppercase">kg</span>
-              <span className="text-xs font-black text-emerald-800 font-nums ml-1.5">
+              <span className="text-sm font-semibold text-[#145C46] font-nums">{pred.predictedWeightKg.toFixed(1)}</span>
+              <span className="text-xs font-normal text-[#145C46]">kg</span>
+              <span className="text-xs font-semibold text-[#145C46] font-nums ml-1.5">
                 ({pred.predictedArroba.toFixed(1)} @)
               </span>
             </div>
             {pred.daysElapsed > 0 ? (
-              <span className="text-[10px] font-bold text-emerald-600 flex items-center gap-1">
-                <Sparkles size={10} />
+              <span className="text-xs font-medium text-[#145C46] flex items-center gap-1">
+                <Sparkles size={11} />
                 +{pred.weightGainKg.toFixed(1)} kg em {pred.daysElapsed}d
               </span>
             ) : (
-              <span className="text-[10px] font-medium text-slate-400">Pesado hoje</span>
+              <span className="text-xs font-normal text-[#64766C]">Pesado hoje</span>
             )}
           </div>
         </td>
@@ -451,15 +451,15 @@ const AnimalManager: React.FC<AnimalManagerProps> = ({
       {/* Cabeçalho */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight">Gestão do Rebanho</h2>
-          <p className="text-slate-500 text-xs">Pesagens individuais e por lote, Ganho Médio Diário (GMD) e Peso Previsto atualizado</p>
+          <h2 className="text-2xl font-semibold text-[#20332C] leading-snug">Gestão do Rebanho</h2>
+          <p className="text-sm text-[#64766C] font-normal mt-0.5">Pesagens individuais e por lote, Ganho Médio Diário (GMD) e Peso Previsto atualizado</p>
         </div>
         <div className="flex items-center gap-2.5 flex-wrap">
           <button 
             onClick={() => setIsBatchModalOpen(true)} 
-            className="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2.5 rounded-xl flex items-center gap-2 transition-all font-bold text-xs cursor-pointer border border-slate-800 shadow-sm"
+            className="bg-white hover:bg-[#F6F8F5] text-[#20332C] px-4 py-2.5 rounded-xl flex items-center gap-2 transition-all font-semibold text-sm cursor-pointer border border-[#E3EAE6] shadow-2xs"
           >
-            <Layers size={16} /> Cadastrar Lote
+            <Layers size={16} className="text-[#145C46]" /> Cadastrar Lote
           </button>
           <button 
             onClick={() => { 
@@ -468,7 +468,7 @@ const AnimalManager: React.FC<AnimalManagerProps> = ({
               setIndInitialGmd(0.8);
               setIsModalIndividualOpen(true); 
             }} 
-            className="bg-emerald-700 hover:bg-emerald-800 text-white px-4.5 py-2.5 rounded-xl flex items-center gap-2 transition-all font-bold text-xs cursor-pointer shadow-sm border border-emerald-800"
+            className="bg-[#145C46] hover:bg-[#0E4434] text-white px-4.5 py-2.5 rounded-xl flex items-center gap-2 transition-all font-semibold text-sm cursor-pointer shadow-sm"
           >
             <Plus size={16} /> Novo Animal
           </button>
@@ -477,47 +477,55 @@ const AnimalManager: React.FC<AnimalManagerProps> = ({
 
       {/* Cards de Resumo com Peso Balança, GMD e Peso Previsto */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="agro-card p-4.5 flex items-center gap-3.5">
-          <div className="p-2.5 bg-slate-100 text-slate-700 rounded-xl border border-slate-200/60">
-            <Users size={18} />
+        <div className="agro-card p-5 flex items-center gap-3.5">
+          <div className="p-3 bg-[#F6F8F5] text-[#145C46] rounded-xl border border-[#E3EAE6]">
+            <Users size={20} />
           </div>
           <div>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Ativo</p>
-            <h4 className="text-xl font-black text-slate-900 font-nums">{totalActive} <span className="text-xs font-normal text-slate-400">cab.</span></h4>
-            <p className="text-[10px] text-slate-400 font-medium">{males}M / {females}F</p>
+            <p className="text-xs font-medium text-[#64766C]">Total Ativo</p>
+            <h4 className="text-2xl font-semibold text-[#20332C] font-nums leading-tight mt-0.5">
+              {totalActive} <span className="text-sm font-normal text-[#64766C] ml-1">cab.</span>
+            </h4>
+            <p className="text-xs text-[#64766C] font-normal mt-0.5">{males}M / {females}F</p>
           </div>
         </div>
 
-        <div className="agro-card p-4.5 flex items-center gap-3.5">
-          <div className="p-2.5 bg-slate-100 text-slate-700 rounded-xl border border-slate-200/60">
-            <Scale size={18} />
+        <div className="agro-card p-5 flex items-center gap-3.5">
+          <div className="p-3 bg-[#F6F8F5] text-[#145C46] rounded-xl border border-[#E3EAE6]">
+            <Scale size={20} />
           </div>
           <div>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Média Balança</p>
-            <h4 className="text-xl font-black text-slate-900 font-nums">{herdStats.avgRecordedArroba.toFixed(1)} <span className="text-xs font-normal text-slate-400">@</span></h4>
-            <p className="text-[10px] text-slate-400 font-medium font-nums">{herdStats.avgRecordedWeightKg.toFixed(1)} kg/cab</p>
+            <p className="text-xs font-medium text-[#64766C]">Média Balança</p>
+            <h4 className="text-2xl font-semibold text-[#20332C] font-nums leading-tight mt-0.5">
+              {herdStats.avgRecordedArroba.toFixed(1)} <span className="text-sm font-normal text-[#64766C] ml-1">@</span>
+            </h4>
+            <p className="text-xs text-[#64766C] font-normal font-nums mt-0.5">{herdStats.avgRecordedWeightKg.toFixed(1)} kg/cab</p>
           </div>
         </div>
 
-        <div className="agro-card p-4.5 flex items-center gap-3.5">
-          <div className="p-2.5 bg-emerald-50 text-emerald-700 rounded-xl border border-emerald-100">
-            <TrendingUp size={18} />
+        <div className="agro-card p-5 flex items-center gap-3.5">
+          <div className="p-3 bg-[#DCEDE4] text-[#145C46] rounded-xl border border-[#145C46]/20">
+            <TrendingUp size={20} />
           </div>
           <div>
-            <p className="text-[10px] font-bold text-emerald-700 uppercase tracking-wider">GMD Médio</p>
-            <h4 className="text-xl font-black text-emerald-700 font-nums">+{herdStats.avgGmd.toFixed(3)} <span className="text-xs font-normal text-emerald-600">kg/d</span></h4>
-            <p className="text-[10px] text-emerald-600 font-medium">Ganho Médio Diário</p>
+            <p className="text-xs font-medium text-[#145C46]">GMD Médio</p>
+            <h4 className="text-2xl font-semibold text-[#145C46] font-nums leading-tight mt-0.5">
+              +{herdStats.avgGmd.toFixed(3)} <span className="text-sm font-normal text-[#218568] ml-1">kg/d</span>
+            </h4>
+            <p className="text-xs text-[#64766C] font-normal mt-0.5">Ganho Médio Diário</p>
           </div>
         </div>
 
-        <div className="agro-card p-4.5 flex items-center gap-3.5 bg-gradient-to-br from-emerald-50/50 to-white border-emerald-200/70">
-          <div className="p-2.5 bg-emerald-600 text-white rounded-xl shadow-xs">
-            <Sparkles size={18} />
+        <div className="agro-card p-5 flex items-center gap-3.5 bg-gradient-to-br from-[#DCEDE4]/30 to-white border-[#E3EAE6]">
+          <div className="p-3 bg-[#145C46] text-white rounded-xl shadow-xs">
+            <Sparkles size={20} />
           </div>
           <div>
-            <p className="text-[10px] font-extrabold text-emerald-800 uppercase tracking-wider">Peso Previsto Hoje</p>
-            <h4 className="text-xl font-black text-emerald-900 font-nums">{herdStats.avgPredictedArroba.toFixed(1)} <span className="text-xs font-bold text-emerald-700">@</span></h4>
-            <p className="text-[10px] text-emerald-700 font-bold font-nums">{herdStats.avgPredictedWeightKg.toFixed(1)} kg projetados</p>
+            <p className="text-xs font-medium text-[#145C46]">Peso Previsto Hoje</p>
+            <h4 className="text-2xl font-semibold text-[#20332C] font-nums leading-tight mt-0.5">
+              {herdStats.avgPredictedArroba.toFixed(1)} <span className="text-sm font-medium text-[#145C46] ml-1">@</span>
+            </h4>
+            <p className="text-xs text-[#218568] font-normal font-nums mt-0.5">{herdStats.avgPredictedWeightKg.toFixed(1)} kg projetados</p>
           </div>
         </div>
       </div>
@@ -525,19 +533,19 @@ const AnimalManager: React.FC<AnimalManagerProps> = ({
       {/* Filtros */}
       <div className="agro-card p-4 flex flex-col md:flex-row gap-3">
         <div className="relative flex-1">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#64766C]" size={18} />
           <input 
             type="text" 
             placeholder="Buscar por brinco, raça ou lote..." 
-            className="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 bg-slate-50/50 focus:bg-white transition-all text-xs font-medium text-slate-800" 
+            className="w-full pl-10 pr-4 py-2.5 border border-[#E3EAE6] rounded-xl outline-none focus:ring-2 focus:ring-[#145C46]/20 focus:border-[#145C46] bg-[#F6F8F5] focus:bg-white transition-all text-sm font-normal text-[#20332C]" 
             value={searchTerm} 
             onChange={(e) => setSearchTerm(e.target.value)} 
           />
         </div>
         <div className="flex items-center gap-2">
-          <Filter className="text-slate-400" size={18} />
+          <Filter className="text-[#64766C]" size={18} />
           <select 
-            className="border border-slate-200 rounded-xl px-3.5 py-2.5 outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 bg-slate-50/50 text-xs font-bold text-slate-700 cursor-pointer" 
+            className="border border-[#E3EAE6] rounded-xl px-3.5 py-2.5 outline-none focus:ring-2 focus:ring-[#145C46]/20 focus:border-[#145C46] bg-[#F6F8F5] text-sm font-medium text-[#20332C] cursor-pointer" 
             value={filterStatus} 
             onChange={(e) => setFilterStatus(e.target.value)}
           >
@@ -552,31 +560,31 @@ const AnimalManager: React.FC<AnimalManagerProps> = ({
       <div className="space-y-6 pb-20">
         {/* Animais Avulsos */}
         {avulsoAnimals.length > 0 && (
-          <div className="bg-white rounded-3xl shadow-xs border border-slate-200/80 overflow-hidden">
-            <div className="p-5 bg-slate-50/80 border-b border-slate-200/80 flex items-center justify-between">
+          <div className="bg-white rounded-2xl shadow-xs border border-[#E3EAE6] overflow-hidden">
+            <div className="p-4 sm:p-5 bg-[#F6F8F5] border-b border-[#E3EAE6] flex items-center justify-between">
               <div className="flex items-center gap-3.5">
-                <div className="p-2.5 rounded-xl bg-slate-800 text-white shadow-sm">
-                  <Users size={20} />
+                <div className="p-2.5 rounded-xl bg-[#145C46] text-white shadow-sm">
+                  <Users size={18} />
                 </div>
                 <div>
-                  <h3 className="text-base font-black text-slate-900 uppercase tracking-tight">Rebanho Geral (Animais Avulsos)</h3>
-                  <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">{avulsoAnimals.length} animais sem lote específico</p>
+                  <h3 className="text-base font-semibold text-[#20332C]">Rebanho Geral (Animais Avulsos)</h3>
+                  <p className="text-xs font-normal text-[#64766C] mt-0.5">{avulsoAnimals.length} animais sem lote específico</p>
                 </div>
               </div>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-left">
-                <thead className="bg-slate-50/60 border-b border-slate-100">
+                <thead className="bg-[#F6F8F5] border-b border-[#E3EAE6]">
                   <tr>
-                    <th className="px-6 py-3.5 text-[10px] font-black text-slate-400 uppercase tracking-wider">Identificação</th>
-                    <th className="px-6 py-3.5 text-[10px] font-black text-slate-400 uppercase tracking-wider">Raça / Sexo</th>
-                    <th className="px-6 py-3.5 text-[10px] font-black text-slate-400 uppercase tracking-wider">Última Balança</th>
-                    <th className="px-6 py-3.5 text-[10px] font-black text-slate-400 uppercase tracking-wider">GMD Base</th>
-                    <th className="px-6 py-3.5 text-[10px] font-black text-slate-400 uppercase tracking-wider">Peso Previsto Hoje</th>
-                    <th className="px-6 py-3.5 text-[10px] font-black text-slate-400 uppercase tracking-wider text-right">Ações</th>
+                    <th className="px-6 py-3.5 text-xs font-medium text-[#64766C]">Identificação</th>
+                    <th className="px-6 py-3.5 text-xs font-medium text-[#64766C]">Raça / Sexo</th>
+                    <th className="px-6 py-3.5 text-xs font-medium text-[#64766C]">Última Balança</th>
+                    <th className="px-6 py-3.5 text-xs font-medium text-[#64766C]">GMD Base</th>
+                    <th className="px-6 py-3.5 text-xs font-medium text-[#64766C]">Peso Previsto Hoje</th>
+                    <th className="px-6 py-3.5 text-xs font-medium text-[#64766C] text-right">Ações</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-50">
+                <tbody className="divide-y divide-[#E3EAE6]">
                   {avulsoAnimals.map(animal => renderAnimalRow(animal))}
                 </tbody>
               </table>
@@ -593,34 +601,34 @@ const AnimalManager: React.FC<AnimalManagerProps> = ({
           const lotStats = calculateLotWeighingStats(animalsInLot, todayStr, lot);
 
           return (
-            <div key={lotId} className="bg-white rounded-3xl shadow-xs border border-slate-200/80 overflow-hidden">
+            <div key={lotId} className="bg-white rounded-2xl shadow-xs border border-[#E3EAE6] overflow-hidden">
               <div 
                 onClick={() => toggleLot(lotId)} 
-                className={`p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 cursor-pointer transition-colors ${isOpen ? 'bg-slate-50/90' : 'hover:bg-slate-50/50'}`}
+                className={`p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 cursor-pointer transition-colors ${isOpen ? 'bg-[#F6F8F5]' : 'hover:bg-[#F6F8F5]/50'}`}
               >
                 <div className="flex items-center gap-4">
-                  <div className={`p-3 rounded-2xl ${isOpen ? 'bg-emerald-700 text-white shadow-md' : 'bg-slate-100 text-slate-700'}`}>
-                    {isOpen ? <FolderOpen size={22} /> : <Folder size={22} />}
+                  <div className={`p-3 rounded-xl ${isOpen ? 'bg-[#145C46] text-white shadow-xs' : 'bg-[#F6F8F5] text-[#145C46] border border-[#E3EAE6]'}`}>
+                    {isOpen ? <FolderOpen size={20} /> : <Folder size={20} />}
                   </div>
                   <div>
                     <div className="flex items-center gap-2.5">
-                      <h3 className="text-lg font-black text-slate-900 uppercase tracking-tight">{lotName}</h3>
-                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-100 text-emerald-800">
+                      <h3 className="text-base font-semibold text-[#20332C]">{lotName}</h3>
+                      <span className="px-2.5 py-0.5 rounded-md text-xs font-medium bg-[#DCEDE4] text-[#145C46]">
                         {lotStats.headCount} Cab.
                       </span>
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-3 text-xs font-bold text-slate-500 mt-1">
-                      <span className="font-nums text-slate-700">
-                        Balança: <strong className="text-slate-900">{lotStats.avgRecordedArroba.toFixed(1)} @</strong> ({lotStats.avgRecordedWeightKg.toFixed(1)} kg)
+                    <div className="flex flex-wrap items-center gap-3 text-xs font-normal text-[#64766C] mt-1">
+                      <span className="font-nums text-[#20332C]">
+                        Balança: <strong className="font-semibold text-[#20332C]">{lotStats.avgRecordedArroba.toFixed(1)} @</strong> ({lotStats.avgRecordedWeightKg.toFixed(1)} kg)
                       </span>
-                      <span className="w-1 h-1 bg-slate-300 rounded-full"></span>
-                      <span className="text-emerald-700 font-nums">
-                        GMD: <strong className="text-emerald-800">+{lotStats.avgGmd.toFixed(3)} kg/d</strong>
+                      <span className="w-1 h-1 bg-[#64766C]/40 rounded-full"></span>
+                      <span className="text-[#145C46] font-nums">
+                        GMD: <strong className="font-semibold text-[#145C46]">+{lotStats.avgGmd.toFixed(3)} kg/d</strong>
                       </span>
-                      <span className="w-1 h-1 bg-slate-300 rounded-full"></span>
-                      <span className="text-emerald-900 font-nums bg-emerald-100/70 px-2 py-0.5 rounded-md font-black flex items-center gap-1">
-                        <Sparkles size={11} className="text-emerald-600" />
+                      <span className="w-1 h-1 bg-[#64766C]/40 rounded-full"></span>
+                      <span className="text-[#145C46] font-nums bg-[#DCEDE4]/70 px-2 py-0.5 rounded-md font-medium flex items-center gap-1">
+                        <Sparkles size={11} className="text-[#145C46]" />
                         Previsto: {lotStats.avgPredictedArroba.toFixed(1)} @ ({lotStats.avgPredictedWeightKg.toFixed(1)} kg)
                       </span>
                     </div>
@@ -632,7 +640,7 @@ const AnimalManager: React.FC<AnimalManagerProps> = ({
                   <button 
                     type="button"
                     onClick={() => openLotWeighModal(lotId)} 
-                    className="bg-emerald-700 hover:bg-emerald-800 text-white px-3.5 py-2 rounded-xl text-xs font-extrabold flex items-center gap-1.5 transition-all shadow-xs border border-emerald-800"
+                    className="bg-[#145C46] hover:bg-[#0E4434] text-white px-3.5 py-2 rounded-xl text-sm font-semibold flex items-center gap-1.5 transition-all shadow-xs"
                     title="Realizar nova pesagem média do lote completo"
                   >
                     <Scale size={15} />
@@ -643,7 +651,7 @@ const AnimalManager: React.FC<AnimalManagerProps> = ({
                   <button 
                     type="button"
                     onClick={() => { setTargetLotId(lotId); setIsLotSellModalOpen(true); }} 
-                    className="bg-white border border-slate-200 hover:border-blue-400 text-blue-700 hover:bg-blue-50 px-3.5 py-2 rounded-xl text-xs font-bold transition-all shadow-2xs"
+                    className="bg-white border border-[#E3EAE6] hover:border-[#145C46] text-[#20332C] hover:bg-[#F6F8F5] px-3.5 py-2 rounded-xl text-sm font-semibold transition-all shadow-2xs"
                   >
                     Vender Lote
                   </button>
@@ -651,7 +659,7 @@ const AnimalManager: React.FC<AnimalManagerProps> = ({
                   <button 
                     type="button"
                     onClick={() => toggleLot(lotId)}
-                    className="p-2 text-slate-400 hover:text-slate-600"
+                    className="p-2 text-[#64766C] hover:text-[#20332C]"
                   >
                     {isOpen ? <ChevronDown size={20} /> : <ChevronRight size={20} />}
                   </button>
@@ -659,19 +667,19 @@ const AnimalManager: React.FC<AnimalManagerProps> = ({
               </div>
 
               {isOpen && (
-                <div className="overflow-x-auto border-t border-slate-200/80">
+                <div className="overflow-x-auto border-t border-[#E3EAE6]">
                   <table className="w-full text-left">
-                    <thead className="bg-slate-50/60 border-b border-slate-100">
+                    <thead className="bg-[#F6F8F5] border-b border-[#E3EAE6]">
                       <tr>
-                        <th className="px-6 py-3.5 text-[10px] font-black text-slate-400 uppercase tracking-wider">Identificação</th>
-                        <th className="px-6 py-3.5 text-[10px] font-black text-slate-400 uppercase tracking-wider">Raça / Sexo</th>
-                        <th className="px-6 py-3.5 text-[10px] font-black text-slate-400 uppercase tracking-wider">Última Balança</th>
-                        <th className="px-6 py-3.5 text-[10px] font-black text-slate-400 uppercase tracking-wider">GMD Base</th>
-                        <th className="px-6 py-3.5 text-[10px] font-black text-slate-400 uppercase tracking-wider">Peso Previsto Hoje</th>
-                        <th className="px-6 py-3.5 text-[10px] font-black text-slate-400 uppercase tracking-wider text-right">Ações</th>
+                        <th className="px-6 py-3.5 text-xs font-medium text-[#64766C]">Identificação</th>
+                        <th className="px-6 py-3.5 text-xs font-medium text-[#64766C]">Raça / Sexo</th>
+                        <th className="px-6 py-3.5 text-xs font-medium text-[#64766C]">Última Balança</th>
+                        <th className="px-6 py-3.5 text-xs font-medium text-[#64766C]">GMD Base</th>
+                        <th className="px-6 py-3.5 text-xs font-medium text-[#64766C]">Peso Previsto Hoje</th>
+                        <th className="px-6 py-3.5 text-xs font-medium text-[#64766C] text-right">Ações</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-50">
+                    <tbody className="divide-y divide-[#E3EAE6]">
                       {animalsInLot.map(animal => renderAnimalRow(animal))}
                     </tbody>
                   </table>
@@ -692,38 +700,39 @@ const AnimalManager: React.FC<AnimalManagerProps> = ({
         const futurePredicted = inputWeightKg + (daysFromWeighingToToday * activeGmd);
 
         return (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 backdrop-blur-xs p-4 overflow-y-auto">
-            <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden border border-slate-100 my-8">
-              <div className="px-7 py-5 bg-gradient-to-r from-emerald-800 to-emerald-900 text-white flex justify-between items-center">
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4 overflow-y-auto">
+            <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden border border-[#E3EAE6] my-8">
+              <div className="px-6 py-5 bg-[#F6F8F5] border-b border-[#E3EAE6] flex justify-between items-center">
                 <div className="flex items-center gap-3">
-                  <div className="p-2.5 rounded-xl bg-white/10 text-emerald-200">
-                    <Scale size={22} />
+                  <div className="p-2.5 rounded-xl bg-[#DCEDE4] text-[#145C46]">
+                    <Scale size={20} />
                   </div>
                   <div>
-                    <h3 className="text-lg font-black uppercase tracking-tight">Nova Pesagem: {currentAnimal.earTag}</h3>
-                    <p className="text-xs text-emerald-200 font-medium">{currentAnimal.breed} · {currentAnimal.gender}</p>
+                    <h3 className="text-lg font-semibold leading-snug text-[#20332C]">Nova Pesagem: {currentAnimal.earTag}</h3>
+                    <p className="text-[13px] font-normal leading-normal text-[#64766C]">{currentAnimal.breed} · {currentAnimal.gender}</p>
                   </div>
                 </div>
-                <button onClick={() => setIsWeighModalOpen(false)} className="hover:bg-white/10 p-2 rounded-full text-white/80 hover:text-white transition-colors">
+                <button onClick={() => setIsWeighModalOpen(false)} className="hover:bg-white p-2 rounded-xl text-[#64766C] hover:text-[#20332C] transition-colors">
                   <X size={20} />
                 </button>
               </div>
 
-              <form onSubmit={handleWeighingSubmit} className="p-7 space-y-5">
+              <form onSubmit={handleWeighingSubmit} className="p-6 space-y-5">
                 {/* Resumo da Pesagem Anterior */}
-                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200/70 flex items-center justify-between">
+                <div className="p-4 bg-[#F6F8F5] rounded-xl border border-[#E3EAE6] flex items-center justify-between">
                   <div>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Última Pesagem Registrada</p>
-                    <p className="text-base font-black text-slate-800 font-nums mt-0.5">
-                      {last.weightKg.toFixed(1)} kg <span className="text-xs font-bold text-slate-500">({(last.weightKg / 30).toFixed(1)} @)</span>
+                    <p className="text-xs font-medium leading-snug text-[#64766C]">Última Pesagem Registrada</p>
+                    <p className="text-base font-semibold text-[#20332C] font-nums mt-0.5">
+                      {last.weightKg.toFixed(1)}<span className="ml-1 text-xs font-normal text-[#64766C]">kg</span>
+                      <span className="ml-1.5 text-xs font-normal text-[#64766C]">({(last.weightKg / 30).toFixed(1)} @)</span>
                     </p>
-                    <p className="text-[11px] text-slate-500 font-medium mt-0.5">
+                    <p className="text-xs font-normal text-[#64766C] mt-0.5">
                       Data: {new Date(last.date + 'T00:00:00').toLocaleDateString('pt-BR')}
                     </p>
                   </div>
                   <div className="text-right">
-                    <span className="text-[10px] font-bold text-emerald-700 uppercase tracking-wider block">GMD Anterior</span>
-                    <span className="text-sm font-black text-emerald-800 font-nums">
+                    <span className="text-xs font-medium leading-snug text-[#145C46] block">GMD Anterior</span>
+                    <span className="text-sm font-semibold text-[#145C46] font-nums">
                       {last.gmd ? `+${last.gmd.toFixed(3)} kg/d` : '0.000 kg/d'}
                     </span>
                   </div>
@@ -732,10 +741,10 @@ const AnimalManager: React.FC<AnimalManagerProps> = ({
                 {/* Campos da Nova Pesagem */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <label className="text-[11px] font-extrabold text-slate-700 uppercase tracking-wider">Data da Nova Pesagem</label>
+                    <label className="block text-xs font-medium leading-snug text-[#64766C]">Data da Nova Pesagem</label>
                     <input 
                       type="date" 
-                      className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 font-bold text-slate-800 bg-slate-50 focus:bg-white outline-none focus:ring-2 focus:ring-emerald-500 text-sm" 
+                      className="w-full border border-[#E3EAE6] rounded-xl px-3.5 py-2.5 text-sm font-normal leading-normal text-[#20332C] bg-[#F6F8F5] focus:bg-white outline-none focus:ring-2 focus:ring-[#145C46]/20 focus:border-[#145C46]" 
                       value={weighDate} 
                       onChange={e => setWeighDate(e.target.value)} 
                       required 
@@ -744,8 +753,8 @@ const AnimalManager: React.FC<AnimalManagerProps> = ({
 
                   <div className="space-y-1.5">
                     <div className="flex justify-between items-center">
-                      <label className="text-[11px] font-extrabold text-slate-700 uppercase tracking-wider">Novo Peso</label>
-                      <div className="flex bg-slate-200 rounded-lg p-0.5">
+                      <label className="block text-xs font-medium leading-snug text-[#64766C]">Novo Peso</label>
+                      <div className="flex bg-[#F6F8F5] border border-[#E3EAE6] rounded-lg p-0.5">
                         <button 
                           type="button" 
                           onClick={() => {
@@ -754,9 +763,9 @@ const AnimalManager: React.FC<AnimalManagerProps> = ({
                               setWeighUnit('kg');
                             }
                           }} 
-                          className={`px-2 py-0.5 text-[9px] font-black rounded ${weighUnit === 'kg' ? 'bg-white text-emerald-700 shadow-2xs' : 'text-slate-500'}`}
+                          className={`px-2 py-0.5 text-xs font-semibold rounded-md ${weighUnit === 'kg' ? 'bg-white text-[#145C46] shadow-2xs' : 'text-[#64766C]'}`}
                         >
-                          KG
+                          kg
                         </button>
                         <button 
                           type="button" 
@@ -766,7 +775,7 @@ const AnimalManager: React.FC<AnimalManagerProps> = ({
                               setWeighUnit('arroba');
                             }
                           }} 
-                          className={`px-2 py-0.5 text-[9px] font-black rounded ${weighUnit === 'arroba' ? 'bg-white text-emerald-700 shadow-2xs' : 'text-slate-500'}`}
+                          className={`px-2 py-0.5 text-xs font-semibold rounded-md ${weighUnit === 'arroba' ? 'bg-white text-[#145C46] shadow-2xs' : 'text-[#64766C]'}`}
                         >
                           @
                         </button>
@@ -777,46 +786,46 @@ const AnimalManager: React.FC<AnimalManagerProps> = ({
                         type="number" 
                         step="0.1" 
                         onFocus={handleFocus} 
-                        className="w-full border border-slate-200 rounded-xl px-4 py-2.5 font-black text-xl text-slate-900 bg-slate-50 focus:bg-white outline-none focus:ring-2 focus:ring-emerald-500 pr-12 font-nums" 
+                        className="w-full border border-[#E3EAE6] rounded-xl px-4 py-2 text-lg font-semibold text-[#20332C] bg-[#F6F8F5] focus:bg-white outline-none focus:ring-2 focus:ring-[#145C46]/20 focus:border-[#145C46] pr-12 font-nums" 
                         value={weighValue || ''} 
                         onChange={e => setWeighValue(Number(e.target.value))} 
                         required 
                       />
-                      <span className="absolute right-3.5 top-1/2 -translate-y-1/2 font-black text-xs text-slate-400 uppercase font-mono">
-                        {weighUnit === 'kg' ? 'KG' : '@'}
+                      <span className="absolute right-3.5 top-1/2 -translate-y-1/2 font-medium text-xs text-[#64766C]">
+                        {weighUnit === 'kg' ? 'kg' : '@'}
                       </span>
                     </div>
                   </div>
                 </div>
 
                 {/* Cálculo do GMD Obtido e Configuração */}
-                <div className="bg-gradient-to-br from-emerald-50 to-emerald-100/50 p-4.5 rounded-2xl border border-emerald-200/80 space-y-3">
+                <div className="bg-[#DCEDE4]/50 p-4 rounded-xl border border-[#145C46]/20 space-y-3">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-[10px] font-extrabold text-emerald-900 uppercase tracking-wider">GMD Realizado no Período</p>
-                      <p className="text-xs text-emerald-700 font-medium">
+                      <p className="text-xs font-medium leading-snug text-[#145C46]">GMD Realizado no Período</p>
+                      <p className="text-xs font-normal text-[#64766C] mt-0.5">
                         {autoCalc.days} dias corridos ({autoCalc.weightDiffKg >= 0 ? `+${autoCalc.weightDiffKg.toFixed(1)}` : autoCalc.weightDiffKg.toFixed(1)} kg)
                       </p>
                     </div>
                     <div className="text-right">
-                      <span className="text-xl font-black text-emerald-900 font-nums">
+                      <span className="text-xl font-semibold text-[#145C46] font-nums">
                         {autoCalc.gmd >= 0 ? `+${autoCalc.gmd.toFixed(3)}` : autoCalc.gmd.toFixed(3)}
                       </span>
-                      <span className="text-xs font-bold text-emerald-700 block">kg/dia</span>
+                      <span className="text-xs font-normal text-[#64766C] block">kg/dia</span>
                     </div>
                   </div>
 
-                  <div className="pt-2 border-t border-emerald-200/60 flex items-center justify-between gap-3">
+                  <div className="pt-2.5 border-t border-[#145C46]/15 flex items-center justify-between gap-3">
                     <div className="flex-1">
-                      <label className="text-[10px] font-bold text-slate-600 uppercase tracking-wider block">GMD Base Para Projeção Diária</label>
-                      <p className="text-[10px] text-slate-500">Adicionado diariamente no "Peso Previsto"</p>
+                      <label className="text-xs font-medium text-[#20332C] block">GMD Base para Projeção Diária</label>
+                      <p className="text-xs font-normal text-[#64766C]">Adicionado diariamente no "Peso Previsto"</p>
                     </div>
                     <div className="w-28 relative">
                       <input 
                         type="number" 
                         step="0.001" 
                         onFocus={handleFocus}
-                        className="w-full border border-emerald-300 rounded-lg px-2.5 py-1.5 font-black text-sm text-emerald-950 bg-white text-right font-nums focus:ring-2 focus:ring-emerald-500 outline-none"
+                        className="w-full border border-[#145C46]/30 rounded-xl px-3 py-1.5 font-semibold text-sm text-[#145C46] bg-white text-right font-nums focus:ring-2 focus:ring-[#145C46]/20 outline-none"
                         value={isCustomGmdManual ? customGmd : (autoCalc.days > 0 ? autoCalc.gmd : last.gmd || 0.8)}
                         onChange={e => {
                           setIsCustomGmdManual(true);
@@ -828,17 +837,17 @@ const AnimalManager: React.FC<AnimalManagerProps> = ({
                 </div>
 
                 {/* Prévia do Peso Previsto */}
-                <div className="p-4 bg-slate-900 text-white rounded-2xl flex items-center justify-between">
+                <div className="p-4 bg-[#F6F8F5] border border-[#E3EAE6] rounded-xl flex items-center justify-between">
                   <div className="flex items-center gap-2.5">
-                    <Sparkles className="text-emerald-400 shrink-0" size={18} />
+                    <Sparkles className="text-[#145C46] shrink-0" size={18} />
                     <div>
-                      <p className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider">Novo Peso Previsto Hoje</p>
-                      <p className="text-xs text-slate-300 font-medium">Projeção diária com base no novo GMD</p>
+                      <p className="text-xs font-medium text-[#145C46]">Novo Peso Previsto Hoje</p>
+                      <p className="text-xs font-normal text-[#64766C]">Projeção diária com base no novo GMD</p>
                     </div>
                   </div>
                   <div className="text-right font-nums">
-                    <span className="text-lg font-black text-white">{futurePredicted.toFixed(1)} kg</span>
-                    <span className="text-xs font-bold text-emerald-300 block">({(futurePredicted / 30).toFixed(1)} @)</span>
+                    <span className="text-lg font-semibold text-[#20332C]">{futurePredicted.toFixed(1)}<span className="ml-1 text-xs font-normal text-[#64766C]">kg</span></span>
+                    <span className="text-xs font-medium text-[#145C46] block">({(futurePredicted / 30).toFixed(1)} @)</span>
                   </div>
                 </div>
 
@@ -847,13 +856,13 @@ const AnimalManager: React.FC<AnimalManagerProps> = ({
                   <button 
                     type="button" 
                     onClick={() => setIsWeighModalOpen(false)} 
-                    className="flex-1 py-3 px-4 rounded-xl text-slate-500 font-bold text-xs hover:bg-slate-100 transition-colors uppercase tracking-wider"
+                    className="flex-1 py-2.5 px-4 rounded-xl text-[#64766C] border border-[#E3EAE6] font-semibold text-sm leading-snug hover:bg-[#F6F8F5] transition-colors"
                   >
                     Cancelar
                   </button>
                   <button 
                     type="submit" 
-                    className="flex-2 py-3 px-6 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl font-extrabold text-xs uppercase tracking-wider shadow-md shadow-emerald-900/20 transition-all active:scale-98"
+                    className="flex-2 py-2.5 px-6 bg-[#145C46] hover:bg-[#0E4434] text-white rounded-xl font-semibold text-sm leading-snug shadow-xs transition-all active:scale-98"
                   >
                     Salvar Pesagem
                   </button>
@@ -877,42 +886,42 @@ const AnimalManager: React.FC<AnimalManagerProps> = ({
         const totalLotGainKg = (inputAvgKg - stats.avgRecordedWeightKg) * stats.headCount;
 
         return (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 backdrop-blur-xs p-4 overflow-y-auto">
-            <div className="bg-white rounded-3xl shadow-2xl w-full max-w-xl overflow-hidden border border-slate-100 my-8">
-              <div className="px-7 py-5 bg-gradient-to-r from-emerald-800 to-slate-900 text-white flex justify-between items-center">
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4 overflow-y-auto">
+            <div className="bg-white rounded-2xl shadow-xl w-full max-w-xl overflow-hidden border border-[#E3EAE6] my-8">
+              <div className="px-6 py-5 bg-[#F6F8F5] border-b border-[#E3EAE6] flex justify-between items-center">
                 <div className="flex items-center gap-3">
-                  <div className="p-2.5 rounded-xl bg-white/10 text-emerald-300">
-                    <Scale size={22} />
+                  <div className="p-2.5 rounded-xl bg-[#DCEDE4] text-[#145C46]">
+                    <Scale size={20} />
                   </div>
                   <div>
-                    <h3 className="text-lg font-black uppercase tracking-tight">Pesagem do Lote: {lot?.name}</h3>
-                    <p className="text-xs text-emerald-200 font-medium">{stats.headCount} animais ativos no pasto</p>
+                    <h3 className="text-lg font-semibold leading-snug text-[#20332C]">Pesagem do Lote: {lot?.name}</h3>
+                    <p className="text-[13px] font-normal leading-normal text-[#64766C]">{stats.headCount} animais ativos no pasto</p>
                   </div>
                 </div>
-                <button onClick={() => setIsLotWeighModalOpen(false)} className="hover:bg-white/10 p-2 rounded-full text-white/80 hover:text-white transition-colors">
+                <button onClick={() => setIsLotWeighModalOpen(false)} className="hover:bg-white p-2 rounded-xl text-[#64766C] hover:text-[#20332C] transition-colors">
                   <X size={20} />
                 </button>
               </div>
 
-              <form onSubmit={handleLotWeighSubmit} className="p-7 space-y-5">
+              <form onSubmit={handleLotWeighSubmit} className="p-6 space-y-5">
                 {/* Resumo da Última Média do Lote */}
-                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200/70 grid grid-cols-2 sm:grid-cols-3 gap-3">
+                <div className="p-4 bg-[#F6F8F5] rounded-xl border border-[#E3EAE6] grid grid-cols-2 sm:grid-cols-3 gap-3">
                   <div>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Média Anterior</p>
-                    <p className="text-base font-black text-slate-800 font-nums mt-0.5">
-                      {stats.avgRecordedWeightKg.toFixed(1)} kg
+                    <p className="text-xs font-medium leading-snug text-[#64766C]">Média Anterior</p>
+                    <p className="text-base font-semibold text-[#20332C] font-nums mt-0.5">
+                      {stats.avgRecordedWeightKg.toFixed(1)}<span className="ml-1 text-xs font-normal text-[#64766C]">kg</span>
                     </p>
-                    <span className="text-xs font-bold text-slate-500 font-nums">({stats.avgRecordedArroba.toFixed(1)} @)</span>
+                    <span className="text-xs font-normal text-[#64766C] font-nums">({stats.avgRecordedArroba.toFixed(1)} @)</span>
                   </div>
                   <div>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Última Data Base</p>
-                    <p className="text-xs font-black text-slate-800 mt-1">
+                    <p className="text-xs font-medium leading-snug text-[#64766C]">Última Data Base</p>
+                    <p className="text-sm font-semibold text-[#20332C] mt-0.5">
                       {stats.mostRecentWeighingDate ? new Date(stats.mostRecentWeighingDate + 'T00:00:00').toLocaleDateString('pt-BR') : 'Entrada'}
                     </p>
                   </div>
                   <div>
-                    <p className="text-[10px] font-bold text-emerald-700 uppercase tracking-wider">GMD Anterior</p>
-                    <p className="text-sm font-black text-emerald-800 font-nums mt-0.5">
+                    <p className="text-xs font-medium leading-snug text-[#145C46]">GMD Anterior</p>
+                    <p className="text-sm font-semibold text-[#145C46] font-nums mt-0.5">
                       +{stats.avgGmd.toFixed(3)} kg/d
                     </p>
                   </div>
@@ -921,10 +930,10 @@ const AnimalManager: React.FC<AnimalManagerProps> = ({
                 {/* Entradas da Nova Pesagem do Lote */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <label className="text-[11px] font-extrabold text-slate-700 uppercase tracking-wider">Data da Pesagem Coletiva</label>
+                    <label className="block text-xs font-medium leading-snug text-[#64766C]">Data da Pesagem Coletiva</label>
                     <input 
                       type="date" 
-                      className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 font-bold text-slate-800 bg-slate-50 focus:bg-white outline-none focus:ring-2 focus:ring-emerald-500 text-sm" 
+                      className="w-full border border-[#E3EAE6] rounded-xl px-3.5 py-2.5 text-sm font-normal leading-normal text-[#20332C] bg-[#F6F8F5] focus:bg-white outline-none focus:ring-2 focus:ring-[#145C46]/20 focus:border-[#145C46]" 
                       value={lotWeighDate} 
                       onChange={e => setLotWeighDate(e.target.value)} 
                       required 
@@ -933,8 +942,8 @@ const AnimalManager: React.FC<AnimalManagerProps> = ({
 
                   <div className="space-y-1.5">
                     <div className="flex justify-between items-center">
-                      <label className="text-[11px] font-extrabold text-slate-700 uppercase tracking-wider">Novo Peso Médio</label>
-                      <div className="flex bg-slate-200 rounded-lg p-0.5">
+                      <label className="block text-xs font-medium leading-snug text-[#64766C]">Novo Peso Médio</label>
+                      <div className="flex bg-[#F6F8F5] border border-[#E3EAE6] rounded-lg p-0.5">
                         <button 
                           type="button" 
                           onClick={() => {
@@ -943,9 +952,9 @@ const AnimalManager: React.FC<AnimalManagerProps> = ({
                               setLotWeighUnit('kg');
                             }
                           }} 
-                          className={`px-2 py-0.5 text-[9px] font-black rounded ${lotWeighUnit === 'kg' ? 'bg-white text-emerald-700 shadow-2xs' : 'text-slate-500'}`}
+                          className={`px-2 py-0.5 text-xs font-semibold rounded-md ${lotWeighUnit === 'kg' ? 'bg-white text-[#145C46] shadow-2xs' : 'text-[#64766C]'}`}
                         >
-                          KG
+                          kg
                         </button>
                         <button 
                           type="button" 
@@ -955,7 +964,7 @@ const AnimalManager: React.FC<AnimalManagerProps> = ({
                               setLotWeighUnit('arroba');
                             }
                           }} 
-                          className={`px-2 py-0.5 text-[9px] font-black rounded ${lotWeighUnit === 'arroba' ? 'bg-white text-emerald-700 shadow-2xs' : 'text-slate-500'}`}
+                          className={`px-2 py-0.5 text-xs font-semibold rounded-md ${lotWeighUnit === 'arroba' ? 'bg-white text-[#145C46] shadow-2xs' : 'text-[#64766C]'}`}
                         >
                           @
                         </button>
@@ -966,46 +975,46 @@ const AnimalManager: React.FC<AnimalManagerProps> = ({
                         type="number" 
                         step="0.1" 
                         onFocus={handleFocus} 
-                        className="w-full border border-slate-200 rounded-xl px-4 py-2.5 font-black text-xl text-slate-900 bg-slate-50 focus:bg-white outline-none focus:ring-2 focus:ring-emerald-500 pr-12 font-nums" 
+                        className="w-full border border-[#E3EAE6] rounded-xl px-4 py-2 text-lg font-semibold text-[#20332C] bg-[#F6F8F5] focus:bg-white outline-none focus:ring-2 focus:ring-[#145C46]/20 focus:border-[#145C46] pr-12 font-nums" 
                         value={lotWeighAvgValue || ''} 
                         onChange={e => setLotWeighAvgValue(Number(e.target.value))} 
                         required 
                       />
-                      <span className="absolute right-3.5 top-1/2 -translate-y-1/2 font-black text-xs text-slate-400 uppercase font-mono">
-                        {lotWeighUnit === 'kg' ? 'KG' : '@'}
+                      <span className="absolute right-3.5 top-1/2 -translate-y-1/2 font-medium text-xs text-[#64766C]">
+                        {lotWeighUnit === 'kg' ? 'kg' : '@'}
                       </span>
                     </div>
                   </div>
                 </div>
 
                 {/* GMD Realizado e Modo de Distribuição */}
-                <div className="bg-gradient-to-br from-emerald-50 to-emerald-100/50 p-4.5 rounded-2xl border border-emerald-200/80 space-y-3.5">
+                <div className="bg-[#DCEDE4]/50 p-4 rounded-xl border border-[#145C46]/20 space-y-3.5">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-[10px] font-extrabold text-emerald-900 uppercase tracking-wider">GMD Médio Calculado do Lote</p>
-                      <p className="text-xs text-emerald-700 font-medium">
+                      <p className="text-xs font-medium leading-snug text-[#145C46]">GMD Médio Calculado do Lote</p>
+                      <p className="text-xs font-normal text-[#64766C] mt-0.5">
                         {autoCalc.days} dias de intervalo · Ganho total do lote: {totalLotGainKg >= 0 ? `+${totalLotGainKg.toFixed(0)}` : totalLotGainKg.toFixed(0)} kg
                       </p>
                     </div>
                     <div className="text-right">
-                      <span className="text-xl font-black text-emerald-900 font-nums">
+                      <span className="text-xl font-semibold text-[#145C46] font-nums">
                         {autoCalc.gmd >= 0 ? `+${autoCalc.gmd.toFixed(3)}` : autoCalc.gmd.toFixed(3)}
                       </span>
-                      <span className="text-xs font-bold text-emerald-700 block">kg/dia/cab</span>
+                      <span className="text-xs font-normal text-[#64766C] block">kg/dia/cab</span>
                     </div>
                   </div>
 
-                  <div className="pt-2 border-t border-emerald-200/60 flex items-center justify-between gap-3">
+                  <div className="pt-2.5 border-t border-[#145C46]/15 flex items-center justify-between gap-3">
                     <div className="flex-1">
-                      <label className="text-[10px] font-bold text-slate-600 uppercase tracking-wider block">GMD Base Para o Lote</label>
-                      <p className="text-[10px] text-slate-500">Usado no cálculo diário do "Peso Previsto" dos animais</p>
+                      <label className="text-xs font-medium text-[#20332C] block">GMD Base para o Lote</label>
+                      <p className="text-xs font-normal text-[#64766C]">Usado no cálculo diário do "Peso Previsto" dos animais</p>
                     </div>
                     <div className="w-28 relative">
                       <input 
                         type="number" 
                         step="0.001" 
                         onFocus={handleFocus}
-                        className="w-full border border-emerald-300 rounded-lg px-2.5 py-1.5 font-black text-sm text-emerald-950 bg-white text-right font-nums focus:ring-2 focus:ring-emerald-500 outline-none"
+                        className="w-full border border-[#145C46]/30 rounded-xl px-3 py-1.5 font-semibold text-sm text-[#145C46] bg-white text-right font-nums focus:ring-2 focus:ring-[#145C46]/20 outline-none"
                         value={isLotWeighGmdManual ? lotWeighGmd : autoCalc.gmd}
                         onChange={e => {
                           setIsLotWeighGmdManual(true);
@@ -1016,50 +1025,50 @@ const AnimalManager: React.FC<AnimalManagerProps> = ({
                   </div>
 
                   {/* Modo de aplicação */}
-                  <div className="pt-2 border-t border-emerald-200/60 space-y-1.5">
-                    <label className="text-[10px] font-extrabold text-slate-700 uppercase tracking-wider block">Modo de Aplicação nos Animais</label>
-                    <div className="grid grid-cols-2 gap-2">
+                  <div className="pt-2.5 border-t border-[#145C46]/15 space-y-2">
+                    <label className="text-xs font-medium text-[#20332C] block">Modo de Aplicação nos Animais</label>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                       <button 
                         type="button"
                         onClick={() => setLotWeighApplyMode('uniform')}
-                        className={`p-2 rounded-xl text-left border transition-all ${
+                        className={`p-3 rounded-xl text-left border transition-all ${
                           lotWeighApplyMode === 'uniform' 
-                            ? 'bg-white border-emerald-500 shadow-xs' 
-                            : 'bg-emerald-50/50 border-emerald-200 text-slate-600'
+                            ? 'bg-white border-[#145C46] shadow-2xs' 
+                            : 'bg-white/60 border-[#E3EAE6] text-[#64766C]'
                         }`}
                       >
-                        <p className="text-[11px] font-bold text-slate-800">Peso Uniforme</p>
-                        <p className="text-[9px] text-slate-500 leading-tight">Todos os animais recebem {inputAvgKg.toFixed(1)} kg</p>
+                        <p className="text-sm font-semibold text-[#20332C] leading-snug">Peso Uniforme</p>
+                        <p className="text-xs font-normal text-[#64766C] leading-snug mt-0.5">Todos os animais recebem {inputAvgKg.toFixed(1)} kg</p>
                       </button>
                       
                       <button 
                         type="button"
                         onClick={() => setLotWeighApplyMode('gain_delta')}
-                        className={`p-2 rounded-xl text-left border transition-all ${
+                        className={`p-3 rounded-xl text-left border transition-all ${
                           lotWeighApplyMode === 'gain_delta' 
-                            ? 'bg-white border-emerald-500 shadow-xs' 
-                            : 'bg-emerald-50/50 border-emerald-200 text-slate-600'
+                            ? 'bg-white border-[#145C46] shadow-2xs' 
+                            : 'bg-white/60 border-[#E3EAE6] text-[#64766C]'
                         }`}
                       >
-                        <p className="text-[11px] font-bold text-slate-800">Ganho Proporcional</p>
-                        <p className="text-[9px] text-slate-500 leading-tight">Soma {autoCalc.weightDiffKg >= 0 ? `+${autoCalc.weightDiffKg.toFixed(1)}` : autoCalc.weightDiffKg.toFixed(1)} kg no peso individual</p>
+                        <p className="text-sm font-semibold text-[#20332C] leading-snug">Ganho Proporcional</p>
+                        <p className="text-xs font-normal text-[#64766C] leading-snug mt-0.5">Soma {autoCalc.weightDiffKg >= 0 ? `+${autoCalc.weightDiffKg.toFixed(1)}` : autoCalc.weightDiffKg.toFixed(1)} kg no peso individual</p>
                       </button>
                     </div>
                   </div>
                 </div>
 
                 {/* Prévia do Peso Previsto do Lote */}
-                <div className="p-4 bg-slate-900 text-white rounded-2xl flex items-center justify-between">
+                <div className="p-4 bg-[#F6F8F5] border border-[#E3EAE6] rounded-xl flex items-center justify-between">
                   <div className="flex items-center gap-2.5">
-                    <Sparkles className="text-emerald-400 shrink-0" size={18} />
+                    <Sparkles className="text-[#145C46] shrink-0" size={18} />
                     <div>
-                      <p className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider">Novo Peso Previsto Médio</p>
-                      <p className="text-xs text-slate-300 font-medium">Projeção diária por cabeça no lote</p>
+                      <p className="text-xs font-medium text-[#145C46]">Novo Peso Previsto Médio</p>
+                      <p className="text-xs font-normal text-[#64766C]">Projeção diária por cabeça no lote</p>
                     </div>
                   </div>
                   <div className="text-right font-nums">
-                    <span className="text-lg font-black text-white">{futurePredictedAvgKg.toFixed(1)} kg</span>
-                    <span className="text-xs font-bold text-emerald-300 block">({(futurePredictedAvgKg / 30).toFixed(1)} @)</span>
+                    <span className="text-lg font-semibold text-[#20332C]">{futurePredictedAvgKg.toFixed(1)}<span className="ml-1 text-xs font-normal text-[#64766C]">kg</span></span>
+                    <span className="text-xs font-medium text-[#145C46] block">({(futurePredictedAvgKg / 30).toFixed(1)} @)</span>
                   </div>
                 </div>
 
@@ -1068,13 +1077,13 @@ const AnimalManager: React.FC<AnimalManagerProps> = ({
                   <button 
                     type="button" 
                     onClick={() => setIsLotWeighModalOpen(false)} 
-                    className="flex-1 py-3 px-4 rounded-xl text-slate-500 font-bold text-xs hover:bg-slate-100 transition-colors uppercase tracking-wider"
+                    className="flex-1 py-2.5 px-4 rounded-xl text-[#64766C] border border-[#E3EAE6] font-semibold text-sm leading-snug hover:bg-[#F6F8F5] transition-colors"
                   >
                     Cancelar
                   </button>
                   <button 
                     type="submit" 
-                    className="flex-2 py-3 px-6 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl font-extrabold text-xs uppercase tracking-wider shadow-md shadow-emerald-900/20 transition-all active:scale-98"
+                    className="flex-2 py-2.5 px-6 bg-[#145C46] hover:bg-[#0E4434] text-white rounded-xl font-semibold text-sm leading-snug shadow-xs transition-all active:scale-98"
                   >
                     Confirmar Pesagem do Lote
                   </button>
@@ -1087,32 +1096,32 @@ const AnimalManager: React.FC<AnimalManagerProps> = ({
 
       {/* MODAL NOVO CADASTRO INDIVIDUAL */}
       {isModalIndividualOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
-          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden scale-in max-h-[90vh] flex flex-col">
-            <div className="px-8 py-6 border-b border-slate-100 flex justify-between items-center shrink-0">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden border border-[#E3EAE6] max-h-[90vh] flex flex-col">
+            <div className="px-6 py-5 bg-[#F6F8F5] border-b border-[#E3EAE6] flex justify-between items-center shrink-0">
                <div>
-                  <h3 className="text-2xl font-black text-slate-800 tracking-tight">Novo Cadastro</h3>
-                  <p className="text-xs text-slate-400 font-bold uppercase">Preencha as informações iniciais do animal</p>
+                  <h3 className="text-lg font-semibold leading-snug text-[#20332C]">Novo Cadastro de Animal</h3>
+                  <p className="text-[13px] font-normal leading-normal text-[#64766C]">Preencha as informações iniciais do animal</p>
                </div>
-               <button onClick={() => setIsModalIndividualOpen(false)} className="text-slate-400 hover:text-slate-600 p-2"><X size={24} /></button>
+               <button onClick={() => setIsModalIndividualOpen(false)} className="text-[#64766C] hover:text-[#20332C] hover:bg-white rounded-xl p-2 transition-colors"><X size={20} /></button>
             </div>
             
-            <form onSubmit={handleIndividualSubmit} className="p-8 space-y-6 overflow-y-auto">
-               <div className="grid grid-cols-2 gap-6">
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">BRINCO (ID)</label>
-                    <input type="text" className="w-full border border-slate-200 rounded-xl px-4 py-3 font-bold bg-slate-50 focus:bg-white outline-none focus:ring-2 focus:ring-emerald-500" value={currentAnimal.earTag || ''} onChange={e => setCurrentAnimal({...currentAnimal, earTag: e.target.value})} placeholder="Ex: NEL-123" required />
+            <form onSubmit={handleIndividualSubmit} className="p-6 space-y-5 overflow-y-auto">
+               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                  <div className="space-y-1.5">
+                    <label className="block text-xs font-medium leading-snug text-[#64766C]">Brinco (ID) *</label>
+                    <input type="text" className="w-full border border-[#E3EAE6] rounded-xl px-3.5 py-2.5 text-sm font-normal leading-normal text-[#20332C] bg-[#F6F8F5] focus:bg-white outline-none focus:ring-2 focus:ring-[#145C46]/20 focus:border-[#145C46]" value={currentAnimal.earTag || ''} onChange={e => setCurrentAnimal({...currentAnimal, earTag: e.target.value})} placeholder="Ex: NEL-123" required />
                   </div>
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">DATA ENTRADA/NASC.</label>
-                    <input type="date" className="w-full border border-slate-200 rounded-xl px-4 py-3 font-bold bg-slate-50 cursor-pointer" value={currentAnimal.entryDate || ''} onChange={e => setCurrentAnimal({...currentAnimal, entryDate: e.target.value})} required />
+                  <div className="space-y-1.5">
+                    <label className="block text-xs font-medium leading-snug text-[#64766C]">Data de Entrada / Nascimento *</label>
+                    <input type="date" className="w-full border border-[#E3EAE6] rounded-xl px-3.5 py-2.5 text-sm font-normal leading-normal text-[#20332C] bg-[#F6F8F5] focus:bg-white outline-none focus:ring-2 focus:ring-[#145C46]/20 focus:border-[#145C46] cursor-pointer" value={currentAnimal.entryDate || ''} onChange={e => setCurrentAnimal({...currentAnimal, entryDate: e.target.value})} required />
                   </div>
                </div>
 
-               <div className="grid grid-cols-2 gap-6">
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">RAÇA</label>
-                    <select className="w-full border border-slate-200 rounded-xl px-4 py-3 font-bold bg-slate-50 cursor-pointer appearance-none" value={currentAnimal.breed || ''} onChange={e => setCurrentAnimal({...currentAnimal, breed: e.target.value})}>
+               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                  <div className="space-y-1.5">
+                    <label className="block text-xs font-medium leading-snug text-[#64766C]">Raça</label>
+                    <select className="w-full border border-[#E3EAE6] rounded-xl px-3.5 py-2.5 text-sm font-normal leading-normal text-[#20332C] bg-[#F6F8F5] focus:bg-white outline-none focus:ring-2 focus:ring-[#145C46]/20 focus:border-[#145C46] cursor-pointer" value={currentAnimal.breed || ''} onChange={e => setCurrentAnimal({...currentAnimal, breed: e.target.value})}>
                        <option value="Nelore">Nelore</option>
                        <option value="Angus">Angus</option>
                        <option value="Cruzado">Cruzado</option>
@@ -1121,23 +1130,23 @@ const AnimalManager: React.FC<AnimalManagerProps> = ({
                        <option value="Brangus">Brangus</option>
                     </select>
                   </div>
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">PESO INICIAL (KG)</label>
-                    <input type="number" step="0.1" onFocus={handleFocus} className="w-full border border-slate-200 rounded-xl px-4 py-3 font-bold bg-slate-50 font-nums" value={indWeightValue || ''} onChange={e => setIndWeightValue(Number(e.target.value))} required />
+                  <div className="space-y-1.5">
+                    <label className="block text-xs font-medium leading-snug text-[#64766C]">Peso Inicial (kg) *</label>
+                    <input type="number" step="0.1" onFocus={handleFocus} className="w-full border border-[#E3EAE6] rounded-xl px-3.5 py-2.5 text-sm font-semibold leading-normal text-[#20332C] bg-[#F6F8F5] focus:bg-white outline-none focus:ring-2 focus:ring-[#145C46]/20 focus:border-[#145C46] font-nums" value={indWeightValue || ''} onChange={e => setIndWeightValue(Number(e.target.value))} required />
                   </div>
                </div>
 
-               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">GÊNERO</label>
-                    <select className="w-full border border-slate-200 rounded-xl px-4 py-3 font-bold bg-slate-50 cursor-pointer appearance-none" value={currentAnimal.gender || AnimalGender.MALE} onChange={e => setCurrentAnimal({...currentAnimal, gender: e.target.value as AnimalGender})}>
+               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                  <div className="space-y-1.5">
+                    <label className="block text-xs font-medium leading-snug text-[#64766C]">Gênero</label>
+                    <select className="w-full border border-[#E3EAE6] rounded-xl px-3.5 py-2.5 text-sm font-normal leading-normal text-[#20332C] bg-[#F6F8F5] focus:bg-white outline-none focus:ring-2 focus:ring-[#145C46]/20 focus:border-[#145C46] cursor-pointer" value={currentAnimal.gender || AnimalGender.MALE} onChange={e => setCurrentAnimal({...currentAnimal, gender: e.target.value as AnimalGender})}>
                        <option value={AnimalGender.MALE}>Macho</option>
                        <option value={AnimalGender.FEMALE}>Fêmea</option>
                     </select>
                   </div>
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">LOTE DE MANEJO</label>
-                    <select className="w-full border border-slate-200 rounded-xl px-4 py-3 font-bold bg-slate-50 cursor-pointer appearance-none" value={currentAnimal.lotId || ''} onChange={e => setCurrentAnimal({...currentAnimal, lotId: e.target.value})}>
+                  <div className="space-y-1.5">
+                    <label className="block text-xs font-medium leading-snug text-[#64766C]">Lote de Manejo</label>
+                    <select className="w-full border border-[#E3EAE6] rounded-xl px-3.5 py-2.5 text-sm font-normal leading-normal text-[#20332C] bg-[#F6F8F5] focus:bg-white outline-none focus:ring-2 focus:ring-[#145C46]/20 focus:border-[#145C46] cursor-pointer" value={currentAnimal.lotId || ''} onChange={e => setCurrentAnimal({...currentAnimal, lotId: e.target.value})}>
                        <option value="">Nenhum (Pasto Geral)</option>
                        {lots.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
                     </select>
@@ -1145,17 +1154,17 @@ const AnimalManager: React.FC<AnimalManagerProps> = ({
                </div>
 
                {/* GMD Inicial Esperado */}
-               <div className="p-4 bg-emerald-50 rounded-2xl border border-emerald-200 flex items-center justify-between gap-4">
+               <div className="p-4 bg-[#DCEDE4]/50 rounded-xl border border-[#145C46]/20 flex items-center justify-between gap-4">
                   <div>
-                    <label className="text-[10px] font-black text-emerald-800 uppercase tracking-wider block">GMD Inicial Esperado (kg/dia)</label>
-                    <p className="text-[10px] text-emerald-600">Alimenta o cálculo diário do "Peso Previsto" até a próxima pesagem</p>
+                    <label className="text-xs font-medium text-[#145C46] block">GMD Inicial Esperado (kg/dia)</label>
+                    <p className="text-xs font-normal text-[#64766C] mt-0.5">Alimenta o cálculo diário do "Peso Previsto" até a próxima pesagem</p>
                   </div>
-                  <div className="w-32">
+                  <div className="w-32 shrink-0">
                     <input 
                       type="number" 
                       step="0.001" 
                       onFocus={handleFocus}
-                      className="w-full border border-emerald-300 rounded-xl px-3 py-2 font-black text-base text-emerald-950 bg-white text-right font-nums focus:ring-2 focus:ring-emerald-500 outline-none" 
+                      className="w-full border border-[#145C46]/30 rounded-xl px-3 py-2 font-semibold text-sm text-[#145C46] bg-white text-right font-nums focus:ring-2 focus:ring-[#145C46]/20 outline-none" 
                       value={indInitialGmd} 
                       onChange={e => setIndInitialGmd(Number(e.target.value))} 
                     />
@@ -1163,37 +1172,37 @@ const AnimalManager: React.FC<AnimalManagerProps> = ({
                </div>
 
                {/* SEÇÃO INVESTIMENTO */}
-               <div className="border-2 border-emerald-50 bg-emerald-50/10 rounded-3xl p-6 space-y-4">
-                  <div className="flex items-center justify-between mb-2">
-                     <h4 className="text-[10px] font-black text-emerald-700 uppercase tracking-widest">INVESTIMENTO / AQUISIÇÃO</h4>
-                     <div className="flex bg-white rounded-lg p-0.5 border border-emerald-100 shadow-2xs">
-                        <button type="button" onClick={() => setIndPriceMode('total')} className={`px-4 py-2 text-[9px] font-black rounded-md transition-all ${indPriceMode === 'total' ? 'bg-emerald-600 text-white shadow-xs' : 'text-slate-400'}`}>VALOR TOTAL</button>
-                        <button type="button" onClick={() => setIndPriceMode('arroba')} className={`px-4 py-2 text-[9px] font-black rounded-md transition-all ${indPriceMode === 'arroba' ? 'bg-emerald-600 text-white shadow-xs' : 'text-slate-400'}`}>VALOR P/ @</button>
+               <div className="border border-[#E3EAE6] bg-[#F6F8F5] rounded-xl p-5 space-y-3.5">
+                  <div className="flex items-center justify-between gap-2">
+                     <h4 className="text-xs font-semibold text-[#145C46]">Investimento / Aquisição</h4>
+                     <div className="flex bg-white rounded-lg p-0.5 border border-[#E3EAE6]">
+                        <button type="button" onClick={() => setIndPriceMode('total')} className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${indPriceMode === 'total' ? 'bg-[#145C46] text-white shadow-2xs' : 'text-[#64766C]'}`}>Valor Total</button>
+                        <button type="button" onClick={() => setIndPriceMode('arroba')} className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${indPriceMode === 'arroba' ? 'bg-[#145C46] text-white shadow-2xs' : 'text-[#64766C]'}`}>Valor p/ @</button>
                      </div>
                   </div>
                   <div className="relative">
-                     <span className="absolute left-6 top-1/2 -translate-y-1/2 text-emerald-600 font-black text-xl">R$</span>
-                     <input type="number" onFocus={handleFocus} className="w-full border border-slate-200 rounded-2xl pl-16 pr-6 py-4 font-black text-2xl text-emerald-900 bg-white outline-none focus:ring-4 focus:ring-emerald-50 font-nums" value={currentAnimal.purchaseValue || ''} onChange={e => setCurrentAnimal({...currentAnimal, purchaseValue: Number(e.target.value)})} placeholder="0,00" />
+                     <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#145C46] font-semibold text-base">R$</span>
+                     <input type="number" onFocus={handleFocus} className="w-full border border-[#E3EAE6] rounded-xl pl-12 pr-4 py-3 font-semibold text-xl text-[#20332C] bg-white outline-none focus:ring-2 focus:ring-[#145C46]/20 focus:border-[#145C46] font-nums" value={currentAnimal.purchaseValue || ''} onChange={e => setCurrentAnimal({...currentAnimal, purchaseValue: Number(e.target.value)})} placeholder="0,00" />
                   </div>
-                  <p className="text-[9px] text-slate-400 font-medium text-center uppercase tracking-wider">Gera lançamento financeiro automático. Use 0 para nascimentos na fazenda.</p>
+                  <p className="text-xs text-[#64766C] font-normal">Gera lançamento financeiro automático. Use 0 para nascimentos na fazenda.</p>
                </div>
 
-               <div className="grid grid-cols-1 gap-6">
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">ESTADO DE SAÚDE</label>
-                    <select className="w-full border border-slate-200 rounded-xl px-4 py-3 font-bold bg-slate-50" value={currentAnimal.status || AnimalStatus.ACTIVE} onChange={e => setCurrentAnimal({...currentAnimal, status: e.target.value as AnimalStatus})}>
+               <div className="grid grid-cols-1 gap-5">
+                  <div className="space-y-1.5">
+                    <label className="block text-xs font-medium leading-snug text-[#64766C]">Estado de Saúde / Status</label>
+                    <select className="w-full border border-[#E3EAE6] rounded-xl px-3.5 py-2.5 text-sm font-normal leading-normal text-[#20332C] bg-[#F6F8F5] focus:bg-white outline-none focus:ring-2 focus:ring-[#145C46]/20 focus:border-[#145C46]" value={currentAnimal.status || AnimalStatus.ACTIVE} onChange={e => setCurrentAnimal({...currentAnimal, status: e.target.value as AnimalStatus})}>
                        {Object.values(AnimalStatus).map(s => <option key={s} value={s}>{s}</option>)}
                     </select>
                   </div>
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">OBSERVAÇÕES</label>
-                    <textarea rows={2} className="w-full border border-slate-200 rounded-xl px-4 py-3 font-medium bg-slate-50 focus:bg-white outline-none" value={currentAnimal.notes || ''} onChange={e => setCurrentAnimal({...currentAnimal, notes: e.target.value})} placeholder="Ex: Vacinação em dia, pedigree..." />
+                  <div className="space-y-1.5">
+                    <label className="block text-xs font-medium leading-snug text-[#64766C]">Observações</label>
+                    <textarea rows={2} className="w-full border border-[#E3EAE6] rounded-xl px-3.5 py-2.5 text-sm font-normal leading-normal text-[#20332C] bg-[#F6F8F5] focus:bg-white outline-none focus:ring-2 focus:ring-[#145C46]/20 focus:border-[#145C46]" value={currentAnimal.notes || ''} onChange={e => setCurrentAnimal({...currentAnimal, notes: e.target.value})} placeholder="Ex: Vacinação em dia, pedigree..." />
                   </div>
                </div>
 
-               <div className="flex gap-4 pt-4 shrink-0">
-                  <button type="button" onClick={() => setIsModalIndividualOpen(false)} className="flex-1 px-8 py-4 text-slate-400 font-black text-xs uppercase tracking-widest hover:bg-slate-100 rounded-2xl transition-all">CANCELAR</button>
-                  <button type="submit" className="flex-2 px-8 py-4 bg-emerald-700 hover:bg-emerald-800 text-white font-black text-xs uppercase tracking-[0.2em] rounded-2xl shadow-xl shadow-emerald-100 transition-all active:scale-95">SALVAR</button>
+               <div className="flex gap-3 pt-3 border-t border-[#E3EAE6] shrink-0">
+                  <button type="button" onClick={() => setIsModalIndividualOpen(false)} className="flex-1 px-5 py-2.5 text-[#64766C] border border-[#E3EAE6] font-semibold text-sm leading-snug hover:bg-[#F6F8F5] rounded-xl transition-all">Cancelar</button>
+                  <button type="submit" className="flex-2 px-6 py-2.5 bg-[#145C46] hover:bg-[#0E4434] text-white font-semibold text-sm leading-snug rounded-xl shadow-xs transition-all active:scale-95">Salvar Animal</button>
                </div>
             </form>
           </div>
@@ -1202,21 +1211,21 @@ const AnimalManager: React.FC<AnimalManagerProps> = ({
 
       {/* MODAL LOTE (BATCH ENTRY) */}
       {isBatchModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
-          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden border border-slate-100">
-            <div className="px-8 py-6 bg-slate-900 text-white flex justify-between items-center">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4 overflow-y-auto">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden border border-[#E3EAE6] my-8">
+            <div className="px-6 py-5 bg-[#F6F8F5] border-b border-[#E3EAE6] flex justify-between items-center">
                <div>
-                  <h3 className="text-xl font-black uppercase tracking-tight">Cadastrar Novo Lote de Animais</h3>
-                  <p className="text-xs text-slate-400 font-bold uppercase tracking-wider">Entrada coletiva por lote</p>
+                  <h3 className="text-lg font-semibold leading-snug text-[#20332C]">Cadastrar Novo Lote de Animais</h3>
+                  <p className="text-[13px] font-normal leading-normal text-[#64766C]">Entrada coletiva por lote</p>
                </div>
-               <button onClick={() => setIsBatchModalOpen(false)} className="hover:bg-white/10 p-2 rounded-full"><X size={24} /></button>
+               <button onClick={() => setIsBatchModalOpen(false)} className="hover:bg-white p-2 rounded-xl text-[#64766C] hover:text-[#20332C] transition-colors"><X size={20} /></button>
             </div>
-            <form onSubmit={handleBatchSubmit} className="p-8 space-y-6">
-               <div className="grid grid-cols-2 gap-6">
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-black text-slate-400 uppercase ml-1">Lote de Destino (Obrigatório)</label>
+            <form onSubmit={handleBatchSubmit} className="p-6 space-y-5">
+               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                  <div className="space-y-1.5">
+                    <label className="block text-xs font-medium leading-snug text-[#64766C]">Lote de Destino (Obrigatório) *</label>
                     <select 
-                      className="w-full border border-slate-200 rounded-2xl px-5 py-3 font-bold bg-slate-50 outline-none focus:ring-2 focus:ring-emerald-500" 
+                      className="w-full border border-[#E3EAE6] rounded-xl px-3.5 py-2.5 text-sm font-normal leading-normal text-[#20332C] bg-[#F6F8F5] focus:bg-white outline-none focus:ring-2 focus:ring-[#145C46]/20 focus:border-[#145C46]" 
                       value={batchLotId} 
                       onChange={e => {
                         const newLotId = e.target.value;
@@ -1232,62 +1241,62 @@ const AnimalManager: React.FC<AnimalManagerProps> = ({
                        {lots.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
                     </select>
                   </div>
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-black text-slate-400 uppercase ml-1">Quantidade Total</label>
-                    <input type="number" onFocus={handleFocus} className="w-full border border-slate-200 rounded-2xl px-5 py-3 font-black text-slate-900 bg-slate-50 outline-none font-nums" value={batchQty} onChange={e => setBatchQty(Number(e.target.value))} />
+                  <div className="space-y-1.5">
+                    <label className="block text-xs font-medium leading-snug text-[#64766C]">Quantidade Total</label>
+                    <input type="number" onFocus={handleFocus} className="w-full border border-[#E3EAE6] rounded-xl px-3.5 py-2.5 text-sm font-semibold leading-normal text-[#20332C] bg-[#F6F8F5] focus:bg-white outline-none focus:ring-2 focus:ring-[#145C46]/20 focus:border-[#145C46] font-nums" value={batchQty} onChange={e => setBatchQty(Number(e.target.value))} />
                   </div>
                </div>
 
-               <div className="grid grid-cols-2 gap-6">
-                  <div className="space-y-1">
-                    <div className="flex justify-between items-center mb-1">
-                      <label className="text-[10px] font-black text-slate-400 uppercase ml-1">Peso Médio Inicial</label>
-                      <div className="flex bg-slate-200 rounded-lg p-1">
-                        <button type="button" onClick={() => setBatchWeightType('kg')} className={`px-2 py-0.5 text-[8px] font-black rounded ${batchWeightType === 'kg' ? 'bg-white text-emerald-700 shadow-2xs' : 'text-slate-500'}`}>KG</button>
-                        <button type="button" onClick={() => setBatchWeightType('arroba')} className={`px-2 py-0.5 text-[8px] font-black rounded ${batchWeightType === 'arroba' ? 'bg-white text-emerald-700 shadow-2xs' : 'text-slate-500'}`}>@</button>
+               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                  <div className="space-y-1.5">
+                    <div className="flex justify-between items-center">
+                      <label className="block text-xs font-medium leading-snug text-[#64766C]">Peso Médio Inicial</label>
+                      <div className="flex bg-[#F6F8F5] border border-[#E3EAE6] rounded-lg p-0.5">
+                        <button type="button" onClick={() => setBatchWeightType('kg')} className={`px-2 py-0.5 text-xs font-semibold rounded-md ${batchWeightType === 'kg' ? 'bg-white text-[#145C46] shadow-2xs' : 'text-[#64766C]'}`}>kg</button>
+                        <button type="button" onClick={() => setBatchWeightType('arroba')} className={`px-2 py-0.5 text-xs font-semibold rounded-md ${batchWeightType === 'arroba' ? 'bg-white text-[#145C46] shadow-2xs' : 'text-[#64766C]'}`}>@</button>
                       </div>
                     </div>
-                    <input type="number" step="0.1" onFocus={handleFocus} className="w-full border border-slate-200 rounded-2xl px-5 py-3 font-bold bg-slate-50 outline-none font-nums" value={batchWeightValue} onChange={e => setBatchWeightValue(Number(e.target.value))} />
+                    <input type="number" step="0.1" onFocus={handleFocus} className="w-full border border-[#E3EAE6] rounded-xl px-3.5 py-2.5 text-sm font-semibold leading-normal text-[#20332C] bg-[#F6F8F5] focus:bg-white outline-none focus:ring-2 focus:ring-[#145C46]/20 focus:border-[#145C46] font-nums" value={batchWeightValue} onChange={e => setBatchWeightValue(Number(e.target.value))} />
                   </div>
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-black text-slate-400 uppercase ml-1">Data Entrada</label>
-                    <input type="date" className="w-full border border-slate-200 rounded-2xl px-5 py-3 font-bold bg-slate-50" value={batchDate} onChange={e => setBatchDate(e.target.value)} />
+                  <div className="space-y-1.5">
+                    <label className="block text-xs font-medium leading-snug text-[#64766C]">Data de Entrada</label>
+                    <input type="date" className="w-full border border-[#E3EAE6] rounded-xl px-3.5 py-2.5 text-sm font-normal leading-normal text-[#20332C] bg-[#F6F8F5] focus:bg-white outline-none focus:ring-2 focus:ring-[#145C46]/20 focus:border-[#145C46]" value={batchDate} onChange={e => setBatchDate(e.target.value)} />
                   </div>
                </div>
 
                {/* GMD Inicial Esperado do Lote */}
-               <div className="p-4 bg-emerald-50 rounded-2xl border border-emerald-200 flex items-center justify-between gap-4">
+               <div className="p-4 bg-[#DCEDE4]/50 rounded-xl border border-[#145C46]/20 flex items-center justify-between gap-4">
                   <div>
-                    <label className="text-[10px] font-black text-emerald-800 uppercase tracking-wider block">GMD Inicial Esperado (kg/dia)</label>
-                    <p className="text-[10px] text-emerald-600">Será aplicado no "Peso Previsto" diário de todos os animais do lote</p>
+                    <label className="text-xs font-medium text-[#145C46] block">GMD Inicial Esperado (kg/dia)</label>
+                    <p className="text-xs font-normal text-[#64766C] mt-0.5">Será aplicado no "Peso Previsto" diário de todos os animais do lote</p>
                   </div>
-                  <div className="w-32">
+                  <div className="w-32 shrink-0">
                     <input 
                       type="number" 
                       step="0.001" 
                       onFocus={handleFocus}
-                      className="w-full border border-emerald-300 rounded-xl px-3 py-2 font-black text-base text-emerald-950 bg-white text-right font-nums focus:ring-2 focus:ring-emerald-500 outline-none" 
+                      className="w-full border border-[#145C46]/30 rounded-xl px-3 py-2 font-semibold text-sm text-[#145C46] bg-white text-right font-nums focus:ring-2 focus:ring-[#145C46]/20 outline-none" 
                       value={batchInitialGmd} 
                       onChange={e => setBatchInitialGmd(Number(e.target.value))} 
                     />
                   </div>
                </div>
 
-               <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200 space-y-4">
-                  <div className="flex justify-between items-center">
-                     <h4 className="text-[10px] font-black text-slate-700 uppercase tracking-wider">Valor de Compra</h4>
-                     <div className="flex bg-white rounded-lg p-1 border border-slate-200 shadow-2xs">
-                        <button type="button" onClick={() => setBatchPriceMode('head')} className={`px-3 py-1 text-[9px] font-black rounded ${batchPriceMode === 'head' ? 'bg-slate-900 text-white shadow-xs' : 'text-slate-400'}`}>P/ CABEÇA</button>
-                        <button type="button" onClick={() => setBatchPriceMode('arroba')} className={`px-3 py-1 text-[9px] font-black rounded ${batchPriceMode === 'arroba' ? 'bg-slate-900 text-white shadow-xs' : 'text-slate-400'}`}>P/ ARROBA (@)</button>
+               <div className="bg-[#F6F8F5] p-5 rounded-xl border border-[#E3EAE6] space-y-3.5">
+                  <div className="flex justify-between items-center gap-2">
+                     <h4 className="text-xs font-semibold text-[#20332C]">Valor de Compra</h4>
+                     <div className="flex bg-white rounded-lg p-0.5 border border-[#E3EAE6]">
+                        <button type="button" onClick={() => setBatchPriceMode('head')} className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${batchPriceMode === 'head' ? 'bg-[#145C46] text-white shadow-2xs' : 'text-[#64766C]'}`}>p/ Cabeça</button>
+                        <button type="button" onClick={() => setBatchPriceMode('arroba')} className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${batchPriceMode === 'arroba' ? 'bg-[#145C46] text-white shadow-2xs' : 'text-[#64766C]'}`}>p/ Arroba (@)</button>
                      </div>
                   </div>
                   <div className="relative">
-                    <span className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-600 font-black text-xl">R$</span>
-                    <input type="number" onFocus={handleFocus} className="w-full border border-slate-200 rounded-2xl pl-16 pr-6 py-4 font-black text-2xl text-slate-900 bg-white font-nums" value={batchPriceValue || ''} onChange={e => setBatchPriceValue(Number(e.target.value))} placeholder="0,00" />
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#145C46] font-semibold text-base">R$</span>
+                    <input type="number" onFocus={handleFocus} className="w-full border border-[#E3EAE6] rounded-xl pl-12 pr-4 py-3 font-semibold text-xl text-[#20332C] bg-white outline-none focus:ring-2 focus:ring-[#145C46]/20 focus:border-[#145C46] font-nums" value={batchPriceValue || ''} onChange={e => setBatchPriceValue(Number(e.target.value))} placeholder="0,00" />
                   </div>
                </div>
 
-               <button type="submit" className="w-full bg-emerald-700 hover:bg-emerald-800 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-xl transition-all">Salvar Lote de Animais</button>
+               <button type="submit" className="w-full bg-[#145C46] hover:bg-[#0E4434] text-white py-3 rounded-xl font-semibold text-sm leading-snug shadow-xs transition-all">Salvar Lote de Animais</button>
             </form>
           </div>
         </div>
@@ -1295,44 +1304,44 @@ const AnimalManager: React.FC<AnimalManagerProps> = ({
 
       {/* MODAL VENDA INDIVIDUAL */}
       {isSellModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
-          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden scale-in">
-            <div className="px-8 py-6 bg-green-700 text-white flex justify-between items-center">
-               <h3 className="text-xl font-black uppercase tracking-tight">Liquidar Animal: {currentAnimal.earTag}</h3>
-               <button onClick={() => setIsSellModalOpen(false)} className="hover:bg-white/10 p-2 rounded-full"><X size={24} /></button>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden border border-[#E3EAE6]">
+            <div className="px-6 py-5 bg-[#F6F8F5] border-b border-[#E3EAE6] flex justify-between items-center">
+               <h3 className="text-lg font-semibold leading-snug text-[#20332C]">Liquidar Animal: {currentAnimal.earTag}</h3>
+               <button onClick={() => setIsSellModalOpen(false)} className="hover:bg-white p-2 rounded-xl text-[#64766C] hover:text-[#20332C] transition-colors"><X size={20} /></button>
             </div>
-            <form onSubmit={handleIndividualSale} className="p-8 space-y-6">
-               <div className="space-y-1">
-                  <label className="text-[10px] font-black text-slate-400 uppercase ml-1">Data da Venda</label>
-                  <input type="date" className="w-full border border-slate-200 rounded-2xl px-5 py-3 font-bold bg-slate-50" value={actionDate} onChange={e => setActionDate(e.target.value)} required />
+            <form onSubmit={handleIndividualSale} className="p-6 space-y-5">
+               <div className="space-y-1.5">
+                  <label className="block text-xs font-medium leading-snug text-[#64766C]">Data da Venda *</label>
+                  <input type="date" className="w-full border border-[#E3EAE6] rounded-xl px-3.5 py-2.5 text-sm font-normal leading-normal text-[#20332C] bg-[#F6F8F5] focus:bg-white outline-none focus:ring-2 focus:ring-[#145C46]/20 focus:border-[#145C46]" value={actionDate} onChange={e => setActionDate(e.target.value)} required />
                </div>
-               <div className="space-y-1">
-                  <div className="flex justify-between items-center mb-1">
-                    <label className="text-[10px] font-black text-slate-400 uppercase ml-1">Peso Final</label>
-                    <div className="flex bg-slate-100 rounded-lg p-1">
-                      <button type="button" onClick={() => setSellWeightType('kg')} className={`px-2 py-0.5 text-[8px] font-black rounded ${sellWeightType === 'kg' ? 'bg-green-600 text-white shadow-2xs' : 'text-slate-400'}`}>KG</button>
-                      <button type="button" onClick={() => setSellWeightType('arroba')} className={`px-2 py-0.5 text-[8px] font-black rounded ${sellWeightType === 'arroba' ? 'bg-green-600 text-white shadow-2xs' : 'text-slate-400'}`}>@</button>
-                    </div>
-                  </div>
-                  <div className="relative">
-                    <input type="number" step="0.1" onFocus={handleFocus} className="w-full border border-slate-200 rounded-2xl px-5 py-3 font-black text-xl text-green-900 bg-slate-50 outline-none font-nums" value={sellWeightValue || ''} onChange={e => setSellWeightValue(Number(e.target.value))} required />
-                    <span className="absolute right-5 top-1/2 -translate-y-1/2 font-black text-xs text-slate-400 uppercase">{sellWeightType === 'kg' ? 'KG' : '@'}</span>
-                  </div>
-               </div>
-               <div className="space-y-4 pt-2">
+               <div className="space-y-1.5">
                   <div className="flex justify-between items-center">
-                    <label className="text-[10px] font-black text-slate-400 uppercase ml-1">Modo de Venda</label>
-                    <div className="flex bg-slate-100 rounded-xl p-1 border border-slate-200">
-                        <button type="button" onClick={() => setSellPriceMode('head')} className={`px-3 py-1.5 text-[9px] font-black rounded-lg transition-all ${sellPriceMode === 'head' ? 'bg-green-600 text-white shadow-xs' : 'text-slate-400'}`}>P/ CABEÇA</button>
-                        <button type="button" onClick={() => setSellPriceMode('arroba')} className={`px-3 py-1.5 text-[9px] font-black rounded-lg transition-all ${sellPriceMode === 'arroba' ? 'bg-green-600 text-white shadow-xs' : 'text-slate-400'}`}>P/ @</button>
+                    <label className="block text-xs font-medium leading-snug text-[#64766C]">Peso Final *</label>
+                    <div className="flex bg-[#F6F8F5] border border-[#E3EAE6] rounded-lg p-0.5">
+                      <button type="button" onClick={() => setSellWeightType('kg')} className={`px-2 py-0.5 text-xs font-semibold rounded-md ${sellWeightType === 'kg' ? 'bg-white text-[#145C46] shadow-2xs' : 'text-[#64766C]'}`}>kg</button>
+                      <button type="button" onClick={() => setSellWeightType('arroba')} className={`px-2 py-0.5 text-xs font-semibold rounded-md ${sellWeightType === 'arroba' ? 'bg-white text-[#145C46] shadow-2xs' : 'text-[#64766C]'}`}>@</button>
                     </div>
                   </div>
                   <div className="relative">
-                    <span className="absolute left-6 top-1/2 -translate-y-1/2 text-green-600 font-black text-2xl">R$</span>
-                    <input type="number" step="0.01" onFocus={handleFocus} required className="w-full border border-slate-200 rounded-2xl pl-16 pr-6 py-4 font-black text-3xl text-green-900 bg-slate-50 outline-none font-nums" value={sellPriceValue || ''} onChange={e => setSellPriceValue(Number(e.target.value))} placeholder="0,00" />
+                    <input type="number" step="0.1" onFocus={handleFocus} className="w-full border border-[#E3EAE6] rounded-xl px-4 py-2.5 pr-12 font-semibold text-lg text-[#20332C] bg-[#F6F8F5] focus:bg-white outline-none focus:ring-2 focus:ring-[#145C46]/20 focus:border-[#145C46] font-nums" value={sellWeightValue || ''} onChange={e => setSellWeightValue(Number(e.target.value))} required />
+                    <span className="absolute right-4 top-1/2 -translate-y-1/2 font-medium text-xs text-[#64766C]">{sellWeightType === 'kg' ? 'kg' : '@'}</span>
                   </div>
                </div>
-               <button type="submit" className="w-full bg-green-700 hover:bg-green-800 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-xl">Confirmar Liquidação</button>
+               <div className="space-y-3 pt-1">
+                  <div className="flex justify-between items-center gap-2">
+                    <label className="block text-xs font-medium leading-snug text-[#64766C]">Modo de Venda</label>
+                    <div className="flex bg-[#F6F8F5] rounded-lg p-0.5 border border-[#E3EAE6]">
+                        <button type="button" onClick={() => setSellPriceMode('head')} className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${sellPriceMode === 'head' ? 'bg-[#145C46] text-white shadow-2xs' : 'text-[#64766C]'}`}>p/ Cabeça</button>
+                        <button type="button" onClick={() => setSellPriceMode('arroba')} className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${sellPriceMode === 'arroba' ? 'bg-[#145C46] text-white shadow-2xs' : 'text-[#64766C]'}`}>p/ @</button>
+                    </div>
+                  </div>
+                  <div className="relative">
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#145C46] font-semibold text-lg">R$</span>
+                    <input type="number" step="0.01" onFocus={handleFocus} required className="w-full border border-[#E3EAE6] rounded-xl pl-12 pr-4 py-3 font-semibold text-2xl text-[#20332C] bg-[#F6F8F5] focus:bg-white outline-none focus:ring-2 focus:ring-[#145C46]/20 focus:border-[#145C46] font-nums" value={sellPriceValue || ''} onChange={e => setSellPriceValue(Number(e.target.value))} placeholder="0,00" />
+                  </div>
+               </div>
+               <button type="submit" className="w-full bg-[#145C46] hover:bg-[#0E4434] text-white py-3 rounded-xl font-semibold text-sm leading-snug shadow-xs transition-all">Confirmar Liquidação</button>
             </form>
           </div>
         </div>
@@ -1340,26 +1349,26 @@ const AnimalManager: React.FC<AnimalManagerProps> = ({
 
       {/* MODAL ÓBITO */}
       {isDeathModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
-          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden scale-in">
-            <div className="px-8 py-6 bg-red-600 text-white flex justify-between items-center">
-               <h3 className="text-xl font-black uppercase tracking-tight">Informar Óbito: {currentAnimal.earTag}</h3>
-               <button onClick={() => setIsDeathModalOpen(false)} className="hover:bg-white/10 p-2 rounded-full"><X size={24} /></button>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden border border-[#E3EAE6]">
+            <div className="px-6 py-5 bg-red-50 border-b border-red-100 flex justify-between items-center">
+               <h3 className="text-lg font-semibold leading-snug text-red-800">Informar Óbito: {currentAnimal.earTag}</h3>
+               <button onClick={() => setIsDeathModalOpen(false)} className="hover:bg-white p-2 rounded-xl text-red-700 transition-colors"><X size={20} /></button>
             </div>
-            <form onSubmit={(e) => { e.preventDefault(); onAnimalDeath(currentAnimal.id!, actionDate, deathCause); setIsDeathModalOpen(false); }} className="p-8 space-y-6">
-               <div className="space-y-1">
-                  <label className="text-[10px] font-black text-slate-400 uppercase ml-1">Data do Ocorrido</label>
-                  <input type="date" className="w-full border border-slate-200 rounded-2xl px-5 py-3 font-bold bg-slate-50" value={actionDate} onChange={e => setActionDate(e.target.value)} required />
+            <form onSubmit={(e) => { e.preventDefault(); onAnimalDeath(currentAnimal.id!, actionDate, deathCause); setIsDeathModalOpen(false); }} className="p-6 space-y-5">
+               <div className="space-y-1.5">
+                  <label className="block text-xs font-medium leading-snug text-[#64766C]">Data do Ocorrido *</label>
+                  <input type="date" className="w-full border border-[#E3EAE6] rounded-xl px-3.5 py-2.5 text-sm font-normal leading-normal text-[#20332C] bg-[#F6F8F5] focus:bg-white outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500" value={actionDate} onChange={e => setActionDate(e.target.value)} required />
                </div>
-               <div className="space-y-1">
-                  <label className="text-[10px] font-black text-slate-400 uppercase ml-1">Causa Estimada</label>
-                  <input type="text" className="w-full border border-slate-200 rounded-2xl px-5 py-3 font-bold bg-slate-50 focus:bg-white outline-none" value={deathCause} onChange={e => setDeathCause(e.target.value)} placeholder="Ex: Doença, Acidente, etc." required />
+               <div className="space-y-1.5">
+                  <label className="block text-xs font-medium leading-snug text-[#64766C]">Causa Estimada *</label>
+                  <input type="text" className="w-full border border-[#E3EAE6] rounded-xl px-3.5 py-2.5 text-sm font-normal leading-normal text-[#20332C] bg-[#F6F8F5] focus:bg-white outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500" value={deathCause} onChange={e => setDeathCause(e.target.value)} placeholder="Ex: Doença, Acidente, etc." required />
                </div>
-               <div className="bg-red-50 p-4 rounded-2xl border border-red-100 flex items-center gap-3">
-                  <AlertCircle className="text-red-600 shrink-0" size={24} />
-                  <p className="text-[10px] text-red-700 font-bold uppercase tracking-wider leading-relaxed">Atenção: Esta ação removerá o animal do rebanho ativo.</p>
+               <div className="bg-red-50 p-3.5 rounded-xl border border-red-200 flex items-center gap-3">
+                  <AlertCircle className="text-red-600 shrink-0" size={20} />
+                  <p className="text-xs text-red-700 font-medium leading-relaxed">Atenção: Esta ação removerá o animal do rebanho ativo.</p>
                </div>
-               <button type="submit" className="w-full bg-red-600 hover:bg-red-700 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-xl">Confirmar Óbito</button>
+               <button type="submit" className="w-full bg-red-600 hover:bg-red-700 text-white py-3 rounded-xl font-semibold text-sm leading-snug shadow-xs transition-all">Confirmar Óbito</button>
             </form>
           </div>
         </div>
@@ -1367,38 +1376,38 @@ const AnimalManager: React.FC<AnimalManagerProps> = ({
 
       {/* Modal Venda de Lote */}
       {isLotSellModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
-          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden scale-in">
-            <div className="px-8 py-6 bg-emerald-700 text-white flex justify-between items-center">
-               <h3 className="text-xl font-black uppercase tracking-tight">Venda de Lote</h3>
-               <button onClick={() => setIsLotSellModalOpen(false)} className="hover:bg-white/10 p-2 rounded-full"><X size={24} /></button>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden border border-[#E3EAE6]">
+            <div className="px-6 py-5 bg-[#F6F8F5] border-b border-[#E3EAE6] flex justify-between items-center">
+               <h3 className="text-lg font-semibold leading-snug text-[#20332C]">Venda de Lote</h3>
+               <button onClick={() => setIsLotSellModalOpen(false)} className="hover:bg-white p-2 rounded-xl text-[#64766C] hover:text-[#20332C] transition-colors"><X size={20} /></button>
             </div>
-            <form onSubmit={(e) => { e.preventDefault(); if(onSellLot) onSellLot(targetLotId, lotSellDate, lotSellAvgWeight, lotSellPriceMode, lotSellPriceValue); setIsLotSellModalOpen(false); }} className="p-8 space-y-6">
-               <div className="space-y-1">
-                  <label className="text-[10px] font-black text-slate-400 uppercase ml-1">Data da Venda</label>
-                  <input type="date" className="w-full border border-slate-200 rounded-2xl px-5 py-3 font-bold bg-slate-50 outline-none" value={lotSellDate} onChange={e => setLotSellDate(e.target.value)} required />
+            <form onSubmit={(e) => { e.preventDefault(); if(onSellLot) onSellLot(targetLotId, lotSellDate, lotSellAvgWeight, lotSellPriceMode, lotSellPriceValue); setIsLotSellModalOpen(false); }} className="p-6 space-y-5">
+               <div className="space-y-1.5">
+                  <label className="block text-xs font-medium leading-snug text-[#64766C]">Data da Venda *</label>
+                  <input type="date" className="w-full border border-[#E3EAE6] rounded-xl px-3.5 py-2.5 text-sm font-normal leading-normal text-[#20332C] bg-[#F6F8F5] focus:bg-white outline-none focus:ring-2 focus:ring-[#145C46]/20 focus:border-[#145C46]" value={lotSellDate} onChange={e => setLotSellDate(e.target.value)} required />
                </div>
-               <div className="space-y-1">
-                  <label className="text-[10px] font-black text-slate-400 uppercase ml-1">Peso Médio Final (kg)</label>
+               <div className="space-y-1.5">
+                  <label className="block text-xs font-medium leading-snug text-[#64766C]">Peso Médio Final (kg) *</label>
                   <div className="relative">
-                    <input type="number" onFocus={handleFocus} className="w-full border border-slate-200 rounded-2xl px-5 py-3 font-black text-slate-800 bg-slate-50 focus:bg-white outline-none font-nums" value={lotSellAvgWeight} onChange={e => setLotSellAvgWeight(Number(e.target.value))} required />
-                    <span className="absolute right-5 top-1/2 -translate-y-1/2 font-black text-xs text-slate-400 uppercase">KG</span>
+                    <input type="number" onFocus={handleFocus} className="w-full border border-[#E3EAE6] rounded-xl px-4 py-2.5 pr-12 font-semibold text-lg text-[#20332C] bg-[#F6F8F5] focus:bg-white outline-none focus:ring-2 focus:ring-[#145C46]/20 focus:border-[#145C46] font-nums" value={lotSellAvgWeight} onChange={e => setLotSellAvgWeight(Number(e.target.value))} required />
+                    <span className="absolute right-4 top-1/2 -translate-y-1/2 font-medium text-xs text-[#64766C]">kg</span>
                   </div>
                </div>
-               <div className="space-y-4 pt-2">
-                  <div className="flex justify-between items-center">
-                    <label className="text-[10px] font-black text-slate-400 uppercase ml-1">Modo de Venda</label>
-                    <div className="flex bg-slate-100 rounded-xl p-1 shadow-inner border border-slate-200">
-                        <button type="button" onClick={() => setLotSellPriceMode('head')} className={`px-4 py-2 text-[10px] font-black rounded-lg transition-all ${lotSellPriceMode === 'head' ? 'bg-emerald-600 text-white shadow-xs' : 'text-slate-400'}`}>P/ CABEÇA</button>
-                        <button type="button" onClick={() => setLotSellPriceMode('arroba')} className={`px-4 py-2 text-[10px] font-black rounded-lg transition-all ${lotSellPriceMode === 'arroba' ? 'bg-emerald-600 text-white shadow-xs' : 'text-slate-400'}`}>P/ ARROBA (@)</button>
+               <div className="space-y-3 pt-1">
+                  <div className="flex justify-between items-center gap-2">
+                    <label className="block text-xs font-medium leading-snug text-[#64766C]">Modo de Venda</label>
+                    <div className="flex bg-[#F6F8F5] rounded-lg p-0.5 border border-[#E3EAE6]">
+                        <button type="button" onClick={() => setLotSellPriceMode('head')} className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${lotSellPriceMode === 'head' ? 'bg-[#145C46] text-white shadow-2xs' : 'text-[#64766C]'}`}>p/ Cabeça</button>
+                        <button type="button" onClick={() => setLotSellPriceMode('arroba')} className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${lotSellPriceMode === 'arroba' ? 'bg-[#145C46] text-white shadow-2xs' : 'text-[#64766C]'}`}>p/ Arroba (@)</button>
                     </div>
                   </div>
                   <div className="relative">
-                    <span className="absolute left-6 top-1/2 -translate-y-1/2 text-emerald-600 font-black text-2xl">R$</span>
-                    <input type="number" onFocus={handleFocus} required className="w-full border border-slate-200 rounded-2xl pl-16 pr-6 py-4 font-black text-3xl text-emerald-900 bg-slate-50 focus:bg-white outline-none font-nums" value={lotSellPriceValue || ''} onChange={e => setLotSellPriceValue(Number(e.target.value))} placeholder="0,00" />
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#145C46] font-semibold text-lg">R$</span>
+                    <input type="number" onFocus={handleFocus} required className="w-full border border-[#E3EAE6] rounded-xl pl-12 pr-4 py-3 font-semibold text-2xl text-[#20332C] bg-[#F6F8F5] focus:bg-white outline-none focus:ring-2 focus:ring-[#145C46]/20 focus:border-[#145C46] font-nums" value={lotSellPriceValue || ''} onChange={e => setLotSellPriceValue(Number(e.target.value))} placeholder="0,00" />
                   </div>
                </div>
-               <button type="submit" className="w-full bg-emerald-700 hover:bg-emerald-800 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-xl transition-all">Confirmar Venda do Lote</button>
+               <button type="submit" className="w-full bg-[#145C46] hover:bg-[#0E4434] text-white py-3 rounded-xl font-semibold text-sm leading-snug shadow-xs transition-all">Confirmar Venda do Lote</button>
             </form>
           </div>
         </div>

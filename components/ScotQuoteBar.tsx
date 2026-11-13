@@ -106,31 +106,31 @@ const ScotQuoteBar: React.FC<ScotQuoteBarProps> = ({
 
   if (compact) {
     return (
-      <div className="bg-emerald-950 text-white p-4 rounded-xl shadow-xs border border-emerald-900/80 flex flex-col sm:flex-row items-center justify-between gap-4 font-sans">
+      <div className="bg-white text-[#20332C] p-4 sm:p-5 rounded-xl shadow-xs border border-[#E3EAE6] flex flex-col sm:flex-row items-center justify-between gap-4 font-sans">
         <div className="flex items-center gap-3 w-full sm:w-auto">
-          <div className="p-2.5 bg-emerald-800/80 text-emerald-300 rounded-lg shrink-0 border border-emerald-700/50">
-            <Building2 size={18} />
+          <div className="p-2.5 bg-[#DCEDE4] text-[#145C46] rounded-xl shrink-0 border border-[#DCEDE4]">
+            <Building2 size={20} />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider">Arroba do Boi (Scot)</span>
-              <span className="text-[9px] bg-emerald-800/60 text-emerald-200 border border-emerald-700/60 px-1.5 py-0.2 rounded font-semibold">{selectedQuote.state}</span>
+              <span className="text-xs font-medium text-[#64766C]">Arroba do Boi (Scot)</span>
+              <span className="text-xs font-medium bg-[#DCEDE4] text-[#145C46] px-2 py-0.5 rounded-md">{selectedQuote.state}</span>
             </div>
-            <p className="text-lg font-black text-white font-nums tracking-tight">
-              R$ {selectedQuote.boiGordoVista.toFixed(2)} <span className="text-xs font-normal text-emerald-300/80">/@ (À Vista)</span>
+            <p className="text-2xl font-semibold text-[#20332C] font-nums mt-0.5">
+              R$ {selectedQuote.boiGordoVista.toFixed(2)} <span className="text-sm font-normal text-[#64766C] ml-1">/@ (À Vista)</span>
             </p>
           </div>
         </div>
 
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full sm:w-auto justify-end">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto justify-end">
           <div className="relative flex-1 sm:flex-initial">
             <select
               value={selectedRegionId}
               onChange={handleRegionChange}
-              className="w-full sm:w-auto bg-emerald-900/90 border border-emerald-800 text-white text-xs font-bold py-2 pl-3 pr-8 rounded-lg outline-none focus:ring-1 focus:ring-emerald-400 cursor-pointer sm:max-w-[200px] truncate"
+              className="w-full sm:w-auto bg-[#F6F8F5] border border-[#E3EAE6] text-[#20332C] text-sm font-medium py-2 px-3 rounded-lg outline-none focus:ring-1 focus:ring-[#145C46] cursor-pointer sm:max-w-[210px] truncate"
             >
               {quotes.map(q => (
-                <option key={q.id} value={q.id} className="bg-emerald-950 text-white">
+                <option key={q.id} value={q.id} className="bg-white text-[#20332C]">
                   {q.regionName}
                 </option>
               ))}
@@ -140,10 +140,10 @@ const ScotQuoteBar: React.FC<ScotQuoteBarProps> = ({
           <button
             type="button"
             onClick={handleApplyToCalc}
-            className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs py-2 px-3.5 rounded-lg transition-all flex items-center justify-center gap-1.5 shadow-xs whitespace-nowrap cursor-pointer border border-emerald-500/40 shrink-0"
+            className="bg-[#145C46] hover:bg-[#0E4434] text-white font-semibold text-sm py-2 px-4 rounded-lg transition-all flex items-center justify-center gap-2 shadow-xs whitespace-nowrap cursor-pointer shrink-0"
             title="Usar esta cotação nas calculadoras de margem e simulador"
           >
-            <Calculator size={14} />
+            <Calculator size={16} />
             {appliedNotification ? 'Aplicado!' : 'Usar nos Cálculos'}
           </button>
         </div>
@@ -152,42 +152,39 @@ const ScotQuoteBar: React.FC<ScotQuoteBarProps> = ({
   }
 
   return (
-    <div className="bg-gradient-to-br from-[#121622] via-[#1a1f2c] to-[#252c3f] text-white rounded-[2.5rem] p-6 sm:p-8 shadow-xl border-[4px] border-[#252b3a] space-y-6 relative overflow-hidden">
-      {/* Elemento Decorativo no fundo */}
-      <div className="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none"></div>
-
+    <div className="agro-card p-6 sm:p-7 space-y-6 font-sans">
       {/* Top Bar / Cabeçalho */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-gray-800/80 pb-6">
-        <div className="flex items-start gap-3">
-          <div className="p-3 bg-emerald-500/20 text-emerald-400 rounded-2xl border border-emerald-500/30">
-            <Building2 size={26} />
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-[#E3EAE6] pb-5">
+        <div className="flex items-start gap-3.5">
+          <div className="p-3 bg-[#DCEDE4] text-[#145C46] rounded-xl border border-[#DCEDE4] shrink-0">
+            <Building2 size={22} />
           </div>
           <div>
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-[10px] font-black text-emerald-400 uppercase tracking-[0.2em] bg-emerald-950/60 border border-emerald-500/30 px-2 py-0.5 rounded-md">
+            <div className="flex items-center gap-2 flex-wrap text-xs">
+              <span className="font-medium text-[#145C46] bg-[#DCEDE4] px-2.5 py-0.5 rounded-md">
                 Scot Consultoria & CEPEA
               </span>
-              <span className="text-[10px] text-gray-400 font-semibold flex items-center gap-1">
-                <MapPin size={12} className="text-emerald-400" /> Praça Selecionada
+              <span className="text-[#64766C] font-normal flex items-center gap-1">
+                <MapPin size={13} className="text-[#218568]" /> Praça selecionada
               </span>
             </div>
-            <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight mt-1">
+            <h3 className="text-lg font-semibold text-[#20332C] leading-snug mt-1">
               Cotações Regionais da Arroba do Boi
             </h3>
           </div>
         </div>
 
         {/* Seletor de Região */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-end gap-3">
           <div className="space-y-1">
-            <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest block ml-1">
-              Selecione a Região:
+            <label className="text-xs font-medium text-[#64766C] block">
+              Selecione a região
             </label>
             <div className="relative">
               <select
                 value={selectedRegionId}
                 onChange={handleRegionChange}
-                className="w-full sm:w-auto bg-[#252b3a] hover:bg-[#2e3547] text-white text-xs font-black py-3 pl-4 pr-10 rounded-2xl border border-gray-700 outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer shadow-inner transition-all"
+                className="w-full sm:w-auto bg-[#F6F8F5] hover:bg-[#E5F2EB] text-[#20332C] text-sm font-medium py-2.5 pl-3.5 pr-9 rounded-lg border border-[#E3EAE6] outline-none focus:ring-2 focus:ring-[#145C46] cursor-pointer transition-all"
               >
                 {quotes.map((q, idx) => (
                   <option key={`${q.id}-${idx}`} value={q.id}>
@@ -202,11 +199,11 @@ const ScotQuoteBar: React.FC<ScotQuoteBarProps> = ({
             <button
               type="button"
               onClick={handleApplyToCalc}
-              className="mt-auto bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs py-3 px-5 rounded-2xl uppercase tracking-widest transition-all shadow-lg shadow-emerald-900/40 flex items-center justify-center gap-2 hover:scale-[1.02] cursor-pointer"
+              className="bg-[#145C46] hover:bg-[#0E4434] text-white font-semibold text-sm py-2.5 px-4 rounded-lg transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer"
             >
               <Calculator size={16} />
               {appliedNotification ? (
-                <span className="flex items-center gap-1 text-emerald-200">
+                <span className="flex items-center gap-1.5">
                   <CheckCircle2 size={16} /> Cotação Aplicada!
                 </span>
               ) : (
@@ -218,124 +215,124 @@ const ScotQuoteBar: React.FC<ScotQuoteBarProps> = ({
       </div>
 
       {/* Grid de Valores Principais da Região */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3.5 sm:gap-4">
         {/* Boi Gordo À Vista */}
-        <div className="bg-[#212736] p-4 rounded-2xl border border-emerald-500/30 relative group hover:border-emerald-500 transition-all shadow-sm">
-          <div className="flex items-center justify-between mb-1">
-            <p className="text-[10px] font-black text-emerald-400 uppercase tracking-wider">Boi Gordo (À Vista)</p>
+        <div className="bg-[#F6F8F5] p-4 rounded-xl border border-[#DCEDE4] relative group hover:border-[#218568] transition-all">
+          <div className="flex items-center justify-between mb-1.5">
+            <p className="text-xs font-medium text-[#145C46]">Boi Gordo (À Vista)</p>
             <button 
               onClick={() => {
                 setEditingPrice(selectedQuote.boiGordoVista);
                 setIsEditing(!isEditing);
               }} 
-              className="text-gray-500 hover:text-white transition-colors"
+              className="text-[#64766C] hover:text-[#145C46] transition-colors cursor-pointer"
               title="Ajustar preço negociado localmente"
             >
-              <Edit2 size={12} />
+              <Edit2 size={13} />
             </button>
           </div>
 
           {isEditing ? (
-            <div className="flex items-center gap-1 mt-1">
-              <span className="text-xs font-bold text-emerald-400">R$</span>
+            <div className="flex items-center gap-1.5 mt-1">
+              <span className="text-xs font-medium text-[#145C46]">R$</span>
               <input 
                 type="number"
                 step="0.5"
                 value={editingPrice}
                 onChange={e => setEditingPrice(Number(e.target.value))}
-                className="w-20 bg-black/50 text-white font-black text-sm px-2 py-1 rounded border border-emerald-500 outline-none"
+                className="w-20 bg-white text-[#20332C] font-semibold text-sm px-2 py-1 rounded-md border border-[#218568] outline-none font-nums"
               />
               <button 
                 onClick={handleSaveCustomPrice}
-                className="bg-emerald-600 text-white p-1 rounded hover:bg-emerald-500"
+                className="bg-[#145C46] text-white p-1.5 rounded-md hover:bg-[#0E4434] cursor-pointer"
               >
-                <Check size={12} />
+                <Check size={13} />
               </button>
             </div>
           ) : (
             <div>
-              <p className="text-2xl font-black text-white tracking-tight">
+              <p className="text-2xl font-semibold text-[#20332C] leading-tight font-nums">
                 R$ {selectedQuote.boiGordoVista.toFixed(2)}
               </p>
-              <p className="text-[10px] font-semibold text-gray-400 mt-0.5">por Arroba (@)</p>
+              <p className="text-xs font-normal text-[#64766C] mt-1">por arroba (@)</p>
             </div>
           )}
         </div>
 
         {/* Boi Gordo 30 Dias */}
-        <div className="bg-[#212736] p-4 rounded-2xl border border-gray-700/50 hover:border-gray-500 transition-all shadow-sm">
-          <p className="text-[10px] font-black text-gray-400 uppercase tracking-wider mb-1">Boi Gordo (30 Dias)</p>
-          <p className="text-2xl font-black text-gray-200 tracking-tight">
+        <div className="bg-[#F6F8F5] p-4 rounded-xl border border-[#E3EAE6] hover:border-[#CBD5E1] transition-all">
+          <p className="text-xs font-medium text-[#64766C] mb-1.5">Boi Gordo (30 Dias)</p>
+          <p className="text-2xl font-semibold text-[#20332C] leading-tight font-nums">
             R$ {selectedQuote.boiGordoPrazo.toFixed(2)}
           </p>
-          <p className="text-[10px] font-semibold text-gray-400 mt-0.5">por Arroba (@)</p>
+          <p className="text-xs font-normal text-[#64766C] mt-1">por arroba (@)</p>
         </div>
 
         {/* Vaca Gorda */}
-        <div className="bg-[#212736] p-4 rounded-2xl border border-gray-700/50 hover:border-gray-500 transition-all shadow-sm">
-          <p className="text-[10px] font-black text-pink-400 uppercase tracking-wider mb-1">Vaca Gorda</p>
-          <p className="text-2xl font-black text-white tracking-tight">
+        <div className="bg-[#F6F8F5] p-4 rounded-xl border border-[#E3EAE6] hover:border-[#CBD5E1] transition-all">
+          <p className="text-xs font-medium text-[#64766C] mb-1.5">Vaca Gorda</p>
+          <p className="text-2xl font-semibold text-[#20332C] leading-tight font-nums">
             R$ {selectedQuote.vacaGorda.toFixed(2)}
           </p>
-          <p className="text-[10px] font-semibold text-gray-400 mt-0.5">por Arroba (@)</p>
+          <p className="text-xs font-normal text-[#64766C] mt-1">por arroba (@)</p>
         </div>
 
         {/* Novilha Gorda */}
-        <div className="bg-[#212736] p-4 rounded-2xl border border-gray-700/50 hover:border-gray-500 transition-all shadow-sm">
-          <p className="text-[10px] font-black text-purple-400 uppercase tracking-wider mb-1">Novilha Gorda</p>
-          <p className="text-2xl font-black text-white tracking-tight">
+        <div className="bg-[#F6F8F5] p-4 rounded-xl border border-[#E3EAE6] hover:border-[#CBD5E1] transition-all">
+          <p className="text-xs font-medium text-[#64766C] mb-1.5">Novilha Gorda</p>
+          <p className="text-2xl font-semibold text-[#20332C] leading-tight font-nums">
             R$ {selectedQuote.novilhaGorda.toFixed(2)}
           </p>
-          <p className="text-[10px] font-semibold text-gray-400 mt-0.5">por Arroba (@)</p>
+          <p className="text-xs font-normal text-[#64766C] mt-1">por arroba (@)</p>
         </div>
 
         {/* Bezerro de Reposição */}
-        <div className="bg-[#212736] p-4 rounded-2xl border border-gray-700/50 hover:border-gray-500 transition-all shadow-sm">
-          <p className="text-[10px] font-black text-yellow-400 uppercase tracking-wider mb-1">Bezerro (Reposição)</p>
-          <p className="text-2xl font-black text-white tracking-tight">
+        <div className="bg-[#F6F8F5] p-4 rounded-xl border border-[#E3EAE6] hover:border-[#CBD5E1] transition-all">
+          <p className="text-xs font-medium text-[#64766C] mb-1.5">Bezerro (Reposição)</p>
+          <p className="text-2xl font-semibold text-[#20332C] leading-tight font-nums">
             R$ {selectedQuote.bezerroCabeca.toLocaleString('pt-BR', { minimumFractionDigits: 0 })}
           </p>
-          <p className="text-[10px] font-semibold text-gray-400 mt-0.5">por Cabeça (Aproximado)</p>
+          <p className="text-xs font-normal text-[#64766C] mt-1">por cabeça (aprox.)</p>
         </div>
 
         {/* Insumos Grãos */}
-        <div className="bg-[#212736] p-4 rounded-2xl border border-gray-700/50 hover:border-gray-500 transition-all shadow-sm">
-          <p className="text-[10px] font-black text-blue-400 uppercase tracking-wider mb-1">Insumos (Saca 60kg)</p>
-          <div className="space-y-0.5">
-            <p className="text-sm font-black text-white">
-              Milho: <span className="text-yellow-400">R$ {selectedQuote.milhoSaca.toFixed(2)}</span>
+        <div className="bg-[#F6F8F5] p-4 rounded-xl border border-[#E3EAE6] hover:border-[#CBD5E1] transition-all">
+          <p className="text-xs font-medium text-[#64766C] mb-1.5">Insumos (Saca 60 kg)</p>
+          <div className="space-y-1 font-nums">
+            <p className="text-sm font-normal text-[#64766C]">
+              Milho: <span className="font-semibold text-[#20332C]">R$ {selectedQuote.milhoSaca.toFixed(2)}</span>
             </p>
-            <p className="text-sm font-black text-white">
-              Soja: <span className="text-blue-400">R$ {selectedQuote.sojaSaca.toFixed(2)}</span>
+            <p className="text-sm font-normal text-[#64766C]">
+              Soja: <span className="font-semibold text-[#20332C]">R$ {selectedQuote.sojaSaca.toFixed(2)}</span>
             </p>
           </div>
         </div>
       </div>
 
       {/* Observação / Rodapé informativo */}
-      <div className="flex flex-col sm:flex-row items-center justify-between text-xs text-gray-400 gap-3 pt-2 border-t border-gray-800/60">
+      <div className="flex flex-col sm:flex-row items-center justify-between text-xs text-[#64766C] gap-3 pt-3 border-t border-[#E3EAE6]">
         <div className="flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          <span className="w-2 h-2 rounded-full bg-[#218568]"></span>
           <span>
-            Praça: <strong className="text-white">{selectedQuote.regionName}</strong> — {selectedQuote.notes || 'Scot Consultoria'}
+            Praça: <strong className="font-semibold text-[#20332C]">{selectedQuote.regionName}</strong> — {selectedQuote.notes || 'Scot Consultoria'}
           </span>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4">
           <button
             onClick={handleResetQuotes}
-            className="text-[11px] font-bold text-gray-400 hover:text-white transition-colors flex items-center gap-1 cursor-pointer"
+            className="text-xs font-semibold text-[#64766C] hover:text-[#20332C] transition-colors flex items-center gap-1.5 cursor-pointer"
             title="Sincronizar com valores oficiais da Scot Consultoria"
           >
-            <RefreshCcw size={12} /> Atualizar Cotações Oficiais
+            <RefreshCcw size={13} /> Atualizar cotações oficiais
           </button>
           <a
             href="https://www.scotconsultoria.com.br/cotacoes/"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-[11px] font-bold text-emerald-400 hover:underline flex items-center gap-1"
+            className="text-xs font-semibold text-[#145C46] hover:underline flex items-center gap-1"
           >
-            Site Scot Consultoria <ExternalLink size={12} />
+            Site Scot Consultoria <ExternalLink size={13} />
           </a>
         </div>
       </div>

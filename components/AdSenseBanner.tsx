@@ -49,15 +49,15 @@ const AdSenseBanner: React.FC<AdSenseBannerProps> = ({
   }, []);
 
   return (
-    <div className={`w-full max-w-full my-5 p-2 sm:p-3 bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden transition-all ${className}`}>
+    <div className={`w-full max-w-full my-5 p-2.5 sm:p-3 bg-white rounded-xl border border-[#E3EAE6] shadow-xs overflow-hidden transition-all font-sans ${className}`}>
       {showLabel && (
-        <div className="flex items-center justify-between px-2 pb-1.5 mb-1 border-b border-slate-100 text-[10px] text-slate-400 font-bold uppercase tracking-wider">
+        <div className="flex items-center justify-between px-2 pb-1.5 mb-1 border-b border-[#E3EAE6] text-xs text-[#64766C] font-medium">
           <span>Publicidade</span>
-          <span className="text-[9px] text-slate-300 font-normal">Google AdSense</span>
+          <span className="text-xs text-[#64766C]/70 font-normal">Google AdSense</span>
         </div>
       )}
       
-      <div className="w-full flex justify-center items-center min-h-[90px] overflow-hidden bg-slate-50/50 rounded-xl">
+      <div className="w-full flex justify-center items-center min-h-[90px] overflow-hidden bg-[#F6F8F5]/60 rounded-lg">
         <ins
           ref={adRef}
           className="adsbygoogle"

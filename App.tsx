@@ -67,7 +67,7 @@ const App: React.FC = () => {
 
   const farmData: FarmData = {
     ...rawFarmData,
-    lots: (rawFarmData.lots && rawFarmData.lots.length > 0)
+    lots: Array.isArray(rawFarmData.lots)
       ? rawFarmData.lots
       : [DEFAULT_FAZENDA_LOT]
   };
@@ -426,7 +426,7 @@ const App: React.FC = () => {
         tasks: [],
         globalDailyCost: 0
       };
-      const ensuredLots = (currentData.lots && currentData.lots.length > 0)
+      const ensuredLots = Array.isArray(currentData.lots)
         ? currentData.lots
         : [DEFAULT_FAZENDA_LOT];
       const dataWithLots: FarmData = { ...currentData, lots: ensuredLots };
@@ -597,6 +597,11 @@ const App: React.FC = () => {
           animals={farmData.animals} 
           onAddLot={l => updateActiveFarmData(d => ({ ...d, lots: [...d.lots, l] }))} 
           onUpdateLot={l => updateActiveFarmData(d => ({ ...d, lots: d.lots.map(old => old.id === l.id ? l : old) }))} 
+          onDeleteLot={id => updateActiveFarmData(d => ({
+            ...d,
+            lots: d.lots.filter(l => l.id !== id),
+            animals: d.animals.map(a => a.lotId === id ? { ...a, lotId: '' } : a)
+          }))} 
           onBatchWeighLot={(lotId, date, newAvgWeight, gmd, applyMode) => {
             updateActiveFarmData(d => {
               const lotAnimals = d.animals.filter(a => a.lotId === lotId && a.status === AnimalStatus.ACTIVE);
@@ -815,52 +820,52 @@ const App: React.FC = () => {
         isOpen={isConfigModalOpen} 
         onClose={() => setIsConfigModalOpen(false)} 
       />
-      {isSyncing && <div className="fixed bottom-4 right-4 bg-emerald-600 text-white text-[10px] font-black px-4 py-2 rounded-full shadow-lg z-50 animate-pulse">Sincronizando...</div>}
-      {!isLoaded && <div className="fixed inset-0 bg-white/50 backdrop-blur-sm z-50 flex items-center justify-center font-black uppercase tracking-widest text-xs">Acessando Banco...</div>}
+      {isSyncing && <div className="fixed bottom-4 right-4 bg-[#145C46] text-white text-xs font-semibold px-4 py-2 rounded-full shadow-md z-50 animate-pulse">Sincronizando...</div>}
+      {!isLoaded && <div className="fixed inset-0 bg-white/60 backdrop-blur-xs z-50 flex items-center justify-center text-sm font-medium text-[#20332C]">Acessando Banco...</div>}
       
       {showWelcome && (
-        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/60 backdrop-blur-sm p-3.5 sm:p-4">
-          <div className="bg-white w-full max-w-2xl rounded-3xl sm:rounded-[2.5rem] p-6 sm:p-10 shadow-2xl space-y-6 animate-in zoom-in duration-300 overflow-y-auto max-h-[90vh]">
-            <div className="flex justify-between items-center border-b border-gray-50 pb-4">
-              <h3 className="text-xl sm:text-2xl font-black text-emerald-700 uppercase tracking-tight">Bem-vindo!</h3>
-              <button onClick={closeWelcome} className="p-2 hover:bg-gray-100 rounded-full cursor-pointer"><X /></button>
+        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/50 backdrop-blur-xs p-3.5 sm:p-4">
+          <div className="bg-white w-full max-w-2xl rounded-2xl border border-[#E3EAE6] p-6 sm:p-8 shadow-xl space-y-6 animate-in zoom-in duration-200 overflow-y-auto max-h-[90vh]">
+            <div className="flex justify-between items-center border-b border-[#E3EAE6] pb-4">
+              <h3 className="text-2xl font-semibold leading-snug text-[#145C46]">Bem-vindo!</h3>
+              <button onClick={closeWelcome} className="p-2 text-[#64766C] hover:text-[#20332C] hover:bg-[#F6F8F5] rounded-xl cursor-pointer transition-colors"><X size={20} /></button>
             </div>
             
-            <div className="space-y-6 text-gray-700">
-              <p className="text-base sm:text-lg font-bold leading-relaxed">
+            <div className="space-y-6 text-[#20332C]">
+              <p className="text-base font-medium leading-relaxed">
                 Seja bem-vindo ao APP Gestão Pecuária! <br/>
                 Aqui, sua gestão e sua pecuária saem do amadorismo e alcançam um novo nível de organização e controle.
               </p>
               
-              <div className="space-y-4">
-                <p className="font-black text-xs uppercase tracking-widest text-emerald-600">Para começar:</p>
+              <div className="space-y-3.5">
+                <p className="text-xs font-semibold leading-snug text-[#145C46]">Para começar:</p>
                 
-                <div className="grid gap-3 sm:gap-4">
+                <div className="grid gap-3">
                   {[
                     { step: "1", text: 'Crie sua(s) fazenda(s) clicando em "Unidade selecionada", no canto superior esquerdo.' },
-                    { step: "2", text: 'Cadastre seus lotes em "Gestão de Lotes".' },
+                    { step: "2", text: 'Cadastre seus piquetes em "Gestão de Piquetes".' },
                     { step: "3", text: 'Defina o valor da diária dos seus lotes em "Valor da Diária".' },
                     { step: "4", text: 'Cadastre e gerencie seus animais e o financeiro de forma prática e organizada.' },
                     { step: "5", text: 'Bom proveito!' }
                   ].map((item) => (
-                    <div key={item.step} className="flex items-start gap-3 sm:gap-4 p-3.5 sm:p-4 bg-gray-50 rounded-2xl border border-gray-100">
-                      <span className="flex-shrink-0 w-8 h-8 bg-emerald-600 text-white rounded-full flex items-center justify-center font-black text-sm">{item.step}</span>
-                      <p className="font-semibold text-xs sm:text-sm leading-tight pt-1">{item.text}</p>
+                    <div key={item.step} className="flex items-start gap-3.5 p-3.5 bg-[#F6F8F5] rounded-xl border border-[#E3EAE6]">
+                      <span className="flex-shrink-0 w-7 h-7 bg-[#145C46] text-white rounded-full flex items-center justify-center font-semibold text-xs">{item.step}</span>
+                      <p className="text-sm font-normal leading-normal text-[#20332C] pt-0.5">{item.text}</p>
                     </div>
                   ))}
                 </div>
               </div>
 
-              <div className="pt-4 sm:pt-6 border-t border-gray-50 space-y-2">
-                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Dicas, reclamações ou sugestões:</p>
-                <a href="https://instagram.com.br/vivendoapecuaria" target="_blank" rel="noopener noreferrer" className="text-emerald-600 font-black hover:underline flex items-center gap-2 text-xs sm:text-sm break-all">
+              <div className="pt-4 border-t border-[#E3EAE6] space-y-2.5">
+                <p className="text-xs font-medium leading-snug text-[#64766C]">Dicas, reclamações ou sugestões:</p>
+                <a href="https://instagram.com.br/vivendoapecuaria" target="_blank" rel="noopener noreferrer" className="text-[#145C46] font-semibold hover:underline flex items-center gap-2 text-sm break-all">
                   instagram.com.br/vivendoapecuaria
                 </a>
                 <a 
                   href="https://chat.whatsapp.com/HVA8xmp93HYJeCWQRs1g8x" 
                   target="_blank" 
                   rel="noopener noreferrer" 
-                  className="inline-flex items-center gap-2 text-xs sm:text-sm font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-3 py-1.5 rounded-xl transition-all"
+                  className="inline-flex items-center gap-2 text-sm font-semibold leading-snug text-[#145C46] bg-[#DCEDE4]/60 hover:bg-[#DCEDE4] border border-[#145C46]/25 px-3.5 py-2 rounded-xl transition-all"
                 >
                   <svg 
                     className="w-4 h-4 fill-[#25D366] shrink-0" 
@@ -877,7 +882,7 @@ const App: React.FC = () => {
 
             <button 
               onClick={closeWelcome}
-              className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-4 sm:py-5 rounded-2xl font-black uppercase text-xs tracking-widest shadow-xl active:scale-95 transition-all mt-4 cursor-pointer"
+              className="w-full bg-[#145C46] hover:bg-[#0E4434] text-white py-3.5 rounded-xl text-sm font-semibold leading-snug shadow-xs active:scale-[0.99] transition-all mt-2 cursor-pointer"
             >
               Entendi, vamos começar!
             </button>
@@ -886,18 +891,18 @@ const App: React.FC = () => {
       )}
 
       {isCreatingFarm && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm p-3.5 sm:p-4">
-           <div className="bg-white w-full max-w-md rounded-3xl sm:rounded-[2.5rem] p-6 sm:p-10 shadow-2xl space-y-6 animate-in zoom-in duration-300">
-              <div className="flex justify-between items-center border-b border-gray-50 pb-4">
-                 <h3 className="text-lg sm:text-xl font-black text-gray-800 uppercase tracking-tight">Nova Unidade</h3>
-                 <button onClick={() => setIsCreatingFarm(false)} className="p-2 hover:bg-gray-100 rounded-full cursor-pointer"><X /></button>
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-xs p-3.5 sm:p-4">
+           <div className="bg-white w-full max-w-md rounded-2xl border border-[#E3EAE6] p-6 sm:p-8 shadow-xl space-y-5 animate-in zoom-in duration-200">
+              <div className="flex justify-between items-center border-b border-[#E3EAE6] pb-4">
+                 <h3 className="text-lg font-semibold leading-snug text-[#20332C]">Nova Unidade</h3>
+                 <button onClick={() => setIsCreatingFarm(false)} className="p-2 text-[#64766C] hover:text-[#20332C] hover:bg-[#F6F8F5] rounded-xl cursor-pointer transition-colors"><X size={20} /></button>
               </div>
               <form onSubmit={handleCreateFarm} className="space-y-4">
-                 <div className="space-y-1">
-                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Nome da Fazenda</label>
-                    <input type="text" className="w-full border border-gray-100 rounded-2xl px-4 sm:px-6 py-3.5 sm:py-4 font-bold bg-gray-50 focus:bg-white focus:ring-2 focus:ring-emerald-500 outline-none transition-all text-sm" value={newFarmName} onChange={e => setNewFarmName(e.target.value)} required autoFocus />
+                 <div className="space-y-1.5">
+                    <label className="block text-xs font-medium leading-snug text-[#64766C]">Nome da Fazenda</label>
+                    <input type="text" className="w-full border border-[#E3EAE6] rounded-xl px-4 py-3 text-sm font-normal leading-normal text-[#20332C] bg-[#F6F8F5] focus:bg-white focus:ring-2 focus:ring-[#145C46]/20 focus:border-[#145C46] outline-none transition-all" value={newFarmName} onChange={e => setNewFarmName(e.target.value)} required autoFocus />
                  </div>
-                 <button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-4 sm:py-5 rounded-2xl font-black uppercase text-xs tracking-widest shadow-xl active:scale-95 transition-all cursor-pointer">Cadastrar e Abrir</button>
+                 <button type="submit" className="w-full bg-[#145C46] hover:bg-[#0E4434] text-white py-3 rounded-xl text-sm font-semibold leading-snug shadow-xs active:scale-[0.99] transition-all cursor-pointer">Cadastrar e Abrir</button>
               </form>
            </div>
         </div>

@@ -68,23 +68,23 @@ const HealthManager: React.FC<HealthManagerProps> = ({ animals, healthRecords, o
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 font-sans">
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <div className="agro-card p-5 sm:p-6 flex items-center justify-between">
           <div>
-            <p className="text-xs text-gray-400 font-bold uppercase tracking-widest">Casos Ativos</p>
-            <h3 className="text-3xl font-black text-red-600 mt-1">{activeCases.length}</h3>
+            <p className="text-xs text-[#64766C] font-medium">Casos Ativos</p>
+            <h3 className="text-2xl font-semibold text-rose-600 mt-1 font-nums leading-tight">{activeCases.length}</h3>
           </div>
-          <div className="p-3 bg-red-50 text-red-600 rounded-xl">
-            <AlertCircle size={24} />
+          <div className="p-3 bg-rose-50 text-rose-600 rounded-xl border border-rose-200">
+            <AlertCircle size={22} />
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between">
+        <div className="agro-card p-5 sm:p-6 flex items-center justify-between">
           <div>
-            <p className="text-xs text-gray-400 font-bold uppercase tracking-widest">Manejos (30 dias)</p>
-            <h3 className="text-3xl font-black text-gray-800 mt-1">
+            <p className="text-xs text-[#64766C] font-medium">Manejos (30 dias)</p>
+            <h3 className="text-2xl font-semibold text-[#20332C] mt-1 font-nums leading-tight">
               {healthRecords.filter(r => {
                 const d = new Date(r.startDate);
                 const thirtyDaysAgo = new Date();
@@ -93,98 +93,98 @@ const HealthManager: React.FC<HealthManagerProps> = ({ animals, healthRecords, o
               }).length}
             </h3>
           </div>
-          <div className="p-3 bg-blue-50 text-blue-600 rounded-xl">
-            <HeartPulse size={24} />
+          <div className="p-3 bg-[#DCEDE4] text-[#145C46] rounded-xl border border-[#145C46]/20">
+            <HeartPulse size={22} />
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between">
+        <div className="agro-card p-5 sm:p-6 flex items-center justify-between">
           <div>
-            <p className="text-xs text-gray-400 font-bold uppercase tracking-widest">Próximos Lembretes</p>
-            <h3 className="text-3xl font-black text-orange-600 mt-1">
+            <p className="text-xs text-[#64766C] font-medium">Próximos Lembretes</p>
+            <h3 className="text-2xl font-semibold text-amber-700 mt-1 font-nums leading-tight">
                 {healthRecords.filter(r => r.notifyAsReminder && r.status === 'Em Tratamento').length}
             </h3>
           </div>
-          <div className="p-3 bg-orange-50 text-orange-600 rounded-xl">
-            <Bell size={24} />
+          <div className="p-3 bg-amber-50 text-amber-700 rounded-xl border border-amber-200">
+            <Bell size={22} />
           </div>
         </div>
       </div>
 
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 bg-white p-4 sm:p-5 rounded-2xl shadow-2xs border border-[#E3EAE6]">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#64766C]" size={18} />
           <input 
             type="text" 
             placeholder="Buscar por diagnóstico, brinco ou tipo..." 
-            className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-green-500 bg-gray-50 focus:bg-white transition-all"
+            className="w-full pl-10 pr-4 py-2.5 border border-[#E3EAE6] rounded-xl outline-none focus:ring-2 focus:ring-[#145C46]/20 focus:border-[#145C46] bg-[#F6F8F5] focus:bg-white transition-all text-sm text-[#20332C] placeholder:text-[#64766C]" 
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
         <button 
           onClick={() => setIsModalOpen(true)}
-          className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-xl flex items-center gap-2 font-bold shadow-lg shadow-red-100 transition-all active:scale-95"
+          className="bg-[#145C46] hover:bg-[#0E4434] text-white px-4.5 py-2.5 rounded-xl flex items-center gap-2 font-semibold text-sm shadow-xs transition-all active:scale-95 cursor-pointer"
         >
-          <Plus size={20} /> Registrar Ocorrência
+          <Plus size={16} /> Registrar Ocorrência
         </button>
       </div>
 
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-2xs border border-[#E3EAE6] overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left">
-            <thead className="bg-gray-50/50 border-b border-gray-100">
+            <thead className="bg-[#F6F8F5] border-b border-[#E3EAE6]">
               <tr>
-                <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-widest">Animal / Tipo</th>
-                <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-widest">Ocorrência</th>
-                <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-widest">Início</th>
-                <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-widest">Severidade</th>
-                <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-widest">Status</th>
-                <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-widest text-right">Ação</th>
+                <th className="px-6 py-3.5 text-xs font-medium text-[#64766C]">Animal / Tipo</th>
+                <th className="px-6 py-3.5 text-xs font-medium text-[#64766C]">Ocorrência</th>
+                <th className="px-6 py-3.5 text-xs font-medium text-[#64766C]">Início</th>
+                <th className="px-6 py-3.5 text-xs font-medium text-[#64766C]">Severidade</th>
+                <th className="px-6 py-3.5 text-xs font-medium text-[#64766C]">Status</th>
+                <th className="px-6 py-3.5 text-xs font-medium text-[#64766C] text-right">Ação</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-50">
+            <tbody className="divide-y divide-[#E3EAE6]">
               {filteredRecords.length > 0 ? (
                 filteredRecords.slice().reverse().map((record, idx) => {
                   const animal = animals.find(a => a.id === record.animalId);
                   return (
-                    <tr key={`${record.id}-${idx}`} className="hover:bg-gray-50/50 transition-colors group">
+                    <tr key={`${record.id}-${idx}`} className="hover:bg-[#F6F8F5]/60 transition-colors group">
                       <td className="px-6 py-4">
                         <div className="flex flex-col">
-                          <span className="font-black text-gray-900">{animal?.earTag || 'N/A'}</span>
-                          <span className={`text-[10px] font-bold uppercase w-fit px-2 rounded ${
-                            record.type === 'Doença' ? 'bg-red-100 text-red-700' :
-                            record.type === 'Vacina' ? 'bg-blue-100 text-blue-700' :
-                            'bg-gray-100 text-gray-600'
+                          <span className="text-sm font-semibold text-[#20332C] font-nums">{animal?.earTag || 'N/A'}</span>
+                          <span className={`text-xs font-normal w-fit px-2 py-0.5 rounded-md mt-0.5 ${
+                            record.type === 'Doença' ? 'bg-rose-50 text-rose-700 border border-rose-200' :
+                            record.type === 'Vacina' ? 'bg-[#DCEDE4] text-[#145C46] border border-[#145C46]/20' :
+                            'bg-[#F6F8F5] text-[#64766C] border border-[#E3EAE6]'
                           }`}>{record.type}</span>
                         </div>
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex flex-col max-w-xs">
-                          <span className="text-sm font-bold text-gray-800">{record.title}</span>
-                          <span className="text-xs text-gray-500 line-clamp-1 italic">{record.protocol}</span>
+                          <span className="text-sm font-medium text-[#20332C]">{record.title}</span>
+                          <span className="text-xs text-[#64766C] line-clamp-1 italic font-normal mt-0.5">{record.protocol}</span>
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <div className="flex items-center gap-2 text-sm text-gray-600 font-medium">
-                          <Calendar size={14} />
+                        <div className="flex items-center gap-2 text-xs text-[#64766C] font-normal font-nums">
+                          <Calendar size={14} className="text-[#64766C]" />
                           {new Date(record.startDate).toLocaleDateString('pt-BR')}
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase ${
-                          record.severity === HealthSeverity.CRITICAL ? 'text-red-600 border border-red-200 bg-red-50' :
-                          record.severity === HealthSeverity.MODERATE ? 'text-orange-600 border border-orange-200 bg-orange-50' :
-                          'text-green-600 border border-green-200 bg-green-50'
+                        <span className={`px-2.5 py-1 rounded-md text-xs font-medium ${
+                          record.severity === HealthSeverity.CRITICAL ? 'text-rose-700 border border-rose-200 bg-rose-50' :
+                          record.severity === HealthSeverity.MODERATE ? 'text-amber-700 border border-amber-200 bg-amber-50' :
+                          'text-[#145C46] border border-[#145C46]/20 bg-[#DCEDE4]'
                         }`}>
                           {record.severity}
                         </span>
                       </td>
                       <td className="px-6 py-4">
-                        <span className={`px-3 py-1 text-xs font-bold rounded-full ${
-                          record.status === 'Em Tratamento' ? 'bg-yellow-100 text-yellow-800 animate-pulse' :
-                          record.status === 'Concluído' ? 'bg-green-100 text-green-800' :
-                          'bg-gray-100 text-gray-800'
+                        <span className={`inline-flex items-center px-3 py-1 text-xs font-medium rounded-full ${
+                          record.status === 'Em Tratamento' ? 'bg-amber-50 text-amber-800 border border-amber-200' :
+                          record.status === 'Concluído' ? 'bg-[#DCEDE4] text-[#145C46]' :
+                          'bg-[#F6F8F5] text-[#64766C] border border-[#E3EAE6]'
                         }`}>
                           {record.status}
                         </span>
@@ -193,7 +193,7 @@ const HealthManager: React.FC<HealthManagerProps> = ({ animals, healthRecords, o
                         {record.status === 'Em Tratamento' && (
                           <button 
                             onClick={() => handleStatusChange(record, 'Concluído')}
-                            className="p-2 text-green-600 hover:bg-green-50 rounded-xl transition-all"
+                            className="p-2 text-[#145C46] hover:bg-[#E5F2EB] rounded-xl transition-all"
                             title="Concluir Tratamento"
                           >
                             <CheckCircle2 size={20} />
@@ -205,7 +205,7 @@ const HealthManager: React.FC<HealthManagerProps> = ({ animals, healthRecords, o
                 })
               ) : (
                 <tr>
-                  <td colSpan={6} className="px-6 py-20 text-center text-gray-400">
+                  <td colSpan={6} className="px-6 py-16 text-center text-sm font-normal text-[#64766C]">
                     Nenhum registro de saúde encontrado.
                   </td>
                 </tr>
@@ -217,25 +217,25 @@ const HealthManager: React.FC<HealthManagerProps> = ({ animals, healthRecords, o
 
       {/* Register Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden scale-in">
-            <div className="px-8 py-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden border border-[#E3EAE6] max-h-[90vh] flex flex-col">
+            <div className="px-6 py-5 border-b border-[#E3EAE6] flex justify-between items-center bg-[#F6F8F5] shrink-0">
               <div>
-                <h3 className="text-xl font-bold text-gray-800">Registrar Ocorrência de Saúde</h3>
-                <p className="text-sm text-gray-500 mt-1">Gestão sanitária e protocolos de tratamento</p>
+                <h3 className="text-lg font-semibold leading-snug text-[#20332C]">Registrar Ocorrência de Saúde</h3>
+                <p className="text-[13px] font-normal leading-normal text-[#64766C] mt-0.5">Gestão sanitária e protocolos de tratamento</p>
               </div>
-              <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-600 p-2 hover:bg-gray-100 rounded-full transition-all">
-                <X size={24} />
+              <button onClick={() => setIsModalOpen(false)} className="text-[#64766C] hover:text-[#20332C] p-2 hover:bg-white rounded-xl transition-all">
+                <X size={20} />
               </button>
             </div>
             
-            <form onSubmit={handleSubmit} className="p-8 space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-1">
-                  <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1">Animal *</label>
+            <form onSubmit={handleSubmit} className="p-6 space-y-5 overflow-y-auto">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-medium leading-snug text-[#64766C]">Animal *</label>
                   <select 
                     required
-                    className="w-full border border-gray-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-red-500 bg-gray-50 focus:bg-white transition-all font-medium"
+                    className="w-full border border-[#E3EAE6] rounded-xl px-3.5 py-2.5 text-sm font-normal leading-normal text-[#20332C] outline-none focus:ring-2 focus:ring-[#145C46]/20 focus:border-[#145C46] bg-[#F6F8F5] focus:bg-white transition-all"
                     value={formData.animalId}
                     onChange={(e) => setFormData({...formData, animalId: e.target.value})}
                   >
@@ -246,11 +246,11 @@ const HealthManager: React.FC<HealthManagerProps> = ({ animals, healthRecords, o
                   </select>
                 </div>
 
-                <div className="space-y-1">
-                  <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1">Tipo *</label>
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-medium leading-snug text-[#64766C]">Tipo *</label>
                   <select 
                     required
-                    className="w-full border border-gray-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-red-500 bg-gray-50 focus:bg-white transition-all font-medium"
+                    className="w-full border border-[#E3EAE6] rounded-xl px-3.5 py-2.5 text-sm font-normal leading-normal text-[#20332C] outline-none focus:ring-2 focus:ring-[#145C46]/20 focus:border-[#145C46] bg-[#F6F8F5] focus:bg-white transition-all"
                     value={formData.type}
                     onChange={(e) => setFormData({...formData, type: e.target.value as any})}
                   >
@@ -263,34 +263,34 @@ const HealthManager: React.FC<HealthManagerProps> = ({ animals, healthRecords, o
                 </div>
               </div>
 
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1">Diagnóstico / Título *</label>
+              <div className="space-y-1.5">
+                <label className="block text-xs font-medium leading-snug text-[#64766C]">Diagnóstico / Título *</label>
                 <input 
                   type="text" 
                   required
                   placeholder="Ex: Mastite Clínica, Corte na Perna, Pneumonia..."
-                  className="w-full border border-gray-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-red-500 bg-gray-50 focus:bg-white transition-all"
+                  className="w-full border border-[#E3EAE6] rounded-xl px-3.5 py-2.5 text-sm font-normal leading-normal text-[#20332C] outline-none focus:ring-2 focus:ring-[#145C46]/20 focus:border-[#145C46] bg-[#F6F8F5] focus:bg-white transition-all"
                   value={formData.title}
                   onChange={(e) => setFormData({...formData, title: e.target.value})}
                 />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-1">
-                  <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1">Data Início *</label>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-medium leading-snug text-[#64766C]">Data de Início *</label>
                   <input 
                     type="date" 
                     required
-                    className="w-full border border-gray-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-red-500 bg-gray-50 focus:bg-white transition-all"
+                    className="w-full border border-[#E3EAE6] rounded-xl px-3.5 py-2.5 text-sm font-normal leading-normal text-[#20332C] outline-none focus:ring-2 focus:ring-[#145C46]/20 focus:border-[#145C46] bg-[#F6F8F5] focus:bg-white transition-all"
                     value={formData.startDate}
                     onChange={(e) => setFormData({...formData, startDate: e.target.value})}
                   />
                 </div>
 
-                <div className="space-y-1">
-                  <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1">Severidade</label>
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-medium leading-snug text-[#64766C]">Severidade</label>
                   <select 
-                    className="w-full border border-gray-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-red-500 bg-gray-50 focus:bg-white transition-all font-medium"
+                    className="w-full border border-[#E3EAE6] rounded-xl px-3.5 py-2.5 text-sm font-normal leading-normal text-[#20332C] outline-none focus:ring-2 focus:ring-[#145C46]/20 focus:border-[#145C46] bg-[#F6F8F5] focus:bg-white transition-all"
                     value={formData.severity}
                     onChange={(e) => setFormData({...formData, severity: e.target.value as any})}
                   >
@@ -301,61 +301,63 @@ const HealthManager: React.FC<HealthManagerProps> = ({ animals, healthRecords, o
                 </div>
               </div>
 
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1">Protocolo de Tratamento</label>
+              <div className="space-y-1.5">
+                <label className="block text-xs font-medium leading-snug text-[#64766C]">Protocolo de Tratamento</label>
                 <textarea 
                   rows={3}
                   placeholder="Descreva medicamentos, dosagens e procedimentos..."
-                  className="w-full border border-gray-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-red-500 bg-gray-50 focus:bg-white transition-all"
+                  className="w-full border border-[#E3EAE6] rounded-xl px-3.5 py-2.5 text-sm font-normal leading-normal text-[#20332C] outline-none focus:ring-2 focus:ring-[#145C46]/20 focus:border-[#145C46] bg-[#F6F8F5] focus:bg-white transition-all"
                   value={formData.protocol}
                   onChange={(e) => setFormData({...formData, protocol: e.target.value})}
                 />
               </div>
 
-              <div className="bg-gray-50 p-4 rounded-2xl border border-gray-200 space-y-4">
-                  <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                          <RotateCcw size={20} className="text-gray-400" />
-                          <div>
-                            <p className="text-sm font-bold text-gray-700">Repetir Manejo?</p>
-                            <p className="text-[10px] text-gray-400 font-medium">Define se o tratamento precisa de nova dose</p>
-                          </div>
-                      </div>
-                      <input 
-                        type="number" 
-                        placeholder="0"
-                        className="w-20 border border-gray-300 rounded-lg p-2 text-center font-bold"
-                        value={formData.repeatAfterDays}
-                        onChange={(e) => setFormData({...formData, repeatAfterDays: Number(e.target.value)})}
-                      />
-                      <span className="text-xs font-bold text-gray-400">DIAS</span>
+              <div className="bg-[#F6F8F5] p-4 rounded-xl border border-[#E3EAE6] space-y-4">
+                <div className="flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <RotateCcw size={18} className="text-[#64766C] shrink-0" />
+                    <div>
+                      <p className="text-sm font-semibold text-[#20332C] leading-snug">Repetir Manejo?</p>
+                      <p className="text-xs font-normal text-[#64766C] leading-normal">Define se o tratamento precisa de nova dose</p>
+                    </div>
                   </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <input 
+                      type="number" 
+                      placeholder="0"
+                      className="w-20 border border-[#E3EAE6] bg-white rounded-xl px-3 py-2 text-center text-sm font-semibold text-[#20332C] font-nums outline-none focus:border-[#145C46]"
+                      value={formData.repeatAfterDays}
+                      onChange={(e) => setFormData({...formData, repeatAfterDays: Number(e.target.value)})}
+                    />
+                    <span className="text-xs font-medium text-[#64766C]">dias</span>
+                  </div>
+                </div>
 
-                  <label className="flex items-center gap-3 cursor-pointer group">
-                      <input 
-                        type="checkbox" 
-                        className="w-5 h-5 rounded-lg border-gray-300 text-red-600 focus:ring-red-500"
-                        checked={formData.notifyAsReminder}
-                        onChange={(e) => setFormData({...formData, notifyAsReminder: e.target.checked})}
-                      />
-                      <div className="flex flex-col">
-                        <span className="text-sm font-bold text-gray-700 group-hover:text-red-600 transition-colors">Gerar tarefa de acompanhamento automaticamente</span>
-                        <span className="text-[10px] text-gray-400">Você será notificado no painel geral</span>
-                      </div>
-                  </label>
+                <label className="flex items-center gap-3 cursor-pointer group pt-2 border-t border-[#E3EAE6]">
+                  <input 
+                    type="checkbox" 
+                    className="w-4 h-4 rounded border-[#E3EAE6] text-[#145C46] focus:ring-[#145C46]"
+                    checked={formData.notifyAsReminder}
+                    onChange={(e) => setFormData({...formData, notifyAsReminder: e.target.checked})}
+                  />
+                  <div className="flex flex-col">
+                    <span className="text-sm font-medium text-[#20332C] group-hover:text-[#145C46] transition-colors leading-snug">Gerar tarefa de acompanhamento automaticamente</span>
+                    <span className="text-xs font-normal text-[#64766C] leading-normal">Você será notificado no painel geral</span>
+                  </div>
+                </label>
               </div>
 
-              <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
+              <div className="flex justify-end gap-3 pt-4 border-t border-[#E3EAE6]">
                 <button 
                   type="button" 
                   onClick={() => setIsModalOpen(false)}
-                  className="px-6 py-3 text-gray-500 font-bold hover:bg-gray-100 rounded-xl transition-all"
+                  className="px-5 py-2.5 text-sm font-semibold leading-snug text-[#64766C] hover:bg-[#F6F8F5] border border-[#E3EAE6] rounded-xl transition-all"
                 >
                   Cancelar
                 </button>
                 <button 
                   type="submit" 
-                  className="px-10 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl shadow-lg shadow-red-100 transition-all active:scale-95"
+                  className="px-6 py-2.5 bg-[#145C46] hover:bg-[#0E4434] text-white text-sm font-semibold leading-snug rounded-xl shadow-xs transition-all active:scale-95"
                 >
                   Registrar Ocorrência
                 </button>

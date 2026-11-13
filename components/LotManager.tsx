@@ -3,7 +3,7 @@ import { Lot, Animal, AnimalStatus, LotWeighingRecord } from '../types';
 import { 
   Layers, Plus, Edit2, Users, Scale, DollarSign, X, 
   TrendingUp, Sparkles, Calendar, History, CheckCircle2, 
-  Info, ArrowRight, ShieldCheck, Tag
+  Info, ArrowRight, ShieldCheck, Tag, Trash2, AlertTriangle
 } from 'lucide-react';
 import { 
   getTodayDateString, 
@@ -17,15 +17,30 @@ interface LotManagerProps {
   animals: Animal[];
   onAddLot: (lot: Lot) => void;
   onUpdateLot: (lot: Lot) => void;
+  onDeleteLot?: (lotId: string) => void;
   onSellLot?: (lotId: string, date: string, totalValue: number) => void;
   onBatchWeighLot?: (lotId: string, date: string, newAvgWeight: number, gmd: number, applyMode: 'uniform' | 'gain_delta') => void;
 }
+
+const SAMPLE_LOT_NAMES = [
+  'Pasto 01 - Recria Nelore',
+  'Piquete 02 - Terminação & Cruzamento',
+  'Fazenda (Lote Geral)',
+  'Fazenda'
+];
+
+const isSampleLot = (lot: Lot): boolean =>
+  lot.id.startsWith('lot-recria-') ||
+  lot.id.startsWith('lot-engorda-') ||
+  lot.id.startsWith('lot-fazenda') ||
+  SAMPLE_LOT_NAMES.includes(lot.name);
 
 const LotManager: React.FC<LotManagerProps> = ({ 
   lots, 
   animals, 
   onAddLot, 
   onUpdateLot, 
+  onDeleteLot,
   onSellLot, 
   onBatchWeighLot 
 }) => {
@@ -35,7 +50,17 @@ const LotManager: React.FC<LotManagerProps> = ({
   const [isSellModalOpen, setIsSellModalOpen] = useState(false);
   const [isWeighModalOpen, setIsWeighModalOpen] = useState(false);
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
+  const [lotToDelete, setLotToDelete] = useState<Lot | null>(null);
+  const [isClearSamplesModalOpen, setIsClearSamplesModalOpen] = useState(false);
+  const [toastMsg, setToastMsg] = useState<{ text: string; type: 'success' | 'warning' } | null>(null);
   const [currentLot, setCurrentLot] = useState<Lot>({ id: '', name: '', description: '', averageGmd: 0.8 });
+
+  const sampleLots = lots.filter(isSampleLot);
+
+  const showToast = (text: string, type: 'success' | 'warning' = 'success') => {
+    setToastMsg({ text, type });
+    setTimeout(() => setToastMsg(null), 4000);
+  };
   
   const [sellDate, setSellDate] = useState(todayStr);
   const [sellValue, setSellValue] = useState<number>(0);
@@ -123,7 +148,7 @@ const LotManager: React.FC<LotManagerProps> = ({
 
     const lotAnimals = animals.filter(a => a.lotId === currentLot.id && a.status === AnimalStatus.ACTIVE);
     if (lotAnimals.length === 0) {
-      alert("Este lote não possui animais ativos para pesagem.");
+      showToast('Este piquete não possui animais ativos para pesagem.', 'warning');
       return;
     }
 
@@ -138,169 +163,264 @@ const LotManager: React.FC<LotManagerProps> = ({
     setIsWeighModalOpen(false);
   };
 
+  const handleConfirmDeleteLot = () => {
+    if (!lotToDelete || !onDeleteLot) return;
+    const deletedName = lotToDelete.name;
+    onDeleteLot(lotToDelete.id);
+    setLotToDelete(null);
+    setIsModalOpen(false);
+    showToast(`Piquete "${deletedName}" excluído com sucesso!`);
+  };
+
+  const handleConfirmClearSampleLots = () => {
+    if (!onDeleteLot || sampleLots.length === 0) return;
+    const count = sampleLots.length;
+    sampleLots.forEach(lot => onDeleteLot(lot.id));
+    setIsClearSamplesModalOpen(false);
+    showToast(`${count} ${count === 1 ? 'piquete de amostra excluído' : 'piquetes de amostra excluídos'} com sucesso!`);
+  };
+
   return (
     <div className="space-y-6 font-sans">
+      {toastMsg && (
+        <div className={`fixed top-5 right-5 z-50 p-4 rounded-2xl shadow-xl border flex items-start gap-3 max-w-md animate-in slide-in-from-top-4 duration-300 ${
+          toastMsg.type === 'warning'
+            ? 'bg-amber-950/95 text-amber-100 border-amber-500/40'
+            : 'bg-[#145C46] text-white border-[#0E4434]'
+        }`}>
+          <div className="p-1 rounded-lg bg-white/10 shrink-0 mt-0.5">
+            {toastMsg.type === 'warning' ? <AlertTriangle size={18} className="text-amber-300" /> : <CheckCircle2 size={18} className="text-[#DCEDE4]" />}
+          </div>
+          <div className="flex-1 text-xs font-semibold leading-relaxed">
+            {toastMsg.text}
+          </div>
+          <button onClick={() => setToastMsg(null)} className="text-white/70 hover:text-white cursor-pointer">
+            <X size={16} />
+          </button>
+        </div>
+      )}
+
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2.5">
-            <Layers className="text-emerald-700" /> Gestão de Lotes de Manejo
+          <h2 className="text-2xl font-semibold text-[#20332C] leading-snug flex items-center gap-2.5">
+            <Layers className="text-[#145C46]" size={24} /> Gestão de Piquetes
           </h2>
-          <p className="text-xs text-slate-500">
-            Cada lote possui seu próprio <strong>GMD médio guardado separadamente</strong>, projetando o <strong>peso previsto</strong> dos animais em tempo real.
+          <p className="text-[13px] text-[#64766C] leading-normal mt-1">
+            Cada piquete possui seu próprio <strong className="font-semibold text-[#20332C]">GMD médio guardado separadamente</strong>, projetando o <strong className="font-semibold text-[#20332C]">peso previsto</strong> dos animais em tempo real.
           </p>
         </div>
-        <button 
-          onClick={() => openModal()}
-          className="bg-emerald-700 hover:bg-emerald-800 text-white px-4.5 py-2.5 rounded-xl flex items-center gap-2 shadow-xs transition-all font-bold text-xs cursor-pointer border border-emerald-800"
-        >
-          <Plus size={18} /> Novo Lote
-        </button>
+        <div className="flex flex-wrap items-center gap-2.5">
+          {onDeleteLot && sampleLots.length > 0 && (
+            <button
+              type="button"
+              onClick={() => setIsClearSamplesModalOpen(true)}
+              className="bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 px-4 py-2.5 rounded-lg flex items-center gap-2 transition-all font-semibold text-sm leading-snug cursor-pointer"
+              title="Remover todos os piquetes pré-cadastrados como demonstração"
+            >
+              <Trash2 size={16} />
+              <span>Excluir Amostras ({sampleLots.length})</span>
+            </button>
+          )}
+          <button 
+            onClick={() => openModal()}
+            className="bg-[#145C46] hover:bg-[#0E4434] text-white px-4 py-2.5 rounded-lg flex items-center gap-2 shadow-xs transition-all font-semibold text-sm leading-snug cursor-pointer"
+          >
+            <Plus size={18} /> Novo Piquete
+          </button>
+        </div>
       </div>
 
+      {lots.length === 0 ? (
+        <div className="bg-white rounded-2xl border border-[#E3EAE6] p-12 text-center max-w-lg mx-auto space-y-4 shadow-2xs">
+          <div className="w-14 h-14 rounded-2xl bg-[#F6F8F5] text-[#64766C] flex items-center justify-center mx-auto">
+            <Layers size={28} />
+          </div>
+          <h3 className="text-lg font-semibold leading-snug text-[#20332C]">Nenhum piquete cadastrado</h3>
+          <p className="text-[13px] font-normal text-[#64766C] leading-relaxed">
+            Cadastre seus piquetes de pastagem ou confinamento para controlar lotação, pesagens coletivas e o GMD diário do rebanho.
+          </p>
+          <button 
+            onClick={() => openModal()}
+            className="bg-[#145C46] hover:bg-[#0E4434] text-white font-semibold text-sm leading-snug px-5 py-2.5 rounded-xl shadow-xs transition-all inline-flex items-center gap-2 cursor-pointer"
+          >
+            <Plus size={16} /> Cadastrar Primeiro Piquete
+          </button>
+        </div>
+      ) : (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {lots.map((lot, idx) => {
           const lotAnimals = animals.filter(a => a.lotId === lot.id && a.status === AnimalStatus.ACTIVE);
           const stats = calculateLotWeighingStats(lotAnimals, todayStr, lot);
           const hasWeighHistory = (lot.history && lot.history.length > 0);
           const daysFromLastWeighing = stats.mostRecentWeighingDate ? getDaysDifference(stats.mostRecentWeighingDate, todayStr) : 0;
+          const isSample = isSampleLot(lot);
 
           return (
-            <div key={`${lot.id}-${idx}`} className="agro-card p-6 flex flex-col justify-between relative group hover:border-emerald-300 transition-all shadow-xs">
+            <div key={`${lot.id}-${idx}`} className="agro-card p-6 flex flex-col justify-between relative group hover:border-[#218568] transition-all">
               <div>
-                <div className="flex justify-between items-start mb-2">
-                  <div>
-                    <h3 className="text-lg font-black text-slate-900 uppercase tracking-tight">{lot.name}</h3>
-                    <div className="flex items-center gap-1.5 mt-0.5">
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-800 text-[10px] font-black border border-emerald-200">
-                        <TrendingUp size={11} className="text-emerald-700" /> GMD Lote: +{stats.avgGmd.toFixed(3)} kg/d
+                <div className="flex justify-between items-start gap-2 mb-2">
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h3 className="text-base font-semibold text-[#20332C] leading-snug">{lot.name}</h3>
+                      {isSample && (
+                        <span className="px-2 py-0.5 rounded-md bg-amber-50 text-amber-800 border border-amber-200 text-xs font-medium">
+                          Amostra
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-1.5 mt-1">
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-[#DCEDE4] text-[#145C46] text-xs font-medium font-nums">
+                        <TrendingUp size={13} className="text-[#145C46]" /> GMD: +{stats.avgGmd.toFixed(3)} kg/d
                       </span>
                     </div>
                   </div>
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-1 shrink-0">
                     {hasWeighHistory && (
                       <button 
                         onClick={() => openHistoryModal(lot)} 
-                        className="text-slate-400 hover:text-emerald-700 hover:bg-emerald-50 p-2 rounded-xl transition-all" 
-                        title="Histórico de Pesagens do Lote"
+                        className="text-[#64766C] hover:text-[#145C46] hover:bg-[#E5F2EB] p-2 rounded-lg transition-all cursor-pointer" 
+                        title="Histórico de Pesagens do Piquete"
                       >
                         <History size={18} />
                       </button>
                     )}
                     <button 
                       onClick={() => openWeighModal(lot)} 
-                      className="text-emerald-700 hover:bg-emerald-50 p-2 rounded-xl transition-all" 
-                      title="Pesar Lote Completo"
+                      className="text-[#145C46] hover:bg-[#E5F2EB] p-2 rounded-lg transition-all cursor-pointer" 
+                      title="Pesar Piquete Completo"
                     >
                       <Scale size={18} />
                     </button>
                     <button 
                       onClick={() => openModal(lot)} 
-                      className="text-slate-400 hover:text-blue-600 p-2 rounded-xl hover:bg-blue-50 transition-all"
-                      title="Editar Lote e GMD"
+                      className="text-[#64766C] hover:text-blue-600 p-2 rounded-lg hover:bg-blue-50 transition-all cursor-pointer"
+                      title="Editar Piquete e GMD"
                     >
                       <Edit2 size={18} />
                     </button>
                     {stats.headCount > 0 && (
                       <button 
                         onClick={() => openSellModal(lot)} 
-                        className="text-slate-400 hover:text-green-600 p-2 rounded-xl hover:bg-green-50 transition-all" 
-                        title="Vender Lote Inteiro"
+                        className="text-[#64766C] hover:text-[#145C46] p-2 rounded-lg hover:bg-[#E5F2EB] transition-all cursor-pointer" 
+                        title="Vender Animais do Piquete"
                       >
                         <DollarSign size={18} />
+                      </button>
+                    )}
+                    {onDeleteLot && (
+                      <button
+                        type="button"
+                        onClick={() => setLotToDelete(lot)}
+                        className="text-[#64766C] hover:text-rose-600 hover:bg-rose-50 p-2 rounded-lg transition-all cursor-pointer"
+                        title="Excluir Piquete"
+                      >
+                        <Trash2 size={18} />
                       </button>
                     )}
                   </div>
                 </div>
 
-                <p className="text-xs text-slate-500 font-medium mb-4 line-clamp-2">
+                <p className="text-[13px] text-[#64766C] font-normal leading-normal mb-4 line-clamp-2">
                   {lot.description || 'Sem observações cadastradas.'}
                 </p>
 
                 {/* Métricas do Lote */}
-                <div className="grid grid-cols-2 gap-3 pt-3 border-t border-slate-100">
-                  <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Cabeças Ativas</p>
-                    <p className="text-xl font-black text-slate-900 font-nums mt-0.5">{stats.headCount}</p>
-                    <p className="text-[10px] text-slate-400 font-medium">{stats.headCount === 1 ? '1 animal' : `${stats.headCount} animais`}</p>
+                <div className="grid grid-cols-2 gap-3 pt-3 border-t border-[#E3EAE6]">
+                  <div className="p-3.5 bg-[#F6F8F5] rounded-xl border border-[#E3EAE6]">
+                    <p className="text-xs font-medium text-[#64766C] leading-snug">Cabeças ativas</p>
+                    <p className="text-2xl font-semibold text-[#20332C] leading-tight font-nums mt-1">{stats.headCount}</p>
+                    <p className="text-xs text-[#64766C] font-normal mt-1">{stats.headCount === 1 ? '1 animal' : `${stats.headCount} animais`}</p>
                   </div>
 
-                  <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Média na Balança</p>
-                    <p className="text-xl font-black text-slate-900 font-nums mt-0.5">
-                      {stats.avgRecordedArroba.toFixed(1)} <span className="text-xs font-normal text-slate-400">@</span>
+                  <div className="p-3.5 bg-[#F6F8F5] rounded-xl border border-[#E3EAE6]">
+                    <p className="text-xs font-medium text-[#64766C] leading-snug">Média na balança</p>
+                    <p className="text-2xl font-semibold text-[#20332C] leading-tight font-nums mt-1">
+                      {stats.avgRecordedArroba.toFixed(1)}<span className="text-sm font-normal text-[#64766C] ml-1">@</span>
                     </p>
-                    <p className="text-[10px] text-slate-400 font-nums">{stats.avgRecordedWeightKg.toFixed(1)} kg</p>
+                    <p className="text-xs text-[#64766C] font-normal font-nums mt-1">{stats.avgRecordedWeightKg.toFixed(1)} kg</p>
                   </div>
 
-                  <div className="p-3 bg-emerald-50/80 rounded-xl border border-emerald-100">
-                    <p className="text-[10px] font-bold text-emerald-800 uppercase tracking-wider">GMD Gravado no Lote</p>
-                    <p className="text-base font-black text-emerald-900 font-nums mt-0.5">
-                      +{stats.avgGmd.toFixed(3)} <span className="text-[10px] font-bold text-emerald-700">kg/d</span>
+                  <div className="p-3.5 bg-[#F6F8F5] rounded-xl border border-[#DCEDE4]">
+                    <p className="text-xs font-medium text-[#145C46] leading-snug">GMD gravado no lote</p>
+                    <p className="text-xl font-semibold text-[#145C46] leading-tight font-nums mt-1">
+                      +{stats.avgGmd.toFixed(3)}<span className="text-xs font-normal text-[#64766C] ml-1">kg/d</span>
                     </p>
-                    <p className="text-[10px] text-emerald-600 font-medium">
+                    <p className="text-xs text-[#64766C] font-normal mt-1">
                       {daysFromLastWeighing > 0 ? `${daysFromLastWeighing} dias desde a pesagem` : 'Pesado hoje'}
                     </p>
                   </div>
 
-                  <div className="p-3 bg-emerald-100/70 rounded-xl border border-emerald-200">
-                    <p className="text-[10px] font-black text-emerald-950 uppercase tracking-wider flex items-center gap-1">
-                      <Sparkles size={11} className="text-emerald-700" /> Peso Previsto Hoje
+                  <div className="p-3.5 bg-[#DCEDE4]/70 rounded-xl border border-[#DCEDE4]">
+                    <p className="text-xs font-medium text-[#145C46] leading-snug flex items-center gap-1">
+                      <Sparkles size={12} className="text-[#145C46]" /> Peso previsto hoje
                     </p>
-                    <p className="text-base font-black text-emerald-950 font-nums mt-0.5">
-                      {stats.avgPredictedArroba.toFixed(1)} <span className="text-[10px] font-bold text-emerald-800">@</span>
+                    <p className="text-xl font-semibold text-[#20332C] leading-tight font-nums mt-1">
+                      {stats.avgPredictedArroba.toFixed(1)}<span className="text-xs font-normal text-[#145C46] ml-1">@</span>
                     </p>
-                    <p className="text-[10px] text-emerald-800 font-bold font-nums">
+                    <p className="text-xs text-[#145C46] font-medium font-nums mt-1">
                       {stats.avgPredictedWeightKg.toFixed(1)} kg (+{stats.totalWeightGainKg > 0 ? (stats.totalWeightGainKg / (stats.headCount || 1)).toFixed(1) : '0.0'} kg)
                     </p>
                   </div>
                 </div>
               </div>
 
-              <div className="mt-5 pt-4 border-t border-slate-100 flex items-center justify-between gap-2">
+              <div className="mt-5 pt-4 border-t border-[#E3EAE6] flex items-center justify-between gap-2">
                 <button
                   type="button"
                   onClick={() => openWeighModal(lot)}
-                  className="w-full bg-emerald-700 hover:bg-emerald-800 text-white py-2.5 px-3 rounded-xl font-extrabold text-xs flex items-center justify-center gap-1.5 transition-all shadow-xs cursor-pointer"
+                  className="flex-1 bg-[#145C46] hover:bg-[#0E4434] text-white py-2.5 px-4 rounded-lg font-semibold text-sm leading-snug flex items-center justify-center gap-2 transition-all shadow-xs cursor-pointer"
                 >
-                  <Scale size={15} /> Pesar Lote Completo
+                  <Scale size={16} /> Pesar Piquete
                 </button>
+                {onDeleteLot && (
+                  <button
+                    type="button"
+                    onClick={() => setLotToDelete(lot)}
+                    className="py-2.5 px-3 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-lg font-semibold text-sm leading-snug flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                    title="Excluir este piquete"
+                  >
+                    <Trash2 size={15} />
+                    <span>Excluir</span>
+                  </button>
+                )}
               </div>
             </div>
           );
         })}
       </div>
+      )}
 
-      {/* MODAL CONFIGURAÇÃO DO LOTE (Com GMD Próprio) */}
+      {/* MODAL CONFIGURAÇÃO DO PIQUETE (Com GMD Próprio) */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
-          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden border border-slate-100">
-            <div className="px-7 py-5 bg-slate-900 text-white flex justify-between items-center">
-              <h3 className="text-base font-black uppercase tracking-tight">
-                {currentLot.id ? 'Editar Lote & GMD' : 'Novo Lote de Manejo'}
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden border border-[#E3EAE6]">
+            <div className="px-6 py-4 bg-[#145C46] text-white flex justify-between items-center">
+              <h3 className="text-lg font-semibold leading-snug">
+                {currentLot.id ? 'Editar Piquete & GMD' : 'Novo Piquete'}
               </h3>
-              <button onClick={closeModal} className="hover:bg-white/10 p-2 rounded-full cursor-pointer"><X size={20} /></button>
+              <button onClick={closeModal} className="hover:bg-white/10 p-1.5 rounded-lg cursor-pointer"><X size={20} /></button>
             </div>
-            <form onSubmit={handleSubmit} className="p-7 space-y-5">
+            <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div className="space-y-1.5">
-                <label className="text-[11px] font-extrabold text-slate-700 uppercase tracking-wider">Nome do Lote</label>
+                <label className="text-xs font-medium text-[#64766C] block">Nome do piquete</label>
                 <input 
                   type="text" 
                   required 
-                  className="w-full border border-slate-200 rounded-xl px-4 py-2.5 font-bold text-slate-900 bg-slate-50 focus:bg-white outline-none focus:ring-2 focus:ring-emerald-500 text-sm"
+                  className="w-full border border-[#E3EAE6] rounded-lg px-3.5 py-2.5 font-normal text-[#20332C] bg-[#F6F8F5] focus:bg-white outline-none focus:ring-2 focus:ring-[#145C46] text-sm"
                   value={currentLot.name} 
                   onChange={e => setCurrentLot({...currentLot, name: e.target.value})} 
-                  placeholder="Ex: Confinamento Piquete 01" 
+                  placeholder="Ex: Piquete 01 - Mombaça" 
                 />
               </div>
 
               {/* Campo de GMD Médio Específico deste Lote */}
-              <div className="space-y-1.5 bg-emerald-50/70 p-4 rounded-2xl border border-emerald-200">
+              <div className="space-y-1.5 bg-[#DCEDE4]/50 p-4 rounded-xl border border-[#DCEDE4]">
                 <div className="flex items-center justify-between">
-                  <label className="text-[11px] font-extrabold text-emerald-900 uppercase tracking-wider flex items-center gap-1.5">
-                    <TrendingUp size={14} className="text-emerald-700" /> GMD Médio do Lote (kg/cab/dia)
+                  <label className="text-xs font-medium text-[#145C46] flex items-center gap-1.5">
+                    <TrendingUp size={14} className="text-[#145C46]" /> GMD médio do lote (kg/cab/dia)
                   </label>
                 </div>
-                <p className="text-[11px] text-emerald-700 font-medium">
+                <p className="text-xs text-[#64766C] font-normal leading-relaxed">
                   Este GMD é guardado exclusivamente para este lote e adiciona peso diariamente aos animais nele alocados.
                 </p>
                 <div className="relative mt-2">
@@ -309,21 +429,21 @@ const LotManager: React.FC<LotManagerProps> = ({
                     step="0.001"
                     required
                     onFocus={handleFocus}
-                    className="w-full border border-emerald-300 rounded-xl px-4 py-2.5 font-black text-emerald-950 bg-white focus:bg-white outline-none focus:ring-2 focus:ring-emerald-500 text-base font-nums"
+                    className="w-full border border-[#218568]/40 rounded-lg px-3.5 py-2.5 font-semibold text-[#20332C] bg-white outline-none focus:ring-2 focus:ring-[#145C46] text-base font-nums"
                     value={currentLot.averageGmd ?? 0.8} 
                     onChange={e => setCurrentLot({...currentLot, averageGmd: Number(e.target.value)})} 
                     placeholder="0.800"
                   />
-                  <span className="absolute right-4 top-1/2 -translate-y-1/2 font-bold text-xs text-emerald-700">
+                  <span className="absolute right-3.5 top-1/2 -translate-y-1/2 font-medium text-xs text-[#145C46]">
                     kg/dia
                   </span>
                 </div>
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[11px] font-extrabold text-slate-700 uppercase tracking-wider">Descrição / Observações</label>
+                <label className="text-xs font-medium text-[#64766C] block">Descrição / observações</label>
                 <textarea 
-                  className="w-full border border-slate-200 rounded-xl px-4 py-2.5 font-medium text-slate-800 bg-slate-50 focus:bg-white outline-none focus:ring-2 focus:ring-emerald-500 text-xs"
+                  className="w-full border border-[#E3EAE6] rounded-lg px-3.5 py-2.5 font-normal text-[#20332C] bg-[#F6F8F5] focus:bg-white outline-none focus:ring-2 focus:ring-[#145C46] text-sm leading-relaxed"
                   value={currentLot.description || ''} 
                   onChange={e => setCurrentLot({...currentLot, description: e.target.value})} 
                   rows={3} 
@@ -332,21 +452,31 @@ const LotManager: React.FC<LotManagerProps> = ({
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[11px] font-extrabold text-slate-700 uppercase tracking-wider">Custo Diário Específico (R$/cab/dia)</label>
+                <label className="text-xs font-medium text-[#64766C] block">Custo diário específico (R$/cab/dia)</label>
                 <input 
                   type="number" 
                   step="0.01"
                   onFocus={handleFocus}
-                  className="w-full border border-slate-200 rounded-xl px-4 py-2.5 font-bold text-slate-900 bg-slate-50 focus:bg-white outline-none focus:ring-2 focus:ring-emerald-500 text-sm font-nums"
+                  className="w-full border border-[#E3EAE6] rounded-lg px-3.5 py-2.5 font-normal text-[#20332C] bg-[#F6F8F5] focus:bg-white outline-none focus:ring-2 focus:ring-[#145C46] text-sm font-nums"
                   value={currentLot.dailyCost || ''} 
                   onChange={e => setCurrentLot({...currentLot, dailyCost: Number(e.target.value)})} 
                   placeholder="Deixe em branco para usar o padrão da fazenda"
                 />
               </div>
 
-              <div className="flex gap-3 pt-2">
-                <button type="button" onClick={closeModal} className="flex-1 py-3 text-slate-500 font-bold text-xs hover:bg-slate-100 rounded-xl uppercase cursor-pointer">Cancelar</button>
-                <button type="submit" className="flex-2 py-3 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl font-extrabold text-xs uppercase tracking-wider shadow-md cursor-pointer">Salvar Lote</button>
+              <div className="flex items-center gap-3 pt-2">
+                {currentLot.id && onDeleteLot && (
+                  <button
+                    type="button"
+                    onClick={() => setLotToDelete(currentLot)}
+                    className="py-2.5 px-3.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-lg font-semibold text-sm flex items-center gap-1.5 cursor-pointer transition-colors"
+                  >
+                    <Trash2 size={15} />
+                    <span>Excluir</span>
+                  </button>
+                )}
+                <button type="button" onClick={closeModal} className="flex-1 py-2.5 text-[#64766C] font-semibold text-sm hover:bg-[#F6F8F5] rounded-lg cursor-pointer">Cancelar</button>
+                <button type="submit" className="flex-2 py-2.5 px-5 bg-[#145C46] hover:bg-[#0E4434] text-white rounded-lg font-semibold text-sm shadow-xs cursor-pointer">Salvar Piquete</button>
               </div>
             </form>
           </div>
@@ -355,54 +485,54 @@ const LotManager: React.FC<LotManagerProps> = ({
 
       {/* MODAL HISTÓRICO DE PESAGENS DO LOTE */}
       {isHistoryModalOpen && currentLot.id && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
-          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden border border-slate-100">
-            <div className="px-7 py-5 bg-slate-900 text-white flex justify-between items-center">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden border border-[#E3EAE6]">
+            <div className="px-6 py-4 bg-[#145C46] text-white flex justify-between items-center">
               <div className="flex items-center gap-2.5">
-                <History className="text-emerald-400" size={20} />
+                <History className="text-[#DCEDE4]" size={20} />
                 <div>
-                  <h3 className="text-base font-black uppercase tracking-tight">Histórico de Pesagens: {currentLot.name}</h3>
-                  <p className="text-xs text-slate-300">GMDs médios apurados para este lote</p>
+                  <h3 className="text-lg font-semibold leading-snug">Histórico de Pesagens: {currentLot.name}</h3>
+                  <p className="text-xs text-[#DCEDE4] font-normal">GMDs médios apurados para este lote</p>
                 </div>
               </div>
-              <button onClick={closeModal} className="hover:bg-white/10 p-2 rounded-full cursor-pointer"><X size={20} /></button>
+              <button onClick={closeModal} className="hover:bg-white/10 p-1.5 rounded-lg cursor-pointer"><X size={20} /></button>
             </div>
             
             <div className="p-6 max-h-[60vh] overflow-y-auto space-y-3">
               {(!currentLot.history || currentLot.history.length === 0) ? (
-                <div className="text-center py-8 text-slate-400 text-sm">
+                <div className="text-center py-8 text-[#64766C] text-sm">
                   Nenhuma pesagem coletiva registrada para este lote ainda.
                 </div>
               ) : (
                 currentLot.history.slice().reverse().map((rec, idx) => (
-                  <div key={rec.id || idx} className="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between">
+                  <div key={rec.id || idx} className="p-4 rounded-xl bg-[#F6F8F5] border border-[#E3EAE6] flex items-center justify-between">
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="text-xs font-bold text-slate-800">
+                        <span className="text-sm font-semibold text-[#20332C] font-nums">
                           {new Date(rec.date + 'T00:00:00').toLocaleDateString('pt-BR')}
                         </span>
-                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-extrabold">
+                        <span className="text-xs px-2 py-0.5 rounded-md bg-[#DCEDE4] text-[#145C46] font-semibold font-nums">
                           +{Number(rec.gmd || 0).toFixed(3)} kg/d
                         </span>
                       </div>
-                      <p className="text-xs text-slate-500 font-medium mt-1">
+                      <p className="text-xs text-[#64766C] font-normal mt-1">
                         {rec.headCount} animais · {rec.notes || 'Pesagem de rotina'}
                       </p>
                     </div>
                     <div className="text-right font-nums">
-                      <span className="text-base font-black text-slate-900">{rec.avgWeightKg.toFixed(1)} kg</span>
-                      <span className="text-xs font-bold text-slate-400 block font-nums">({(rec.avgWeightKg / 30).toFixed(1)} @)</span>
+                      <span className="text-base font-semibold text-[#20332C]">{rec.avgWeightKg.toFixed(1)} kg</span>
+                      <span className="text-xs font-normal text-[#64766C] block font-nums">({(rec.avgWeightKg / 30).toFixed(1)} @)</span>
                     </div>
                   </div>
                 ))
               )}
             </div>
 
-            <div className="p-4 bg-slate-50 border-t border-slate-100 flex justify-end">
+            <div className="p-4 bg-[#F6F8F5] border-t border-[#E3EAE6] flex justify-end">
               <button 
                 type="button" 
                 onClick={closeModal} 
-                className="px-5 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-800 rounded-xl font-bold text-xs uppercase cursor-pointer"
+                className="px-5 py-2 bg-white hover:bg-[#E5F2EB] border border-[#E3EAE6] text-[#20332C] rounded-lg font-semibold text-sm cursor-pointer"
               >
                 Fechar
               </button>
@@ -422,48 +552,48 @@ const LotManager: React.FC<LotManagerProps> = ({
         const futurePredictedAvgKg = inputAvgKg + (daysFromWeighingToToday * activeGmd);
 
         return (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 backdrop-blur-xs p-4 overflow-y-auto">
-            <div className="bg-white rounded-3xl shadow-2xl w-full max-w-xl overflow-hidden border border-slate-100 my-8">
-              <div className="px-7 py-5 bg-gradient-to-r from-emerald-800 to-slate-900 text-white flex justify-between items-center">
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4 overflow-y-auto">
+            <div className="bg-white rounded-2xl shadow-xl w-full max-w-xl overflow-hidden border border-[#E3EAE6] my-8">
+              <div className="px-6 py-4 bg-[#145C46] text-white flex justify-between items-center">
                 <div className="flex items-center gap-3">
-                  <div className="p-2.5 rounded-xl bg-white/10 text-emerald-300">
-                    <Scale size={22} />
+                  <div className="p-2 rounded-lg bg-white/10 text-white">
+                    <Scale size={20} />
                   </div>
                   <div>
-                    <h3 className="text-lg font-black uppercase tracking-tight">Pesagem do Lote: {currentLot.name}</h3>
-                    <p className="text-xs text-emerald-200 font-medium">{stats.headCount} animais no lote</p>
+                    <h3 className="text-lg font-semibold leading-snug">Pesagem do Lote: {currentLot.name}</h3>
+                    <p className="text-xs text-[#DCEDE4] font-normal">{stats.headCount} animais no lote</p>
                   </div>
                 </div>
-                <button onClick={closeModal} className="hover:bg-white/10 p-2 rounded-full cursor-pointer"><X size={20} /></button>
+                <button onClick={closeModal} className="hover:bg-white/10 p-1.5 rounded-lg cursor-pointer"><X size={20} /></button>
               </div>
 
-              <form onSubmit={handleWeighSubmit} className="p-7 space-y-5">
+              <form onSubmit={handleWeighSubmit} className="p-6 space-y-5">
                 {/* Resumo Atual */}
-                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200/70 grid grid-cols-2 sm:grid-cols-3 gap-3">
+                <div className="p-4 bg-[#F6F8F5] rounded-xl border border-[#E3EAE6] grid grid-cols-2 sm:grid-cols-3 gap-3">
                   <div>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Média Anterior</p>
-                    <p className="text-base font-black text-slate-800 font-nums mt-0.5">{stats.avgRecordedWeightKg.toFixed(1)} kg</p>
-                    <span className="text-xs font-bold text-slate-500 font-nums">({stats.avgRecordedArroba.toFixed(1)} @)</span>
+                    <p className="text-xs font-medium text-[#64766C]">Média anterior</p>
+                    <p className="text-base font-semibold text-[#20332C] font-nums mt-0.5">{stats.avgRecordedWeightKg.toFixed(1)} kg</p>
+                    <span className="text-xs font-normal text-[#64766C] font-nums">({stats.avgRecordedArroba.toFixed(1)} @)</span>
                   </div>
                   <div>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Última Data Base</p>
-                    <p className="text-xs font-black text-slate-800 mt-1">
+                    <p className="text-xs font-medium text-[#64766C]">Última data base</p>
+                    <p className="text-sm font-semibold text-[#20332C] mt-1 font-nums">
                       {stats.mostRecentWeighingDate ? new Date(stats.mostRecentWeighingDate + 'T00:00:00').toLocaleDateString('pt-BR') : 'Entrada'}
                     </p>
                   </div>
                   <div>
-                    <p className="text-[10px] font-bold text-emerald-700 uppercase tracking-wider">GMD Anterior Lote</p>
-                    <p className="text-sm font-black text-emerald-800 font-nums mt-0.5">+{stats.avgGmd.toFixed(3)} kg/d</p>
+                    <p className="text-xs font-medium text-[#145C46]">GMD anterior lote</p>
+                    <p className="text-base font-semibold text-[#145C46] font-nums mt-0.5">+{stats.avgGmd.toFixed(3)} kg/d</p>
                   </div>
                 </div>
 
                 {/* Nova Pesagem */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <label className="text-[11px] font-extrabold text-slate-700 uppercase tracking-wider">Data da Pesagem</label>
+                    <label className="text-xs font-medium text-[#64766C] block">Data da pesagem</label>
                     <input 
                       type="date" 
-                      className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 font-bold text-slate-800 bg-slate-50 focus:bg-white outline-none focus:ring-2 focus:ring-emerald-500 text-sm" 
+                      className="w-full border border-[#E3EAE6] rounded-lg px-3.5 py-2.5 font-normal text-[#20332C] bg-[#F6F8F5] focus:bg-white outline-none focus:ring-2 focus:ring-[#145C46] text-sm" 
                       value={lotWeighDate} 
                       onChange={e => setLotWeighDate(e.target.value)} 
                       required 
@@ -472,8 +602,8 @@ const LotManager: React.FC<LotManagerProps> = ({
 
                   <div className="space-y-1.5">
                     <div className="flex justify-between items-center">
-                      <label className="text-[11px] font-extrabold text-slate-700 uppercase tracking-wider">Novo Peso Médio</label>
-                      <div className="flex bg-slate-200 rounded-lg p-0.5">
+                      <label className="text-xs font-medium text-[#64766C]">Novo peso médio</label>
+                      <div className="flex bg-[#E3EAE6] rounded-md p-0.5">
                         <button 
                           type="button" 
                           onClick={() => {
@@ -482,9 +612,9 @@ const LotManager: React.FC<LotManagerProps> = ({
                               setLotWeighUnit('kg');
                             }
                           }} 
-                          className={`px-2 py-0.5 text-[9px] font-black rounded cursor-pointer ${lotWeighUnit === 'kg' ? 'bg-white text-emerald-700 shadow-2xs' : 'text-slate-500'}`}
+                          className={`px-2 py-0.5 text-xs font-semibold rounded cursor-pointer ${lotWeighUnit === 'kg' ? 'bg-white text-[#145C46] shadow-2xs' : 'text-[#64766C]'}`}
                         >
-                          KG
+                          kg
                         </button>
                         <button 
                           type="button" 
@@ -494,7 +624,7 @@ const LotManager: React.FC<LotManagerProps> = ({
                               setLotWeighUnit('arroba');
                             }
                           }} 
-                          className={`px-2 py-0.5 text-[9px] font-black rounded cursor-pointer ${lotWeighUnit === 'arroba' ? 'bg-white text-emerald-700 shadow-2xs' : 'text-slate-500'}`}
+                          className={`px-2 py-0.5 text-xs font-semibold rounded cursor-pointer ${lotWeighUnit === 'arroba' ? 'bg-white text-[#145C46] shadow-2xs' : 'text-[#64766C]'}`}
                         >
                           @
                         </button>
@@ -505,41 +635,41 @@ const LotManager: React.FC<LotManagerProps> = ({
                         type="number" 
                         step="0.1" 
                         onFocus={handleFocus} 
-                        className="w-full border border-slate-200 rounded-xl px-4 py-2.5 font-black text-xl text-slate-900 bg-slate-50 focus:bg-white outline-none focus:ring-2 focus:ring-emerald-500 pr-12 font-nums" 
+                        className="w-full border border-[#E3EAE6] rounded-lg px-3.5 py-2 font-semibold text-lg text-[#20332C] bg-[#F6F8F5] focus:bg-white outline-none focus:ring-2 focus:ring-[#145C46] pr-12 font-nums" 
                         value={lotWeighAvgValue || ''} 
                         onChange={e => setLotWeighAvgValue(Number(e.target.value))} 
                         required 
                       />
-                      <span className="absolute right-3.5 top-1/2 -translate-y-1/2 font-black text-xs text-slate-400 uppercase font-mono">
-                        {lotWeighUnit === 'kg' ? 'KG' : '@'}
+                      <span className="absolute right-3.5 top-1/2 -translate-y-1/2 font-medium text-xs text-[#64766C]">
+                        {lotWeighUnit === 'kg' ? 'kg' : '@'}
                       </span>
                     </div>
                   </div>
                 </div>
 
                 {/* GMD Realizado e Projeção */}
-                <div className="bg-gradient-to-br from-emerald-50 to-emerald-100/50 p-4.5 rounded-2xl border border-emerald-200/80 space-y-3.5">
+                <div className="bg-[#DCEDE4]/50 p-4 rounded-xl border border-[#DCEDE4] space-y-3.5">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-[10px] font-extrabold text-emerald-900 uppercase tracking-wider">GMD Realizado do Lote</p>
-                      <p className="text-xs text-emerald-700 font-medium">
+                      <p className="text-xs font-medium text-[#145C46]">GMD realizado do lote</p>
+                      <p className="text-xs text-[#64766C] font-normal mt-0.5">
                         {autoCalc.days} dias · Variação: {autoCalc.weightDiffKg >= 0 ? `+${autoCalc.weightDiffKg.toFixed(1)}` : autoCalc.weightDiffKg.toFixed(1)} kg/cab
                       </p>
                     </div>
                     <div className="text-right">
-                      <span className="text-xl font-black text-emerald-900 font-nums">
+                      <span className="text-xl font-semibold text-[#145C46] font-nums">
                         {autoCalc.gmd >= 0 ? `+${autoCalc.gmd.toFixed(3)}` : autoCalc.gmd.toFixed(3)}
                       </span>
-                      <span className="text-xs font-bold text-emerald-700 block">kg/dia/cab</span>
+                      <span className="text-xs font-normal text-[#64766C] block">kg/dia/cab</span>
                     </div>
                   </div>
 
-                  <div className="pt-2 border-t border-emerald-200/60 flex items-center justify-between gap-3">
+                  <div className="pt-2.5 border-t border-[#DCEDE4] flex items-center justify-between gap-3">
                     <div className="flex-1">
-                      <label className="text-[10px] font-bold text-slate-700 uppercase tracking-wider block">
+                      <label className="text-xs font-medium text-[#20332C] block">
                         GMD a ser guardado para o lote
                       </label>
-                      <p className="text-[10px] text-slate-500">
+                      <p className="text-xs text-[#64766C] font-normal">
                         Será armazenado no lote e guiará a projeção diária dos animais
                       </p>
                     </div>
@@ -548,7 +678,7 @@ const LotManager: React.FC<LotManagerProps> = ({
                         type="number" 
                         step="0.001" 
                         onFocus={handleFocus}
-                        className="w-full border border-emerald-400 rounded-lg px-2.5 py-1.5 font-black text-sm text-emerald-950 bg-white text-right font-nums focus:ring-2 focus:ring-emerald-500 outline-none"
+                        className="w-full border border-[#218568]/50 rounded-lg px-2.5 py-1.5 font-semibold text-sm text-[#20332C] bg-white text-right font-nums focus:ring-2 focus:ring-[#145C46] outline-none"
                         value={isLotWeighGmdManual ? lotWeighGmd : autoCalc.gmd}
                         onChange={e => {
                           setIsLotWeighGmdManual(true);
@@ -558,56 +688,56 @@ const LotManager: React.FC<LotManagerProps> = ({
                     </div>
                   </div>
 
-                  <div className="pt-2 border-t border-emerald-200/60 space-y-1.5">
-                    <label className="text-[10px] font-extrabold text-slate-700 uppercase tracking-wider block">Modo de Aplicação nos Animais</label>
-                    <div className="grid grid-cols-2 gap-2">
+                  <div className="pt-2.5 border-t border-[#DCEDE4] space-y-2">
+                    <label className="text-xs font-medium text-[#20332C] block">Modo de aplicação nos animais</label>
+                    <div className="grid grid-cols-2 gap-2.5">
                       <button 
                         type="button"
                         onClick={() => setLotWeighApplyMode('uniform')}
-                        className={`p-2 rounded-xl text-left border transition-all cursor-pointer ${
+                        className={`p-2.5 rounded-lg text-left border transition-all cursor-pointer ${
                           lotWeighApplyMode === 'uniform' 
-                            ? 'bg-white border-emerald-500 shadow-xs' 
-                            : 'bg-emerald-50/50 border-emerald-200 text-slate-600'
+                            ? 'bg-white border-[#145C46] shadow-2xs' 
+                            : 'bg-white/60 border-[#E3EAE6] text-[#64766C]'
                         }`}
                       >
-                        <p className="text-[11px] font-bold text-slate-800">Peso Uniforme</p>
-                        <p className="text-[9px] text-slate-500 leading-tight">Define {inputAvgKg.toFixed(1)} kg para todos</p>
+                        <p className="text-xs font-semibold text-[#20332C]">Peso Uniforme</p>
+                        <p className="text-xs text-[#64766C] leading-snug mt-0.5">Define {inputAvgKg.toFixed(1)} kg para todos</p>
                       </button>
                       
                       <button 
                         type="button"
                         onClick={() => setLotWeighApplyMode('gain_delta')}
-                        className={`p-2 rounded-xl text-left border transition-all cursor-pointer ${
+                        className={`p-2.5 rounded-lg text-left border transition-all cursor-pointer ${
                           lotWeighApplyMode === 'gain_delta' 
-                            ? 'bg-white border-emerald-500 shadow-xs' 
-                            : 'bg-emerald-50/50 border-emerald-200 text-slate-600'
+                            ? 'bg-white border-[#145C46] shadow-2xs' 
+                            : 'bg-white/60 border-[#E3EAE6] text-[#64766C]'
                         }`}
                       >
-                        <p className="text-[11px] font-bold text-slate-800">Ganho Proporcional</p>
-                        <p className="text-[9px] text-slate-500 leading-tight">Soma {autoCalc.weightDiffKg >= 0 ? `+${autoCalc.weightDiffKg.toFixed(1)}` : autoCalc.weightDiffKg.toFixed(1)} kg ao peso atual</p>
+                        <p className="text-xs font-semibold text-[#20332C]">Ganho Proporcional</p>
+                        <p className="text-xs text-[#64766C] leading-snug mt-0.5">Soma {autoCalc.weightDiffKg >= 0 ? `+${autoCalc.weightDiffKg.toFixed(1)}` : autoCalc.weightDiffKg.toFixed(1)} kg ao peso atual</p>
                       </button>
                     </div>
                   </div>
                 </div>
 
                 {/* Prévia Peso Previsto */}
-                <div className="p-4 bg-slate-900 text-white rounded-2xl flex items-center justify-between">
+                <div className="p-4 bg-[#F6F8F5] border border-[#E3EAE6] rounded-xl flex items-center justify-between">
                   <div className="flex items-center gap-2.5">
-                    <Sparkles className="text-emerald-400 shrink-0" size={18} />
+                    <Sparkles className="text-[#145C46] shrink-0" size={18} />
                     <div>
-                      <p className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider">Novo Peso Previsto Médio</p>
-                      <p className="text-xs text-slate-300 font-medium">Calculado com o novo GMD do lote</p>
+                      <p className="text-xs font-medium text-[#145C46]">Novo peso previsto médio</p>
+                      <p className="text-xs text-[#64766C] font-normal">Calculado com o novo GMD do lote</p>
                     </div>
                   </div>
                   <div className="text-right font-nums">
-                    <span className="text-lg font-black text-white">{futurePredictedAvgKg.toFixed(1)} kg</span>
-                    <span className="text-xs font-bold text-emerald-300 block">({(futurePredictedAvgKg / 30).toFixed(1)} @)</span>
+                    <span className="text-lg font-semibold text-[#20332C]">{futurePredictedAvgKg.toFixed(1)} kg</span>
+                    <span className="text-xs font-normal text-[#64766C] block">({(futurePredictedAvgKg / 30).toFixed(1)} @)</span>
                   </div>
                 </div>
 
                 <div className="flex gap-3 pt-2">
-                  <button type="button" onClick={closeModal} className="flex-1 py-3 text-slate-500 font-bold text-xs hover:bg-slate-100 rounded-xl uppercase cursor-pointer">Cancelar</button>
-                  <button type="submit" className="flex-2 py-3 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl font-extrabold text-xs uppercase tracking-wider shadow-md cursor-pointer">Confirmar Pesagem do Lote</button>
+                  <button type="button" onClick={closeModal} className="flex-1 py-2.5 text-[#64766C] font-semibold text-sm hover:bg-[#F6F8F5] rounded-lg cursor-pointer">Cancelar</button>
+                  <button type="submit" className="flex-2 py-2.5 px-5 bg-[#145C46] hover:bg-[#0E4434] text-white rounded-lg font-semibold text-sm shadow-xs cursor-pointer">Confirmar Pesagem do Lote</button>
                 </div>
               </form>
             </div>
@@ -617,40 +747,131 @@ const LotManager: React.FC<LotManagerProps> = ({
 
       {/* MODAL LIQUIDAÇÃO / VENDA */}
       {isSellModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
-          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden border border-slate-100">
-            <div className="px-7 py-5 bg-green-700 text-white flex justify-between items-center">
-              <h3 className="text-base font-black uppercase tracking-tight">Liquidação de Lote</h3>
-              <button onClick={closeModal} className="hover:bg-white/10 p-2 rounded-full cursor-pointer"><X size={20} /></button>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden border border-[#E3EAE6]">
+            <div className="px-6 py-4 bg-[#145C46] text-white flex justify-between items-center">
+              <h3 className="text-lg font-semibold leading-snug">Liquidação de Lote</h3>
+              <button onClick={closeModal} className="hover:bg-white/10 p-1.5 rounded-lg cursor-pointer"><X size={20} /></button>
             </div>
-            <form onSubmit={handleSellSubmit} className="p-7 space-y-5">
+            <form onSubmit={handleSellSubmit} className="p-6 space-y-4">
               <div className="space-y-1.5">
-                <label className="text-[11px] font-extrabold text-slate-700 uppercase tracking-wider">Data da Venda</label>
+                <label className="text-xs font-medium text-[#64766C] block">Data da venda</label>
                 <input 
                   type="date" 
                   required 
-                  className="w-full border border-slate-200 rounded-xl px-4 py-2.5 font-bold bg-slate-50 focus:bg-white outline-none text-sm"
+                  className="w-full border border-[#E3EAE6] rounded-lg px-3.5 py-2.5 font-normal text-[#20332C] bg-[#F6F8F5] focus:bg-white outline-none text-sm"
                   value={sellDate} 
                   onChange={e => setSellDate(e.target.value)} 
                 />
               </div>
               <div className="space-y-1.5">
-                <label className="text-[11px] font-extrabold text-slate-700 uppercase tracking-wider">Valor Total Bruto (R$)</label>
+                <label className="text-xs font-medium text-[#64766C] block">Valor total bruto (R$)</label>
                 <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-green-700 font-black text-lg">R$</span>
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#145C46] font-semibold text-base">R$</span>
                   <input 
                     type="number" 
                     required 
                     onFocus={handleFocus}
-                    className="w-full border border-slate-200 rounded-xl pl-12 pr-4 py-3 font-black text-2xl text-green-900 bg-slate-50 focus:bg-white outline-none font-nums"
+                    className="w-full border border-[#E3EAE6] rounded-lg pl-12 pr-4 py-2.5 font-semibold text-2xl text-[#20332C] bg-[#F6F8F5] focus:bg-white outline-none font-nums"
                     value={sellValue || ''} 
                     onChange={e => setSellValue(Number(e.target.value))} 
                     placeholder="0,00" 
                   />
                 </div>
               </div>
-              <button type="submit" className="w-full bg-green-700 hover:bg-green-800 text-white py-3.5 rounded-xl font-black text-xs uppercase tracking-wider shadow-md cursor-pointer">Confirmar Liquidação</button>
+              <button type="submit" className="w-full bg-[#145C46] hover:bg-[#0E4434] text-white py-3 rounded-lg font-semibold text-sm shadow-xs cursor-pointer">Confirmar Liquidação</button>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL CONFIRMAR EXCLUSÃO DE PIQUETE INDIVIDUAL */}
+      {lotToDelete && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden border border-[#E3EAE6] animate-in zoom-in-95 duration-200">
+            <div className="px-6 py-4 bg-rose-600 text-white flex justify-between items-center">
+              <div className="flex items-center gap-2.5">
+                <Trash2 size={18} />
+                <h3 className="text-lg font-semibold leading-snug">Excluir Piquete</h3>
+              </div>
+              <button onClick={() => setLotToDelete(null)} className="hover:bg-white/10 p-1.5 rounded-lg cursor-pointer"><X size={20} /></button>
+            </div>
+            <div className="p-6 space-y-4">
+              <p className="text-sm font-normal leading-relaxed text-[#20332C]">
+                Deseja realmente excluir o piquete <strong className="font-semibold text-[#20332C]">"{lotToDelete.name}"</strong>?
+              </p>
+              {animals.some(a => a.lotId === lotToDelete.id && a.status === AnimalStatus.ACTIVE) && (
+                <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-200 flex items-start gap-2.5 text-xs text-amber-900 leading-relaxed">
+                  <AlertTriangle size={16} className="text-amber-600 shrink-0 mt-0.5" />
+                  <span>Os animais atualmente alocados neste piquete não serão apagados — eles passarão para o Pasto Geral (sem piquete vinculado).</span>
+                </div>
+              )}
+              <div className="flex items-center gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setLotToDelete(null)}
+                  className="flex-1 py-2.5 rounded-xl border border-[#E3EAE6] text-[#64766C] font-semibold text-sm hover:bg-[#F6F8F5] cursor-pointer transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  onClick={handleConfirmDeleteLot}
+                  className="flex-1 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-semibold text-sm shadow-xs cursor-pointer transition-all flex items-center justify-center gap-2"
+                >
+                  <Trash2 size={16} />
+                  <span>Confirmar Exclusão</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL CONFIRMAR EXCLUSÃO EM LOTE DOS PIQUETES DE AMOSTRA */}
+      {isClearSamplesModalOpen && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden border border-[#E3EAE6] animate-in zoom-in-95 duration-200">
+            <div className="px-6 py-4 bg-rose-600 text-white flex justify-between items-center">
+              <div className="flex items-center gap-2.5">
+                <Trash2 size={18} />
+                <h3 className="text-lg font-semibold leading-snug">Excluir Piquetes de Amostra</h3>
+              </div>
+              <button onClick={() => setIsClearSamplesModalOpen(false)} className="hover:bg-white/10 p-1.5 rounded-lg cursor-pointer"><X size={20} /></button>
+            </div>
+            <div className="p-6 space-y-4">
+              <p className="text-sm font-normal leading-relaxed text-[#20332C]">
+                Serão removidos <strong className="font-semibold text-[#20332C]">{sampleLots.length} {sampleLots.length === 1 ? 'piquete cadastrado' : 'piquetes cadastrados'} como amostra</strong>:
+              </p>
+              <div className="p-3.5 rounded-xl bg-[#F6F8F5] border border-[#E3EAE6] space-y-1.5 max-h-40 overflow-y-auto">
+                {sampleLots.map(l => (
+                  <div key={l.id} className="text-xs font-medium text-[#20332C] flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0" />
+                    <span>{l.name}</span>
+                  </div>
+                ))}
+              </div>
+              <p className="text-xs text-[#64766C] leading-relaxed">
+                Nenhum animal será excluído (eventuais animais vinculados ficarão no Pasto Geral).
+              </p>
+              <div className="flex items-center gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setIsClearSamplesModalOpen(false)}
+                  className="flex-1 py-2.5 rounded-xl border border-[#E3EAE6] text-[#64766C] font-semibold text-sm hover:bg-[#F6F8F5] cursor-pointer transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  onClick={handleConfirmClearSampleLots}
+                  className="flex-1 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-semibold text-sm shadow-xs cursor-pointer transition-all flex items-center justify-center gap-2"
+                >
+                  <Trash2 size={16} />
+                  <span>Excluir Amostras</span>
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}

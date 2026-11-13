@@ -139,7 +139,7 @@ const Layout: React.FC<LayoutProps> = ({
     { id: 'animals', label: 'Rebanho (Animais)', icon: <Beef size={20} /> },
     { id: 'tasks', label: 'Gestão de Tarefas', icon: <CheckSquare size={20} /> },
     { id: 'health', label: 'Saúde e Manejo', icon: <HeartPulse size={20} /> },
-    { id: 'lots', label: 'Gestão de Lotes', icon: <Layers size={20} /> },
+    { id: 'lots', label: 'Gestão de Piquetes', icon: <Layers size={20} /> },
     { id: 'inventory', label: 'Estoque / Insumos', icon: <Warehouse size={20} /> },
     { id: 'finance', label: 'Financeiro', icon: <Wallet size={20} /> },
     { id: 'valor_diario', label: 'Valor da Diária', icon: <DollarSign size={20} /> },
@@ -165,7 +165,7 @@ const Layout: React.FC<LayoutProps> = ({
   }, [isNotifOpen]);
 
   return (
-    <div className="flex h-screen bg-slate-50 text-slate-900 overflow-hidden font-sans">
+    <div className="flex h-screen bg-[#F6F8F5] text-[#20332C] overflow-hidden font-sans">
       {isSidebarOpen && (
         <div 
           className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-20 lg:hidden"
@@ -175,15 +175,16 @@ const Layout: React.FC<LayoutProps> = ({
 
       <aside 
         className={`
-          fixed inset-y-0 left-0 z-30 w-70 bg-emerald-950 text-slate-100 transform transition-transform duration-300 ease-in-out
+          fixed inset-y-0 left-0 z-30 w-64 bg-white text-[#20332C] transform transition-transform duration-200 ease-in-out
           ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
-          lg:relative lg:translate-x-0 lg:shadow-xl flex flex-col border-r border-emerald-900/60
+          lg:relative lg:translate-x-0 flex flex-col border-r border-[#E3EAE6] shadow-xs
         `}
       >
-        <div className="p-5 border-b border-emerald-900/80 shrink-0 bg-emerald-950/80">
-          <div className="flex items-center justify-between mb-5">
+        {/* Brand Header */}
+        <div className="p-4 border-b border-[#E3EAE6] shrink-0 bg-white">
+          <div className="flex items-center justify-between mb-3.5">
             <div className="flex items-center space-x-3">
-              <div className="w-11 h-11 rounded-xl bg-white p-0.5 flex items-center justify-center shadow-md shadow-emerald-950/50 ring-1 ring-emerald-400/40 overflow-hidden shrink-0">
+              <div className="w-10 h-10 rounded-xl bg-white p-0.5 flex items-center justify-center shadow-xs border border-[#E3EAE6] overflow-hidden shrink-0">
                 <img 
                   src={APP_LOGO_DATA_URI} 
                   alt="Gestão Pecuária" 
@@ -191,50 +192,51 @@ const Layout: React.FC<LayoutProps> = ({
                   referrerPolicy="no-referrer" 
                 />
               </div>
-              <div>
-                <span className="text-lg font-extrabold tracking-tight text-white block leading-tight">Gestão Pecuária</span>
-                <span className="text-[10px] font-bold text-emerald-400 tracking-wider uppercase">Pecuária de Precisão</span>
+              <div className="min-w-0">
+                <span className="text-base font-semibold text-[#20332C] block leading-tight truncate">Gestão Pecuária</span>
+                <span className="text-xs text-[#145C46] font-medium block">Pecuária de Precisão</span>
               </div>
             </div>
-            <button onClick={toggleSidebar} className="lg:hidden text-emerald-300 hover:text-white p-1 rounded-lg">
-              <X size={22} />
+            <button onClick={toggleSidebar} className="lg:hidden text-[#64766C] hover:text-[#20332C] p-1.5 rounded-lg">
+              <X size={20} />
             </button>
           </div>
 
+          {/* Farm Switcher */}
           <div className="relative">
             <button 
               onClick={() => setIsFarmMenuOpen(!isFarmMenuOpen)}
-              className="w-full bg-emerald-900/80 hover:bg-emerald-900 p-3.5 rounded-xl flex items-center justify-between transition-all group border border-emerald-800/80 shadow-inner active:scale-[0.99]"
+              className="w-full bg-[#F6F8F5] hover:bg-[#E5F2EB] p-2.5 rounded-xl flex items-center justify-between transition-all group border border-[#E3EAE6] active:scale-[0.99] cursor-pointer"
             >
-              <div className="flex items-center gap-3 min-w-0">
-                <div className="w-8 h-8 rounded-lg bg-emerald-700/80 flex items-center justify-center text-emerald-200 shrink-0 border border-emerald-600/40">
-                  <Tractor size={16} />
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="w-6 h-6 rounded-lg bg-white flex items-center justify-center text-[#145C46] shrink-0 border border-[#E3EAE6]">
+                  <Tractor size={14} />
                 </div>
                 <div className="text-left overflow-hidden">
-                   <p className="text-[9px] font-black text-emerald-400 uppercase tracking-widest">Fazenda Ativa</p>
-                   <p className="text-xs font-bold text-white truncate">{activeFarm?.name || 'Selecionar fazenda...'}</p>
+                   <p className="text-xs font-medium text-[#64766C] leading-none mb-1">Fazenda Ativa</p>
+                   <p className="text-sm font-semibold text-[#20332C] truncate leading-tight">{activeFarm?.name || 'Selecionar fazenda...'}</p>
                 </div>
               </div>
-              <ChevronDown size={16} className={`text-emerald-400 transition-transform duration-200 ${isFarmMenuOpen ? 'rotate-180' : ''}`} />
+              <ChevronDown size={14} className={`text-[#64766C] transition-transform duration-200 ${isFarmMenuOpen ? 'rotate-180' : ''}`} />
             </button>
 
             {isFarmMenuOpen && (
               <>
                 <div className="fixed inset-0 z-[40]" onClick={() => setIsFarmMenuOpen(false)}></div>
-                <div className="absolute top-full left-0 w-full mt-2 bg-white rounded-xl shadow-xl border border-slate-200 overflow-hidden z-[50] animate-in fade-in slide-in-from-top-2">
-                   <div className="p-1.5 max-h-60 overflow-y-auto">
+                <div className="absolute top-full left-0 w-full mt-1.5 bg-white rounded-xl shadow-lg border border-[#E3EAE6] overflow-hidden z-[50] animate-in fade-in slide-in-from-top-1">
+                   <div className="p-1 max-h-56 overflow-y-auto">
                       {farms.length > 0 ? (
                         farms.map(farm => (
-                          <div key={farm.id} className="group flex items-center pr-1 border-b border-slate-100 last:border-0">
+                          <div key={farm.id} className="group flex items-center pr-1 border-b border-[#F6F8F5] last:border-0">
                             <button 
                               onClick={() => {
                                 onSelectFarm?.(farm.id);
                                 setIsFarmMenuOpen(false);
                               }}
-                              className={`flex-1 p-3 rounded-lg text-left transition-colors flex items-center justify-between ${activeFarmId === farm.id ? 'bg-emerald-50 text-emerald-800 font-bold' : 'text-slate-700 hover:bg-slate-50'}`}
+                              className={`flex-1 p-2.5 rounded-lg text-left transition-colors flex items-center justify-between ${activeFarmId === farm.id ? 'bg-[#DCEDE4] text-[#145C46] font-semibold' : 'text-[#20332C] hover:bg-[#E5F2EB]'}`}
                             >
-                              <span className="text-xs truncate">{farm.name}</span>
-                              {activeFarmId === farm.id && <CheckCircle2 size={15} className="text-emerald-600" />}
+                              <span className="text-sm truncate">{farm.name}</span>
+                              {activeFarmId === farm.id && <CheckCircle2 size={15} className="text-[#145C46]" />}
                             </button>
                             
                             <button 
@@ -243,7 +245,7 @@ const Layout: React.FC<LayoutProps> = ({
                                 e.stopPropagation();
                                 onDeleteFarm?.(farm.id);
                               }}
-                              className="p-2 text-slate-300 hover:text-white hover:bg-rose-600 rounded-lg transition-all active:scale-90"
+                              className="p-1.5 text-slate-300 hover:text-white hover:bg-rose-600 rounded-lg transition-all active:scale-90"
                               title="Excluir Permanentemente"
                             >
                               <Trash2 size={14} />
@@ -251,12 +253,12 @@ const Layout: React.FC<LayoutProps> = ({
                           </div>
                         ))
                       ) : (
-                        <p className="p-4 text-xs text-slate-400 text-center font-bold">Nenhuma unidade cadastrada.</p>
+                        <p className="p-3 text-xs text-[#64766C] text-center font-medium">Nenhuma unidade cadastrada.</p>
                       )}
                    </div>
                    <button 
                     onClick={() => { onCreateFarm?.(); setIsFarmMenuOpen(false); }}
-                    className="w-full p-3 bg-slate-50 border-t border-slate-100 text-emerald-700 font-bold text-[11px] uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-emerald-600 hover:text-white transition-all"
+                    className="w-full p-2.5 bg-[#F6F8F5] border-t border-[#E3EAE6] text-[#145C46] font-semibold text-xs flex items-center justify-center gap-1.5 hover:bg-[#E5F2EB] transition-all cursor-pointer"
                    >
                      <Plus size={14} /> Nova Fazenda / Unidade
                    </button>
@@ -266,7 +268,8 @@ const Layout: React.FC<LayoutProps> = ({
           </div>
         </div>
 
-        <nav className="flex-1 my-3 px-3 space-y-1 overflow-y-auto">
+        {/* Navigation Items with 14px size, weight 500, line-height 1.5, Paleta A Hover (#E5F2EB) and Active (#DCEDE4) */}
+        <nav className="flex-1 py-3 px-3 space-y-1 overflow-y-auto">
           {navItems.map((item) => {
             const isActive = currentView === item.id;
             return (
@@ -277,81 +280,108 @@ const Layout: React.FC<LayoutProps> = ({
                   setSidebarOpen(false);
                 }}
                 className={`
-                  w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all font-medium text-xs
+                  w-full flex items-center justify-between px-3 py-2.5 rounded-lg transition-colors duration-150 text-sm font-medium cursor-pointer group leading-normal
                   ${isActive 
-                    ? 'bg-emerald-600 text-white font-bold shadow-sm shadow-emerald-950/40 ring-1 ring-emerald-400/40' 
-                    : 'text-emerald-200/90 hover:bg-emerald-900/60 hover:text-white'}
+                    ? 'bg-[#DCEDE4] text-[#145C46]' 
+                    : 'text-[#64766C] hover:bg-[#E5F2EB] hover:text-[#145C46]'}
                 `}
               >
                 <div className="flex items-center space-x-3">
-                  <div className={isActive ? 'text-white' : 'text-emerald-400/90'}>{item.icon}</div>
+                  <div className={`transition-colors duration-150 ${isActive ? 'text-[#145C46]' : 'text-[#64766C] group-hover:text-[#145C46]'}`}>
+                    {item.icon}
+                  </div>
                   <span className="truncate">{item.label}</span>
                 </div>
                 {item.id === 'consultant' && (
-                  <span className="text-[9px] bg-emerald-400/20 text-emerald-300 border border-emerald-400/30 px-1.5 py-0.5 rounded font-mono uppercase tracking-wider">IA</span>
+                  <span className="text-xs bg-[#145C46]/10 text-[#145C46] font-semibold px-2 py-0.5 rounded">
+                    IA
+                  </span>
                 )}
               </button>
             );
           })}
         </nav>
 
-        <div className="p-3.5 border-t border-emerald-900/80 bg-emerald-950/90 shrink-0 space-y-1">
-          <a 
-            href="https://instagram.com.br/vivendoapecuaria" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="flex items-center space-x-3 text-emerald-200/90 bg-emerald-900/40 hover:bg-pink-600 hover:text-white px-3.5 py-2.5 rounded-xl w-full transition-all font-bold text-xs group border border-emerald-800/40"
-          >
-            <Instagram size={18} className="group-hover:scale-110 transition-transform text-pink-400 group-hover:text-white" />
-            <span className="truncate">@vivendoapecuaria</span>
-          </a>
+        {/* Footer Actions & Profile */}
+        <div className="p-3 border-t border-[#E3EAE6] bg-[#FAFCFA] shrink-0 space-y-1.5">
           <a 
             href="https://chat.whatsapp.com/HVA8xmp93HYJeCWQRs1g8x" 
             target="_blank" 
             rel="noopener noreferrer"
-            className="flex items-center space-x-3 text-emerald-100 bg-emerald-800/50 hover:bg-emerald-600 hover:text-white px-3.5 py-2.5 rounded-xl w-full transition-all font-bold text-xs group border border-emerald-600/40 shadow-xs"
+            className="flex items-center justify-between px-3 py-2.5 rounded-lg bg-[#E8F4EE] hover:bg-[#DCEDE4] text-[#145C46] font-semibold text-sm border border-[#DCEDE4] transition-all group"
             title="Acesse a Comunidade no WhatsApp"
           >
-            <svg 
-              className="w-[18px] h-[18px] fill-[#25D366] group-hover:fill-white shrink-0 group-hover:scale-110 transition-transform" 
-              viewBox="0 0 24 24"
-              role="img"
-              aria-label="WhatsApp"
-            >
-              <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.59 15.36 3.45 16.86L2.05 22L7.3 20.62C8.75 21.41 10.38 21.83 12.04 21.83C17.5 21.83 21.95 17.38 21.95 11.92C21.95 9.27 20.92 6.78 19.05 4.91C17.18 3.03 14.69 2 12.04 2M12.05 3.67C14.25 3.67 16.31 4.53 17.87 6.09C19.42 7.65 20.28 9.72 20.28 11.92C20.28 16.46 16.58 20.15 12.04 20.15C10.56 20.15 9.11 19.76 7.85 19L7.55 18.83L4.43 19.65L5.26 16.61L5.06 16.29C4.24 15 3.8 13.47 3.8 11.91C3.81 7.37 7.5 3.67 12.05 3.67M8.53 7.33C8.37 7.33 8.1 7.39 7.87 7.64C7.65 7.89 7 8.5 7 9.71C7 10.93 7.89 12.1 8.01 12.27C8.14 12.44 9.76 14.94 12.25 16C12.84 16.27 13.3 16.42 13.66 16.53C14.25 16.72 14.79 16.69 15.22 16.63C15.7 16.56 16.68 16.03 16.89 15.45C17.1 14.87 17.1 14.38 17.04 14.27C16.97 14.17 16.81 14.11 16.56 13.99C16.32 13.86 15.12 13.27 14.9 13.19C14.68 13.1 14.52 13.06 14.36 13.3C14.19 13.55 13.73 14.11 13.59 14.27C13.45 14.44 13.31 14.46 13.07 14.34C12.82 14.21 11.79 13.88 10.57 12.79C9.62 11.94 8.98 10.89 8.85 10.65C8.73 10.4 8.83 10.28 8.96 10.15C9.07 10.04 9.21 9.85 9.33 9.71C9.46 9.57 9.5 9.47 9.58 9.31C9.66 9.14 9.62 9 9.56 8.88C9.5 8.76 9.03 7.6 8.84 7.13C8.65 6.67 8.46 6.73 8.31 6.72C8.18 6.72 8.02 6.72 7.87 6.72L8.53 7.33Z" />
-            </svg>
-            <span className="truncate">Acessa Comunidade</span>
+            <div className="flex items-center space-x-2.5">
+              <svg 
+                className="w-4 h-4 fill-[#25D366] shrink-0 group-hover:scale-105 transition-transform" 
+                viewBox="0 0 24 24"
+                role="img"
+                aria-label="WhatsApp"
+              >
+                <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.59 15.36 3.45 16.86L2.05 22L7.3 20.62C8.75 21.41 10.38 21.83 12.04 21.83C17.5 21.83 21.95 17.38 21.95 11.92C21.95 9.27 20.92 6.78 19.05 4.91C17.18 3.03 14.69 2 12.04 2M12.05 3.67C14.25 3.67 16.31 4.53 17.87 6.09C19.42 7.65 20.28 9.72 20.28 11.92C20.28 16.46 16.58 20.15 12.04 20.15C10.56 20.15 9.11 19.76 7.85 19L7.55 18.83L4.43 19.65L5.26 16.61L5.06 16.29C4.24 15 3.8 13.47 3.8 11.91C3.81 7.37 7.5 3.67 12.05 3.67M8.53 7.33C8.37 7.33 8.1 7.39 7.87 7.64C7.65 7.89 7 8.5 7 9.71C7 10.93 7.89 12.1 8.01 12.27C8.14 12.44 9.76 14.94 12.25 16C12.84 16.27 13.3 16.42 13.66 16.53C14.25 16.72 14.79 16.69 15.22 16.63C15.7 16.56 16.68 16.03 16.89 15.45C17.1 14.87 17.1 14.38 17.04 14.27C16.97 14.17 16.81 14.11 16.56 13.99C16.32 13.86 15.12 13.27 14.9 13.19C14.68 13.1 14.52 13.06 14.36 13.3C14.19 13.55 13.73 14.11 13.59 14.27C13.45 14.44 13.31 14.46 13.07 14.34C12.82 14.21 11.79 13.88 10.57 12.79C9.62 11.94 8.98 10.89 8.85 10.65C8.73 10.4 8.83 10.28 8.96 10.15C9.07 10.04 9.21 9.85 9.33 9.71C9.46 9.57 9.5 9.47 9.58 9.31C9.66 9.14 9.62 9 9.56 8.88C9.5 8.76 9.03 7.6 8.84 7.13C8.65 6.67 8.46 6.73 8.31 6.72C8.18 6.72 8.02 6.72 7.87 6.72L8.53 7.33Z" />
+              </svg>
+              <span className="truncate">Acessar Comunidade</span>
+            </div>
+            <span className="text-xs font-semibold bg-[#145C46]/10 text-[#145C46] px-2 py-0.5 rounded shrink-0">VIP</span>
           </a>
-          {onOpenResetPassword && (
-            <button 
-              onClick={onOpenResetPassword}
-              className="flex items-center space-x-3 text-emerald-300 hover:text-white px-3.5 py-2 w-full transition-colors font-medium text-xs cursor-pointer"
-            >
-              <KeyRound size={17} />
-              <span>Alterar Senha</span>
-            </button>
-          )}
-          {isAdmin && onOpenSupabaseConfig && (
-            <button 
-              onClick={onOpenSupabaseConfig}
-              className="flex items-center space-x-3 text-emerald-300 hover:text-white px-3.5 py-2 w-full transition-colors font-medium text-xs cursor-pointer"
-            >
-              <Database size={17} />
-              <span>Configurar Banco</span>
-            </button>
-          )}
-          <button 
-            onClick={onLogout}
-            className="flex items-center space-x-3 text-emerald-300/80 hover:text-rose-400 px-3.5 py-2 w-full transition-colors font-medium text-xs"
+
+          <a 
+            href="https://instagram.com.br/vivendoapecuaria" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="flex items-center space-x-2.5 text-[#64766C] hover:text-[#20332C] hover:bg-[#E5F2EB] px-3 py-2 rounded-lg w-full transition-all text-sm font-medium"
           >
-            <LogOut size={17} />
-            <span>Sair da Conta</span>
-          </button>
+            <Instagram size={15} className="text-pink-500 shrink-0" />
+            <span className="truncate">@vivendoapecuaria</span>
+          </a>
+
+          {/* User profile row */}
+          <div className="pt-2.5 border-t border-[#E3EAE6] flex items-center justify-between">
+            <div className="flex items-center space-x-2.5 min-w-0">
+              <div className="w-8 h-8 rounded-lg bg-[#145C46] flex items-center justify-center text-white font-semibold text-xs shrink-0">
+                {user.photo ? <img src={user.photo} className="w-full h-full object-cover rounded-lg" alt="User" /> : user.name.substring(0, 2).toUpperCase()}
+              </div>
+              <div className="min-w-0 text-left">
+                <p className="text-sm font-semibold text-[#20332C] truncate leading-tight">{user.name}</p>
+                <p className="text-xs text-[#64766C] truncate leading-tight mt-0.5 font-normal">
+                  {user.provider === 'guest' ? 'Acesso Local' : (isAdmin ? 'Administrador' : 'Proprietário')}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center space-x-1 shrink-0">
+              {onOpenResetPassword && (
+                <button 
+                  onClick={onOpenResetPassword}
+                  className="p-1.5 text-[#64766C] hover:text-[#145C46] hover:bg-[#E5F2EB] rounded-lg transition-colors cursor-pointer"
+                  title="Alterar Senha"
+                >
+                  <KeyRound size={16} />
+                </button>
+              )}
+              {isAdmin && onOpenSupabaseConfig && (
+                <button 
+                  onClick={onOpenSupabaseConfig}
+                  className="p-1.5 text-[#64766C] hover:text-[#145C46] hover:bg-[#E5F2EB] rounded-lg transition-colors cursor-pointer"
+                  title="Configurar Banco (Admin)"
+                >
+                  <Database size={16} />
+                </button>
+              )}
+              <button 
+                onClick={onLogout}
+                className="p-1.5 text-[#64766C] hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                title="Sair da Conta"
+              >
+                <LogOut size={16} />
+              </button>
+            </div>
+          </div>
         </div>
       </aside>
 
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden bg-slate-50">
-        <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-xs">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden bg-[#F6F8F5]">
+        <header className="sticky top-0 z-30 bg-white border-b border-[#E3EAE6] shadow-xs">
           <div className="flex items-center justify-between px-3.5 sm:px-6 py-2.5 sm:py-3.5 gap-2">
             <div className="flex items-center gap-2 sm:gap-3 min-w-0">
               <button 
@@ -362,36 +392,43 @@ const Layout: React.FC<LayoutProps> = ({
                 <Menu size={22} />
               </button>
               <div className="min-w-0">
-                <h1 className="text-sm sm:text-base font-extrabold text-slate-900 tracking-tight flex items-center gap-1.5 sm:gap-2 truncate">
-                  <span className="truncate">{navItems.find(i => i.id === currentView)?.label || 'Painel'}</span>
-                  {activeFarm && (
-                    <>
-                      <span className="text-slate-300 font-light hidden xs:inline shrink-0">|</span>
-                      <span className="text-[10px] sm:text-xs font-semibold text-emerald-800 bg-emerald-50 border border-emerald-200/80 px-2 sm:px-2.5 py-0.5 rounded-full truncate max-w-[120px] xs:max-w-[160px] sm:max-w-[220px] shrink-0">
-                        {activeFarm.name}
-                      </span>
-                    </>
-                  )}
-                </h1>
+                <div className="flex items-center gap-2 text-sm text-[#64766C] font-normal">
+                  <span className="font-semibold text-[#20332C]">
+                    {activeFarm ? activeFarm.name : 'Gestão Pecuária'}
+                  </span>
+                  <span className="text-[#64766C]/60">›</span>
+                  <span className="text-[#64766C] truncate">{navItems.find(i => i.id === currentView)?.label || 'Painel'}</span>
+                </div>
               </div>
             </div>
 
-            <div className="flex items-center space-x-2 sm:space-x-4 shrink-0">
+            <div className="flex items-center space-x-2 sm:space-x-3 shrink-0">
+              {/* Quick AI Consultant CTA matching Paleta A */}
+              {currentView !== 'consultant' && (
+                <button
+                  onClick={() => onChangeView('consultant')}
+                  className="hidden sm:inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-[#DCEDE4] hover:bg-[#E5F2EB] border border-[#DCEDE4] text-sm font-semibold text-[#145C46] transition-all active:scale-95 cursor-pointer"
+                  title="Abrir Consultoria Zootécnica com Inteligência Artificial"
+                >
+                  <Sparkles size={16} className="text-[#145C46]" />
+                  <span>Consultor Zootécnico IA</span>
+                </button>
+              )}
               <div className="relative">
                 <button 
                   onClick={() => setIsNotifOpen(!isNotifOpen)}
-                  className={`p-2 rounded-xl border transition-all relative ${
+                  className={`p-2 rounded-lg border transition-all relative ${
                     isNotifOpen 
-                      ? 'bg-slate-100 border-slate-300 text-emerald-700 shadow-inner' 
-                      : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                      ? 'bg-[#E5F2EB] border-[#DCEDE4] text-[#145C46]' 
+                      : 'bg-white border-[#E3EAE6] text-[#64766C] hover:bg-[#F6F8F5] hover:text-[#20332C]'
                   }`}
                   title="Alertas & Notificações"
                   aria-label="Alertas e Notificações"
                   aria-expanded={isNotifOpen}
                 >
-                  <Bell size={19} />
+                  <Bell size={18} />
                   {notifications.length > 0 && (
-                    <span className="absolute -top-1 -right-1 w-5 h-5 bg-rose-600 text-white text-[10px] font-extrabold rounded-full flex items-center justify-center ring-2 ring-white animate-pulse">
+                    <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 bg-rose-600 text-white text-xs font-semibold rounded-full flex items-center justify-center ring-2 ring-white font-nums">
                       {notifications.length}
                     </span>
                   )}
@@ -409,27 +446,27 @@ const Layout: React.FC<LayoutProps> = ({
                     {/* Dropdown de Notificações com z-index alto e responsividade móvel */}
                     <div 
                       id="notifications-dropdown-panel"
-                      className="fixed inset-x-3 top-16 sm:absolute sm:inset-x-auto sm:right-0 sm:top-full sm:mt-2.5 w-auto sm:w-96 max-w-[calc(100vw-1.5rem)] bg-white rounded-2xl shadow-2xl border border-slate-200 z-50 overflow-hidden animate-in fade-in slide-in-from-top-2"
+                      className="fixed inset-x-3 top-16 sm:absolute sm:inset-x-auto sm:right-0 sm:top-full sm:mt-2.5 w-auto sm:w-96 max-w-[calc(100vw-1.5rem)] bg-white rounded-xl shadow-xl border border-[#E3EAE6] z-50 overflow-hidden animate-in fade-in slide-in-from-top-2"
                     >
-                      <div className="p-3.5 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
+                      <div className="p-3.5 bg-[#F6F8F5] border-b border-[#E3EAE6] flex justify-between items-center">
                         <div className="flex items-center gap-2">
-                          <Bell size={16} className="text-emerald-700" />
-                          <span className="font-bold text-xs text-slate-800">Alertas Operacionais</span>
+                          <Bell size={16} className="text-[#145C46]" />
+                          <span className="font-semibold text-sm text-[#20332C]">Alertas Operacionais</span>
                         </div>
                         <div className="flex items-center gap-2">
-                          <span className="text-[10px] font-bold text-slate-600 uppercase tracking-widest bg-slate-200/80 px-2 py-0.5 rounded-full">
-                            {notifications.length} {notifications.length === 1 ? 'Pendente' : 'Pendentes'}
+                          <span className="text-xs font-medium text-[#64766C] bg-white border border-[#E3EAE6] px-2.5 py-0.5 rounded-md font-nums">
+                            {notifications.length} {notifications.length === 1 ? 'pendente' : 'pendentes'}
                           </span>
                           <button 
                             onClick={() => setIsNotifOpen(false)}
-                            className="p-1 text-slate-400 hover:text-slate-700 hover:bg-slate-200/80 rounded-lg transition-colors cursor-pointer"
+                            className="p-1 text-[#64766C] hover:text-[#20332C] hover:bg-[#E5F2EB] rounded-lg transition-colors cursor-pointer"
                             aria-label="Fechar notificações"
                           >
                             <X size={16} />
                           </button>
                         </div>
                       </div>
-                      <div className="max-h-[60vh] sm:max-h-80 overflow-y-auto divide-y divide-slate-100">
+                      <div className="max-h-[60vh] sm:max-h-80 overflow-y-auto divide-y divide-[#E3EAE6]">
                         {notifications.length > 0 ? (
                           notifications.map((n, idx) => (
                             <button 
@@ -438,7 +475,7 @@ const Layout: React.FC<LayoutProps> = ({
                                 onChangeView(n.view);
                                 setIsNotifOpen(false);
                               }}
-                              className="w-full p-3.5 flex gap-3 hover:bg-slate-50 transition-colors text-left group"
+                              className="w-full p-3.5 flex gap-3 hover:bg-[#F6F8F5] transition-colors text-left group cursor-pointer"
                             >
                               <div className={`mt-0.5 p-2 rounded-lg shrink-0 ${
                                 n.type === 'error' ? 'bg-rose-50 text-rose-600 border border-rose-200' :
@@ -448,24 +485,24 @@ const Layout: React.FC<LayoutProps> = ({
                                 <AlertTriangle size={16} />
                               </div>
                               <div className="min-w-0 flex-1">
-                                <p className="text-xs font-bold text-slate-900 leading-tight group-hover:text-emerald-700 transition-colors">{n.title}</p>
-                                <p className="text-[11px] text-slate-500 mt-0.5 line-clamp-2">{n.description}</p>
+                                <p className="text-sm font-semibold text-[#20332C] leading-snug group-hover:text-[#145C46] transition-colors">{n.title}</p>
+                                <p className="text-xs text-[#64766C] mt-1 leading-relaxed line-clamp-2">{n.description}</p>
                               </div>
                             </button>
                           ))
                         ) : (
                           <div className="p-8 text-center">
-                            <CheckCircle2 size={36} className="text-emerald-500 mx-auto mb-2" />
-                            <p className="text-xs text-slate-500 font-medium">Nenhum alerta pendente na fazenda!</p>
+                            <CheckCircle2 size={36} className="text-[#218568] mx-auto mb-2" />
+                            <p className="text-sm text-[#64766C] font-normal">Nenhum alerta pendente na fazenda!</p>
                           </div>
                         )}
                       </div>
-                      <div className="p-2.5 bg-slate-50 border-t border-slate-100 text-center">
+                      <div className="p-2.5 bg-[#F6F8F5] border-t border-[#E3EAE6] text-center">
                          <button 
                            onClick={() => setIsNotifOpen(false)} 
-                           className="text-[11px] font-bold text-emerald-700 hover:text-emerald-800 hover:underline uppercase tracking-wider cursor-pointer"
+                           className="text-sm font-semibold text-[#145C46] hover:text-[#0E4434] hover:underline cursor-pointer"
                          >
-                           Fechar Notificações
+                           Fechar notificações
                          </button>
                       </div>
                     </div>
@@ -473,23 +510,23 @@ const Layout: React.FC<LayoutProps> = ({
                 )}
               </div>
 
-              <div className="flex items-center space-x-2 sm:space-x-3 pl-2 sm:pl-3 border-l border-slate-200">
+              <div className="flex items-center space-x-2 sm:space-x-3 pl-2 sm:pl-3 border-l border-[#E3EAE6]">
                 {user.provider === 'guest' ? (
                   isAdmin ? (
                     <button
                       onClick={onOpenSupabaseConfig}
-                      className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-[10px] font-bold text-emerald-800 transition-colors cursor-pointer"
+                      className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#DCEDE4] hover:bg-[#E5F2EB] border border-[#DCEDE4] text-xs font-medium text-[#145C46] transition-colors cursor-pointer"
                       title="Modo Local: Dados salvos no seu dispositivo. Clique para configurar conexão com a nuvem."
                     >
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#145C46]" />
                       <span>Modo Local</span>
                     </button>
                   ) : (
                     <div
-                      className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-[10px] font-bold text-emerald-800 select-none"
+                      className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#DCEDE4] border border-[#DCEDE4] text-xs font-medium text-[#145C46] select-none"
                       title="Modo Local: Seus dados estão salvos com segurança neste dispositivo."
                     >
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#145C46]" />
                       <span>Modo Local</span>
                     </div>
                   )
@@ -497,29 +534,29 @@ const Layout: React.FC<LayoutProps> = ({
                   isAdmin ? (
                     <button
                       onClick={onOpenSupabaseConfig}
-                      className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-100 hover:bg-slate-200 border border-slate-200 text-[10px] font-bold text-slate-700 transition-colors cursor-pointer"
+                      className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#F6F8F5] hover:bg-[#E5F2EB] border border-[#E3EAE6] text-xs font-medium text-[#20332C] transition-colors cursor-pointer"
                       title="Sincronização em nuvem ativa. Clique para gerenciar o banco."
                     >
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#145C46]" />
                       <span>Nuvem</span>
                     </button>
                   ) : (
                     <div
-                      className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-100 border border-slate-200 text-[10px] font-bold text-slate-700 select-none"
+                      className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#F6F8F5] border border-[#E3EAE6] text-xs font-medium text-[#20332C] select-none"
                       title="Sincronização em nuvem ativa."
                     >
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#145C46]" />
                       <span>Nuvem</span>
                     </div>
                   )
                 )}
                 <div className="hidden sm:block text-right">
-                  <p className="text-xs font-bold text-slate-900 truncate max-w-[130px]">{user.name}</p>
-                  <p className="text-[10px] text-emerald-700 font-semibold uppercase tracking-wider">
+                  <p className="text-sm font-semibold text-[#20332C] truncate max-w-[140px] leading-tight">{user.name}</p>
+                  <p className="text-xs text-[#145C46] font-normal leading-tight mt-0.5">
                     {user.provider === 'guest' ? 'Acesso Local' : 'Proprietário'}
                   </p>
                 </div>
-                <div className="h-8 w-8 sm:h-9 sm:w-9 rounded-xl bg-emerald-700 border border-emerald-600 flex items-center justify-center text-white font-extrabold text-xs shadow-xs overflow-hidden shrink-0">
+                <div className="h-8 w-8 sm:h-9 sm:w-9 rounded-xl bg-[#145C46] text-white flex items-center justify-center font-semibold text-xs shadow-xs overflow-hidden shrink-0">
                   {user.photo ? <img src={user.photo} className="w-full h-full object-cover" alt="User" /> : user.name.substring(0, 2).toUpperCase()}
                 </div>
               </div>
@@ -527,7 +564,7 @@ const Layout: React.FC<LayoutProps> = ({
           </div>
         </header>
 
-        <main className="flex-1 overflow-y-auto overflow-x-hidden p-3.5 sm:p-5 md:p-6 bg-slate-50 flex flex-col justify-between">
+        <main className="flex-1 overflow-y-auto overflow-x-hidden p-3.5 sm:p-5 md:p-6 bg-[#F6F8F5] flex flex-col justify-between">
           <div className="flex-1">
             {children}
           </div>

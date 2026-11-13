@@ -49,53 +49,53 @@ const AiAdvisor: React.FC<AiAdvisorProps> = ({ animals, transactions }) => {
     <div className="space-y-6 h-full flex flex-col">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
-            <Sparkles className="text-purple-600" /> Inteligência Artificial
+          <h2 className="text-2xl font-semibold leading-snug text-[#20332C] flex items-center gap-2">
+            <Sparkles className="text-[#145C46]" size={22} /> Inteligência Artificial
           </h2>
-          <p className="text-gray-500 text-sm">Use o Gemini para analisar sua fazenda e tirar dúvidas técnicas.</p>
+          <p className="text-[#64766C] text-sm font-normal leading-normal mt-0.5">Use a inteligência artificial para analisar sua fazenda e tirar dúvidas técnicas.</p>
         </div>
         
-        <div className="flex bg-gray-200 rounded-lg p-1">
+        <div className="flex bg-[#F6F8F5] border border-[#E3EAE6] rounded-xl p-1">
           <button 
             onClick={() => setActiveTab('report')}
-            className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${activeTab === 'report' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-600 hover:text-gray-900'}`}
+            className={`px-4 py-2 rounded-lg text-sm font-semibold leading-snug transition-all ${activeTab === 'report' ? 'bg-[#145C46] shadow-2xs text-white' : 'text-[#64766C] hover:text-[#20332C]'}`}
           >
             Relatório Completo
           </button>
           <button 
             onClick={() => setActiveTab('chat')}
-            className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${activeTab === 'chat' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-600 hover:text-gray-900'}`}
+            className={`px-4 py-2 rounded-lg text-sm font-semibold leading-snug transition-all ${activeTab === 'chat' ? 'bg-[#145C46] shadow-2xs text-white' : 'text-[#64766C] hover:text-[#20332C]'}`}
           >
             Chat Técnico
           </button>
         </div>
       </div>
 
-      <div className="flex-1 bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex flex-col">
+      <div className="flex-1 bg-white rounded-2xl shadow-2xs border border-[#E3EAE6] overflow-hidden flex flex-col">
         {activeTab === 'report' ? (
           <div className="p-6 flex flex-col h-full">
-            <div className="mb-6 flex items-center justify-between border-b border-gray-100 pb-4">
+            <div className="mb-6 flex items-center justify-between border-b border-[#E3EAE6] pb-4">
               <div>
-                <h3 className="font-semibold text-gray-800">Análise da Fazenda</h3>
-                <p className="text-xs text-gray-500">Cruza dados zootécnicos e financeiros para insights.</p>
+                <h3 className="text-base font-semibold leading-snug text-[#20332C]">Análise da Fazenda</h3>
+                <p className="text-[13px] font-normal leading-normal text-[#64766C]">Cruza dados zootécnicos e financeiros para insights.</p>
               </div>
               <button 
                 onClick={handleGenerateReport}
                 disabled={isLoading}
-                className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 disabled:opacity-50 transition-colors"
+                className="bg-[#145C46] hover:bg-[#0E4434] text-white text-sm font-semibold leading-snug px-4 py-2.5 rounded-xl flex items-center gap-2 disabled:opacity-50 transition-colors"
               >
                 {isLoading ? <Loader2 className="animate-spin" size={18} /> : <FileText size={18} />}
                 {isLoading ? 'Analisando...' : 'Gerar Relatório'}
               </button>
             </div>
             
-            <div className="flex-1 overflow-y-auto bg-gray-50 rounded-lg p-6 border border-gray-200 prose prose-sm max-w-none">
+            <div className="flex-1 overflow-y-auto bg-[#F6F8F5] rounded-xl p-6 border border-[#E3EAE6] prose prose-sm max-w-none text-[#20332C]">
               {report ? (
                 <ReactMarkdown>{report}</ReactMarkdown>
               ) : (
-                <div className="h-full flex flex-col items-center justify-center text-gray-400">
-                  <Sparkles size={48} className="mb-4 opacity-30" />
-                  <p>Clique em "Gerar Relatório" para receber uma análise completa.</p>
+                <div className="h-full flex flex-col items-center justify-center text-[#64766C]">
+                  <Sparkles size={40} className="mb-3 opacity-35 text-[#145C46]" />
+                  <p className="text-sm font-normal">Clique em "Gerar Relatório" para receber uma análise completa.</p>
                 </div>
               )}
             </div>
@@ -104,15 +104,15 @@ const AiAdvisor: React.FC<AiAdvisorProps> = ({ animals, transactions }) => {
           <div className="p-6 flex flex-col h-full">
             <div className="flex-1 overflow-y-auto mb-4 space-y-4">
               {chatResponse ? (
-                <div className="bg-purple-50 p-4 rounded-lg border border-purple-100">
-                  <p className="font-semibold text-purple-900 text-sm mb-2">Resposta do Assistente:</p>
-                  <div className="text-gray-800 text-sm whitespace-pre-line leading-relaxed">
+                <div className="bg-[#DCEDE4]/50 p-4 rounded-xl border border-[#145C46]/20">
+                  <p className="font-semibold text-[#145C46] text-sm leading-snug mb-2">Resposta do Assistente:</p>
+                  <div className="text-[#20332C] text-sm font-normal whitespace-pre-line leading-relaxed">
                     <ReactMarkdown>{chatResponse}</ReactMarkdown>
                   </div>
                 </div>
               ) : (
-                <div className="flex flex-col items-center justify-center h-full text-gray-400">
-                   <p className="text-center max-w-md">Pergunte sobre manejo, vacinação, nutrição ou qualquer dúvida técnica sobre pecuária.</p>
+                <div className="flex flex-col items-center justify-center h-full text-[#64766C]">
+                   <p className="text-center max-w-md text-sm font-normal leading-normal">Pergunte sobre manejo, vacinação, nutrição ou qualquer dúvida técnica sobre pecuária.</p>
                 </div>
               )}
             </div>
@@ -123,13 +123,13 @@ const AiAdvisor: React.FC<AiAdvisorProps> = ({ animals, transactions }) => {
                 value={chatInput}
                 onChange={(e) => setChatInput(e.target.value)}
                 placeholder="Ex: Qual a melhor época para vacinação de aftosa?"
-                className="w-full border border-gray-300 rounded-lg pl-4 pr-12 py-3 focus:ring-2 focus:ring-purple-500 outline-none shadow-sm"
+                className="w-full border border-[#E3EAE6] bg-[#F6F8F5] focus:bg-white rounded-xl pl-4 pr-12 py-3 text-sm font-normal leading-normal text-[#20332C] focus:ring-2 focus:ring-[#145C46]/20 focus:border-[#145C46] outline-none"
                 disabled={chatLoading}
               />
               <button 
                 type="submit" 
                 disabled={chatLoading}
-                className="absolute right-2 top-1/2 transform -translate-y-1/2 p-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:opacity-50 transition-colors"
+                className="absolute right-2 top-1/2 transform -translate-y-1/2 p-2 bg-[#145C46] text-white rounded-lg hover:bg-[#0E4434] disabled:opacity-50 transition-colors"
               >
                 {chatLoading ? <Loader2 className="animate-spin" size={18} /> : <Send size={18} />}
               </button>

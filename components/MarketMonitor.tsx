@@ -45,20 +45,20 @@ const MarketMonitor: React.FC<MarketMonitorProps> = ({
   }, [activeQuote.id]);
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-500">
+    <div className="space-y-6 animate-in fade-in duration-300 font-sans">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-black text-gray-800 tracking-tighter uppercase flex items-center gap-3">
-            <BarChart4 className="text-emerald-600" size={28} /> Monitor de Mercado Scot Consultoria
+          <h2 className="text-2xl font-semibold text-[#20332C] leading-snug flex items-center gap-2.5">
+            <BarChart4 className="text-[#145C46]" size={24} /> Monitor de Mercado Scot Consultoria
           </h2>
-          <p className="text-gray-500 text-sm italic">Cotações da arroba do boi, vaca gorda e grãos por região em tempo real</p>
+          <p className="text-[#64766C] text-[13px] leading-normal mt-1">Cotações da arroba do boi, vaca gorda e grãos por região em tempo real</p>
         </div>
         <button 
           onClick={loadMarketData} 
           disabled={loading}
-          className="flex items-center gap-2 bg-white border border-gray-200 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-gray-50 transition-all shadow-sm disabled:opacity-50 cursor-pointer"
+          className="flex items-center gap-2 bg-white border border-[#E3EAE6] text-[#20332C] px-4 py-2.5 rounded-lg text-sm font-semibold hover:bg-[#E5F2EB] hover:text-[#145C46] transition-all shadow-xs disabled:opacity-50 cursor-pointer"
         >
-          {loading ? <Loader2 size={14} className="animate-spin" /> : <RefreshCcw size={14} />}
+          {loading ? <Loader2 size={16} className="animate-spin text-[#145C46]" /> : <RefreshCcw size={16} className="text-[#145C46]" />}
           Atualizar Cotações
         </button>
       </div>
@@ -72,22 +72,22 @@ const MarketMonitor: React.FC<MarketMonitorProps> = ({
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Painel Principal de Análise */}
         <div className="lg:col-span-8 space-y-6">
-          <div className="bg-white rounded-[2.5rem] shadow-sm border border-gray-100 overflow-hidden flex flex-col h-full">
-            <div className="p-8 border-b border-gray-50 bg-gray-50/30 flex items-center justify-between">
-               <div className="flex items-center gap-3">
-                  <Globe className="text-blue-500" size={20} />
-                  <span className="text-xs font-black text-gray-400 uppercase tracking-widest">
+          <div className="agro-card overflow-hidden flex flex-col h-full">
+            <div className="px-6 py-4 border-b border-[#E3EAE6] bg-[#F6F8F5]/60 flex items-center justify-between gap-3">
+               <div className="flex items-center gap-2.5">
+                  <Globe className="text-[#145C46]" size={18} />
+                  <h3 className="text-base font-semibold text-[#20332C]">
                     Relatório Regional — {activeQuote.regionName}
-                  </span>
+                  </h3>
                </div>
-               <span className="text-[10px] font-bold text-gray-400">Última atualização: {lastUpdate}</span>
+               <span className="text-xs font-normal text-[#64766C] font-nums">Última atualização: {lastUpdate}</span>
             </div>
             
-            <div className="p-8 flex-1 overflow-y-auto prose prose-emerald max-w-none">
+            <div className="p-6 md:p-8 flex-1 overflow-y-auto prose prose-emerald max-w-none text-sm leading-relaxed text-[#20332C]">
               {loading ? (
-                <div className="py-20 flex flex-col items-center justify-center text-gray-400">
-                   <Loader2 size={48} className="animate-spin mb-4 opacity-20" />
-                   <p className="text-sm font-bold uppercase tracking-widest">Consultando Scot Consultoria para {activeQuote.regionName}...</p>
+                <div className="py-16 flex flex-col items-center justify-center text-[#64766C]">
+                   <Loader2 size={40} className="animate-spin mb-3 text-[#218568]" />
+                   <p className="text-sm font-medium">Consultando Scot Consultoria para {activeQuote.regionName}...</p>
                 </div>
               ) : (
                 <ReactMarkdown>{marketText}</ReactMarkdown>
@@ -95,9 +95,9 @@ const MarketMonitor: React.FC<MarketMonitorProps> = ({
             </div>
 
             {!loading && sources.length > 0 && (
-              <div className="p-6 bg-blue-50/50 border-t border-blue-100">
-                <h4 className="text-[10px] font-black text-blue-700 uppercase tracking-widest mb-3 flex items-center gap-2">
-                   <Info size={14} /> Fontes e Referências
+              <div className="p-5 bg-[#F6F8F5] border-t border-[#E3EAE6]">
+                <h4 className="text-xs font-medium text-[#64766C] mb-3 flex items-center gap-1.5">
+                   <Info size={14} className="text-[#145C46]" /> Fontes e referências
                 </h4>
                 <div className="flex flex-wrap gap-2">
                   {sources.map((src, idx) => (
@@ -106,9 +106,9 @@ const MarketMonitor: React.FC<MarketMonitorProps> = ({
                       href={src.web?.uri || '#'} 
                       target="_blank" 
                       rel="noopener noreferrer"
-                      className="bg-white border border-blue-200 px-3 py-1.5 rounded-lg text-[10px] font-bold text-blue-600 hover:bg-blue-600 hover:text-white transition-all flex items-center gap-1.5"
+                      className="bg-white border border-[#E3EAE6] px-3 py-1.5 rounded-lg text-xs font-medium text-[#145C46] hover:bg-[#DCEDE4] transition-all flex items-center gap-1.5"
                     >
-                      <ExternalLink size={10} />
+                      <ExternalLink size={12} />
                       {src.web?.title || 'Ver Fonte'}
                     </a>
                   ))}
@@ -120,60 +120,64 @@ const MarketMonitor: React.FC<MarketMonitorProps> = ({
 
         {/* Widgets Laterais */}
         <div className="lg:col-span-4 space-y-6">
-          <div className="bg-[#1a1f2c] text-white rounded-[2.5rem] p-8 shadow-xl border-[6px] border-[#252b3a] space-y-6">
-             <h3 className="text-xs font-black text-gray-500 uppercase tracking-[0.2em] mb-4">Destaques da Região ({activeQuote.state})</h3>
+          <div className="agro-card p-6 space-y-5">
+             <h3 className="text-base font-semibold text-[#20332C] leading-snug">Destaques da Região ({activeQuote.state})</h3>
              
-             <div className="space-y-4">
-                <div className="bg-[#252b3a] p-5 rounded-3xl border border-gray-700/30 flex items-center justify-between group hover:border-emerald-500/50 transition-all">
+             <div className="space-y-3">
+                <div className="bg-[#F6F8F5] p-4 rounded-xl border border-[#DCEDE4] flex items-center justify-between transition-all">
                    <div>
-                      <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Boi Gordo (À Vista)</p>
-                      <p className="text-xl font-black text-emerald-400">R$ {activeQuote.boiGordoVista.toFixed(2)} /@</p>
+                      <p className="text-xs font-medium text-[#145C46]">Boi Gordo (À Vista)</p>
+                      <p className="text-2xl font-semibold text-[#20332C] font-nums leading-tight mt-0.5">
+                        R$ {activeQuote.boiGordoVista.toFixed(2)}<span className="text-sm font-normal text-[#64766C] ml-1">/@</span>
+                      </p>
                    </div>
-                   <div className="p-2 bg-emerald-500/20 text-emerald-500 rounded-xl group-hover:scale-110 transition-transform">
-                      <TrendingUp size={20} />
+                   <div className="p-2.5 bg-[#DCEDE4] text-[#145C46] rounded-lg">
+                      <TrendingUp size={18} />
                    </div>
                 </div>
 
-                <div className="bg-[#252b3a] p-5 rounded-3xl border border-gray-700/30 flex items-center justify-between group hover:border-pink-500/50 transition-all">
+                <div className="bg-[#F6F8F5] p-4 rounded-xl border border-[#E3EAE6] flex items-center justify-between transition-all">
                    <div>
-                      <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Vaca Gorda</p>
-                      <p className="text-xl font-black text-pink-400">R$ {activeQuote.vacaGorda.toFixed(2)} /@</p>
+                      <p className="text-xs font-medium text-[#64766C]">Vaca Gorda</p>
+                      <p className="text-2xl font-semibold text-[#20332C] font-nums leading-tight mt-0.5">
+                        R$ {activeQuote.vacaGorda.toFixed(2)}<span className="text-sm font-normal text-[#64766C] ml-1">/@</span>
+                      </p>
                    </div>
-                   <div className="p-2 bg-pink-500/20 text-pink-400 rounded-xl group-hover:scale-110 transition-transform">
-                      <Building2 size={20} />
+                   <div className="p-2.5 bg-white border border-[#E3EAE6] text-[#64766C] rounded-lg">
+                      <Building2 size={18} />
                    </div>
                 </div>
 
-                <div className="bg-[#252b3a] p-5 rounded-3xl border border-gray-700/30 flex items-center justify-between group hover:border-yellow-500/50 transition-all">
+                <div className="bg-[#F6F8F5] p-4 rounded-xl border border-[#E3EAE6] flex items-center justify-between transition-all">
                    <div>
-                      <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Milho (Saca 60kg)</p>
-                      <p className="text-xl font-black text-yellow-400">R$ {activeQuote.milhoSaca.toFixed(2)}</p>
+                      <p className="text-xs font-medium text-[#64766C]">Milho (Saca 60 kg)</p>
+                      <p className="text-2xl font-semibold text-[#20332C] font-nums leading-tight mt-0.5">R$ {activeQuote.milhoSaca.toFixed(2)}</p>
                    </div>
-                   <div className="p-2 bg-yellow-500/20 text-yellow-500 rounded-xl group-hover:scale-110 transition-transform">
-                      <TrendingUp size={20} />
+                   <div className="p-2.5 bg-white border border-[#E3EAE6] text-[#64766C] rounded-lg">
+                      <TrendingUp size={18} />
                    </div>
                 </div>
 
-                <div className="bg-[#252b3a] p-5 rounded-3xl border border-gray-700/30 flex items-center justify-between group hover:border-blue-500/50 transition-all">
+                <div className="bg-[#F6F8F5] p-4 rounded-xl border border-[#E3EAE6] flex items-center justify-between transition-all">
                    <div>
-                      <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Soja (Saca 60kg)</p>
-                      <p className="text-xl font-black text-blue-400">R$ {activeQuote.sojaSaca.toFixed(2)}</p>
+                      <p className="text-xs font-medium text-[#64766C]">Soja (Saca 60 kg)</p>
+                      <p className="text-2xl font-semibold text-[#20332C] font-nums leading-tight mt-0.5">R$ {activeQuote.sojaSaca.toFixed(2)}</p>
                    </div>
-                   <div className="p-2 bg-blue-500/20 text-blue-500 rounded-xl group-hover:scale-110 transition-transform">
-                      <TrendingUp size={20} />
+                   <div className="p-2.5 bg-white border border-[#E3EAE6] text-[#64766C] rounded-lg">
+                      <TrendingUp size={18} />
                    </div>
                 </div>
              </div>
 
-             <div className="p-6 bg-emerald-600/10 rounded-3xl border border-emerald-500/20 space-y-2">
-                <p className="text-[10px] font-black text-emerald-500 uppercase tracking-widest">Aplicação nos Cálculos</p>
-                <p className="text-xs text-gray-300 leading-relaxed italic">
-                   Você pode usar o valor de R$ {activeQuote.boiGordoVista.toFixed(2)}/@ da praça <strong className="text-white">{activeQuote.regionName}</strong> nas calculadoras de margem e simulação de venda.
+             <div className="p-4 bg-[#DCEDE4]/50 rounded-xl border border-[#DCEDE4] space-y-2.5">
+                <p className="text-xs font-semibold text-[#145C46]">Aplicação nos cálculos</p>
+                <p className="text-[13px] text-[#64766C] leading-relaxed">
+                   Você pode usar o valor de R$ {activeQuote.boiGordoVista.toFixed(2)}/@ da praça <strong className="font-semibold text-[#20332C]">{activeQuote.regionName}</strong> nas calculadoras de margem e simulação de venda.
                 </p>
                 {onApplyPriceToCalculator && (
                   <button 
                     onClick={() => onApplyPriceToCalculator(activeQuote.boiGordoVista, activeQuote.bezerroCabeca)}
-                    className="w-full mt-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs py-2 px-3 rounded-xl uppercase tracking-wider transition-all"
+                    className="w-full mt-1 bg-[#145C46] hover:bg-[#0E4434] text-white font-semibold text-sm py-2.5 px-4 rounded-lg transition-all cursor-pointer"
                   >
                     Usar R$ {activeQuote.boiGordoVista.toFixed(2)}/@ na Calculadora
                   </button>

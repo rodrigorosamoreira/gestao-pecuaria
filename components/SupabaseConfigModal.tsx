@@ -90,34 +90,34 @@ export const SupabaseConfigModal: React.FC<SupabaseConfigModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-      <div className="bg-slate-900 border border-slate-800 w-full max-w-lg rounded-3xl p-6 sm:p-8 shadow-2xl text-slate-100 animate-in zoom-in-95 duration-200">
+    <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
+      <div className="bg-white border border-[#E3EAE6] w-full max-w-lg rounded-2xl p-6 sm:p-8 shadow-xl text-[#20332C] animate-in zoom-in-95 duration-200">
         
         {/* Header */}
-        <div className="flex justify-between items-center border-b border-slate-800 pb-4">
+        <div className="flex justify-between items-center border-b border-[#E3EAE6] pb-4">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-xl">
+            <div className="p-2.5 bg-[#DCEDE4] text-[#145C46] rounded-xl">
               <Database size={20} />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-white">Configuração do Supabase</h3>
-              <p className="text-xs text-slate-400">Gerencie a conexão do banco de dados na nuvem</p>
+              <h3 className="text-lg font-semibold leading-snug text-[#20332C]">Configuração do Supabase</h3>
+              <p className="text-[13px] font-normal leading-normal text-[#64766C]">Gerencie a conexão do banco de dados na nuvem</p>
             </div>
           </div>
           <button 
             onClick={onClose}
-            className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-full transition-colors cursor-pointer"
+            className="p-2 text-[#64766C] hover:text-[#20332C] hover:bg-[#F6F8F5] rounded-xl transition-colors cursor-pointer"
           >
             <X size={18} />
           </button>
         </div>
 
         {/* Info Note */}
-        <div className="mt-4 p-3.5 bg-slate-950/70 border border-slate-800 rounded-2xl flex items-start gap-3 text-xs text-slate-300">
-          <Info size={18} className="text-emerald-400 shrink-0 mt-0.5" />
+        <div className="mt-4 p-3.5 bg-[#F6F8F5] border border-[#E3EAE6] rounded-xl flex items-start gap-3 text-xs font-normal text-[#64766C]">
+          <Info size={18} className="text-[#145C46] shrink-0 mt-0.5" />
           <div className="space-y-1">
-            <p className="font-semibold text-white">Armazenamento Híbrido</p>
-            <p className="text-slate-400 leading-relaxed">
+            <p className="text-sm font-semibold text-[#20332C] leading-snug">Armazenamento Híbrido</p>
+            <p className="text-xs font-normal text-[#64766C] leading-relaxed">
               O aplicativo salva seus dados localmente no navegador. Você pode conectar seu próprio projeto Supabase inserindo a URL e a Anon Key abaixo.
             </p>
           </div>
@@ -125,54 +125,54 @@ export const SupabaseConfigModal: React.FC<SupabaseConfigModalProps> = ({
 
         {/* Test Result Message */}
         {testResult && (
-          <div className={`mt-4 p-3.5 rounded-2xl text-xs flex items-start gap-2.5 animate-in fade-in duration-200 ${
+          <div className={`mt-4 p-3.5 rounded-xl text-xs font-normal flex items-start gap-2.5 animate-in fade-in duration-200 ${
             testResult.success 
-              ? 'bg-emerald-500/10 border border-emerald-500/30 text-emerald-200' 
-              : 'bg-rose-500/10 border border-rose-500/30 text-rose-200'
+              ? 'bg-[#DCEDE4]/60 border border-[#145C46]/25 text-[#145C46]' 
+              : 'bg-red-50 border border-red-200 text-red-800'
           }`}>
             {testResult.success ? (
-              <CheckCircle2 size={16} className="text-emerald-400 shrink-0 mt-0.5" />
+              <CheckCircle2 size={16} className="text-[#145C46] shrink-0 mt-0.5" />
             ) : (
-              <AlertCircle size={16} className="text-rose-400 shrink-0 mt-0.5" />
+              <AlertCircle size={16} className="text-red-600 shrink-0 mt-0.5" />
             )}
             <span className="leading-relaxed">{testResult.message}</span>
           </div>
         )}
 
         {/* Form */}
-        <form onSubmit={handleSave} className="mt-4 space-y-4">
+        <form onSubmit={handleSave} className="mt-5 space-y-4">
           <div className="space-y-1.5">
-            <label className="text-[11px] font-bold text-slate-300 uppercase tracking-wider ml-1">
+            <label className="block text-xs font-medium leading-snug text-[#64766C]">
               URL do Projeto Supabase
             </label>
             <div className="relative">
-              <Globe className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500" size={16} />
+              <Globe className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#64766C]" size={16} />
               <input 
                 type="url"
                 placeholder="https://seu-projeto.supabase.co"
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
-                className="w-full border border-slate-800 rounded-xl pl-10 pr-4 py-2.5 text-xs text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none bg-slate-950/80 placeholder-slate-600 transition-all font-mono"
+                className="w-full border border-[#E3EAE6] rounded-xl pl-10 pr-4 py-2.5 text-sm font-normal leading-normal text-[#20332C] focus:border-[#145C46] focus:ring-2 focus:ring-[#145C46]/20 focus:bg-white outline-none bg-[#F6F8F5] placeholder-[#64766C]/70 transition-all"
               />
             </div>
-            <p className="text-[10px] text-slate-500 ml-1">Exemplo: https://xyzcompany.supabase.co</p>
+            <p className="text-xs font-normal text-[#64766C]">Exemplo: https://xyzcompany.supabase.co</p>
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-[11px] font-bold text-slate-300 uppercase tracking-wider ml-1">
+            <label className="block text-xs font-medium leading-snug text-[#64766C]">
               Chave Pública (Anon Key)
             </label>
             <div className="relative">
-              <Key className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500" size={16} />
+              <Key className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#64766C]" size={16} />
               <input 
                 type="text"
                 placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
                 value={anonKey}
                 onChange={(e) => setAnonKey(e.target.value)}
-                className="w-full border border-slate-800 rounded-xl pl-10 pr-4 py-2.5 text-xs text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none bg-slate-950/80 placeholder-slate-600 transition-all font-mono"
+                className="w-full border border-[#E3EAE6] rounded-xl pl-10 pr-4 py-2.5 text-sm font-normal leading-normal text-[#20332C] focus:border-[#145C46] focus:ring-2 focus:ring-[#145C46]/20 focus:bg-white outline-none bg-[#F6F8F5] placeholder-[#64766C]/70 transition-all"
               />
             </div>
-            <p className="text-[10px] text-slate-500 ml-1">Encontrada em Project Settings &gt; API no painel do Supabase.</p>
+            <p className="text-xs font-normal text-[#64766C]">Encontrada em Project Settings &gt; API no painel do Supabase.</p>
           </div>
 
           {/* Action Buttons */}
@@ -181,16 +181,16 @@ export const SupabaseConfigModal: React.FC<SupabaseConfigModalProps> = ({
               type="button"
               onClick={handleTest}
               disabled={isTesting}
-              className="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-200 py-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2 border border-slate-700 transition-all disabled:opacity-60 cursor-pointer"
+              className="flex-1 bg-[#F6F8F5] hover:bg-[#E5F2EB] text-[#20332C] py-2.5 rounded-xl text-sm font-semibold leading-snug flex items-center justify-center gap-2 border border-[#E3EAE6] transition-all disabled:opacity-60 cursor-pointer"
             >
               {isTesting ? (
                 <>
-                  <Loader2 size={15} className="animate-spin text-emerald-400" />
+                  <Loader2 size={16} className="animate-spin text-[#145C46]" />
                   <span>Testando Conexão...</span>
                 </>
               ) : (
                 <>
-                  <RefreshCw size={15} className="text-emerald-400" />
+                  <RefreshCw size={16} className="text-[#145C46]" />
                   <span>Testar Servidor</span>
                 </>
               )}
@@ -199,11 +199,11 @@ export const SupabaseConfigModal: React.FC<SupabaseConfigModalProps> = ({
             <button
               type="submit"
               disabled={saveSuccess}
-              className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white py-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-emerald-950/40 transition-all cursor-pointer"
+              className="flex-1 bg-[#145C46] hover:bg-[#0E4434] text-white py-2.5 rounded-xl text-sm font-semibold leading-snug flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer"
             >
               {saveSuccess ? (
                 <>
-                  <Check size={15} />
+                  <Check size={16} />
                   <span>Configuração Salva!</span>
                 </>
               ) : (
@@ -217,7 +217,7 @@ export const SupabaseConfigModal: React.FC<SupabaseConfigModalProps> = ({
               <button
                 type="button"
                 onClick={handleReset}
-                className="text-[11px] text-rose-400 hover:text-rose-300 underline cursor-pointer"
+                className="text-xs font-medium text-red-600 hover:text-red-700 underline cursor-pointer"
               >
                 Restaurar valores padrão
               </button>

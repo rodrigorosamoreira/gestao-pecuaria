@@ -152,51 +152,49 @@ const AiConsultant: React.FC<AiConsultantProps> = ({ farmData, farmName = "Sua F
   ];
 
   return (
-    <div className="space-y-6 pb-12">
+    <div className="space-y-6 pb-12 font-sans">
       {/* Header do Consultor */}
-      <div className="bg-gradient-to-br from-green-900 via-green-800 to-emerald-950 rounded-[2.5rem] p-6 md:p-8 text-white shadow-xl relative overflow-hidden">
-        <div className="absolute top-0 right-0 -mt-10 -mr-10 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
-        
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10">
-          <div className="space-y-3 max-w-2xl">
-            <div className="inline-flex items-center gap-2 bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 px-3.5 py-1.5 rounded-full text-[11px] font-black uppercase tracking-widest backdrop-blur-md">
-              <Sparkles size={14} className="animate-pulse" /> Consultor Pecuário Sênior IA
+      <div className="agro-card p-6 md:p-7 space-y-6">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+          <div className="space-y-2 max-w-2xl">
+            <div className="inline-flex items-center gap-2 bg-[#DCEDE4] text-[#145C46] px-3 py-1 rounded-md text-xs font-medium">
+              <Sparkles size={14} /> Consultor Pecuário Sênior IA
             </div>
-            <h2 className="text-2xl md:text-3xl font-black tracking-tight">
+            <h2 className="text-2xl font-semibold text-[#20332C] leading-snug">
               Análise Técnica & Inteligência Operacional
             </h2>
-            <p className="text-sm text-green-100 font-medium leading-relaxed">
-              Foco inegociável em <strong className="text-emerald-300">Lucro Líquido</strong> e <strong className="text-emerald-300">Bem-Estar Animal</strong>, entendendo perfeitamente as <strong className="text-emerald-300">dificuldades reais do campo</strong>.
+            <p className="text-sm text-[#64766C] font-normal leading-relaxed">
+              Foco inegociável em <strong className="font-semibold text-[#20332C]">Lucro Líquido</strong> e <strong className="font-semibold text-[#20332C]">Bem-Estar Animal</strong>, entendendo perfeitamente as <strong className="font-semibold text-[#20332C]">dificuldades reais do campo</strong>.
             </p>
           </div>
 
           {/* Resumo da Fazenda em Cards compactos */}
-          <div className="grid grid-cols-3 gap-3 bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/10">
-            <div className="text-center">
-              <p className="text-[10px] font-bold text-green-300 uppercase tracking-wider">Rebanho</p>
-              <p className="text-lg font-black text-white">{activeAnimalsCount} <span className="text-xs font-normal text-green-200">cab</span></p>
+          <div className="grid grid-cols-3 gap-4 bg-[#F6F8F5] p-4 rounded-xl border border-[#E3EAE6] shrink-0">
+            <div className="text-center px-2">
+              <p className="text-xs font-medium text-[#64766C]">Rebanho</p>
+              <p className="text-xl font-semibold text-[#20332C] font-nums mt-0.5">{activeAnimalsCount}<span className="text-xs font-normal text-[#64766C] ml-1">cab</span></p>
             </div>
-            <div className="text-center border-x border-white/10 px-2">
-              <p className="text-[10px] font-bold text-green-300 uppercase tracking-wider">Saldo Geral</p>
-              <p className={`text-sm md:text-base font-black ${balance >= 0 ? 'text-emerald-300' : 'text-red-300'}`}>
+            <div className="text-center border-x border-[#E3EAE6] px-4">
+              <p className="text-xs font-medium text-[#64766C]">Saldo geral</p>
+              <p className={`text-lg font-semibold font-nums mt-0.5 ${balance >= 0 ? 'text-[#145C46]' : 'text-rose-600'}`}>
                 R$ {balance.toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
               </p>
             </div>
-            <div className="text-center">
-              <p className="text-[10px] font-bold text-green-300 uppercase tracking-wider">Lotes</p>
-              <p className="text-lg font-black text-white">{farmData.lots.length}</p>
+            <div className="text-center px-2">
+              <p className="text-xs font-medium text-[#64766C]">Lotes</p>
+              <p className="text-xl font-semibold text-[#20332C] font-nums mt-0.5">{farmData.lots.length}</p>
             </div>
           </div>
         </div>
 
         {/* Abas de Navegação */}
-        <div className="mt-8 flex items-center gap-3 border-t border-green-700/50 pt-6">
+        <div className="flex flex-wrap items-center gap-2.5 border-t border-[#E3EAE6] pt-5">
           <button
             onClick={() => setActiveTab('report')}
-            className={`flex items-center gap-2.5 px-5 py-3 rounded-2xl font-bold text-xs uppercase tracking-wider transition-all cursor-pointer ${
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-lg font-semibold text-sm transition-all cursor-pointer ${
               activeTab === 'report'
-                ? 'bg-white text-green-900 shadow-lg scale-105 font-black'
-                : 'bg-green-800/60 text-green-200 hover:bg-green-800 hover:text-white'
+                ? 'bg-[#145C46] text-white shadow-xs'
+                : 'bg-[#F6F8F5] text-[#64766C] hover:bg-[#E5F2EB] hover:text-[#145C46] border border-[#E3EAE6]'
             }`}
           >
             <FileText size={16} /> Relatório IA (Diagnóstico da Fazenda)
@@ -204,10 +202,10 @@ const AiConsultant: React.FC<AiConsultantProps> = ({ farmData, farmName = "Sua F
 
           <button
             onClick={() => setActiveTab('chat')}
-            className={`flex items-center gap-2.5 px-5 py-3 rounded-2xl font-bold text-xs uppercase tracking-wider transition-all cursor-pointer ${
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-lg font-semibold text-sm transition-all cursor-pointer ${
               activeTab === 'chat'
-                ? 'bg-white text-green-900 shadow-lg scale-105 font-black'
-                : 'bg-green-800/60 text-green-200 hover:bg-green-800 hover:text-white'
+                ? 'bg-[#145C46] text-white shadow-xs'
+                : 'bg-[#F6F8F5] text-[#64766C] hover:bg-[#E5F2EB] hover:text-[#145C46] border border-[#E3EAE6]'
             }`}
           >
             <MessageSquare size={16} /> Chat com Consultor IA
@@ -218,14 +216,14 @@ const AiConsultant: React.FC<AiConsultantProps> = ({ farmData, farmName = "Sua F
       {/* CONTEÚDO DA ABA 1: RELATÓRIO IA */}
       {activeTab === 'report' && (
         <div className="space-y-6">
-          <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="agro-card p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-              <h3 className="text-lg font-black text-gray-900 uppercase tracking-tight flex items-center gap-2">
-                <FileText className="text-green-600" size={20} />
+              <h3 className="text-lg font-semibold text-[#20332C] leading-snug flex items-center gap-2">
+                <FileText className="text-[#145C46]" size={20} />
                 Diagnóstico Geral de Desempenho
               </h3>
-              <p className="text-xs text-gray-500 font-medium mt-0.5">
-                Leitura completa dos dados de rebanho, lotes, finanças, estoque e tratamentos de <strong className="text-gray-700">{farmName}</strong>.
+              <p className="text-[13px] text-[#64766C] font-normal leading-normal mt-1">
+                Leitura completa dos dados de rebanho, lotes, finanças, estoque e tratamentos de <strong className="font-semibold text-[#20332C]">{farmName}</strong>.
               </p>
             </div>
 
@@ -233,9 +231,9 @@ const AiConsultant: React.FC<AiConsultantProps> = ({ farmData, farmName = "Sua F
               {reportText && (
                 <button
                   onClick={handleCopyReport}
-                  className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer active:scale-95"
+                  className="bg-white hover:bg-[#E5F2EB] border border-[#E3EAE6] text-[#20332C] px-4 py-2.5 rounded-lg text-sm font-semibold transition-all flex items-center gap-2 cursor-pointer active:scale-95"
                 >
-                  {copiedReport ? <Check size={16} className="text-emerald-600" /> : <Copy size={16} />}
+                  {copiedReport ? <Check size={16} className="text-[#145C46]" /> : <Copy size={16} />}
                   {copiedReport ? 'Copiado!' : 'Copiar Texto'}
                 </button>
               )}
@@ -243,7 +241,7 @@ const AiConsultant: React.FC<AiConsultantProps> = ({ farmData, farmName = "Sua F
               <button
                 onClick={handleGenerateReport}
                 disabled={isLoadingReport}
-                className="bg-green-700 hover:bg-green-800 text-white px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all shadow-md flex items-center gap-2 disabled:opacity-50 cursor-pointer active:scale-95"
+                className="bg-[#145C46] hover:bg-[#0E4434] text-white px-4 py-2.5 rounded-lg text-sm font-semibold transition-all shadow-xs flex items-center gap-2 disabled:opacity-50 cursor-pointer active:scale-95"
               >
                 <RefreshCcw size={16} className={isLoadingReport ? 'animate-spin' : ''} />
                 {isLoadingReport ? 'Analisando...' : 'Atualizar Diagnóstico'}
@@ -252,20 +250,20 @@ const AiConsultant: React.FC<AiConsultantProps> = ({ farmData, farmName = "Sua F
           </div>
 
           {isLoadingReport ? (
-            <div className="bg-white rounded-[2.5rem] p-12 shadow-sm border border-gray-100 text-center space-y-4">
-              <div className="w-16 h-16 bg-green-50 text-green-600 rounded-full flex items-center justify-center mx-auto animate-pulse">
-                <Sparkles size={32} className="animate-spin" />
+            <div className="agro-card p-12 text-center space-y-4">
+              <div className="w-14 h-14 bg-[#DCEDE4] text-[#145C46] rounded-full flex items-center justify-center mx-auto">
+                <Sparkles size={28} className="animate-spin" />
               </div>
-              <div className="max-w-md mx-auto space-y-2">
-                <h4 className="text-base font-black text-gray-900">O Consultor IA está auditando a sua fazenda...</h4>
-                <p className="text-xs text-gray-500 font-medium">
+              <div className="max-w-md mx-auto space-y-1.5">
+                <h4 className="text-base font-semibold text-[#20332C]">O Consultor IA está auditando a sua fazenda...</h4>
+                <p className="text-[13px] text-[#64766C] font-normal leading-relaxed">
                   Cruzando peso médio dos animais, histórico de GMD, saldo financeiro, custos diários e insumos em estoque.
                 </p>
               </div>
             </div>
           ) : reportText ? (
-            <div className="bg-white rounded-[2.5rem] p-6 md:p-8 shadow-sm border border-gray-100 space-y-6">
-              <div className="prose prose-green max-w-none text-gray-800 leading-relaxed text-sm">
+            <div className="agro-card p-6 md:p-8 space-y-5">
+              <div className="space-y-4 text-[#20332C] leading-relaxed text-sm">
                 {/* Formatação estilizada do Markdown recebido da IA */}
                 {reportText.split('### ').map((section, idx) => {
                   if (!section.trim()) return null;
@@ -273,32 +271,32 @@ const AiConsultant: React.FC<AiConsultantProps> = ({ farmData, farmName = "Sua F
                   const title = lines[0];
                   const body = lines.slice(1).join('\n');
 
-                  let cardStyle = "bg-gray-50 border-gray-200 text-gray-800";
-                  let titleColor = "text-gray-900";
+                  let cardStyle = "bg-[#F6F8F5] border-[#E3EAE6] text-[#20332C]";
+                  let titleColor = "text-[#20332C]";
 
                   if (title.includes("Pontos Positivos")) {
-                    cardStyle = "bg-emerald-50/70 border-emerald-200/80 text-emerald-950";
-                    titleColor = "text-emerald-900";
+                    cardStyle = "bg-[#DCEDE4]/50 border-[#DCEDE4] text-[#20332C]";
+                    titleColor = "text-[#145C46]";
                   } else if (title.includes("Pontos Negativos")) {
-                    cardStyle = "bg-red-50/70 border-red-200/80 text-red-950";
-                    titleColor = "text-red-900";
+                    cardStyle = "bg-rose-50/70 border-rose-200 text-rose-950";
+                    titleColor = "text-rose-800";
                   } else if (title.includes("Gargalos")) {
-                    cardStyle = "bg-amber-50/70 border-amber-200/80 text-amber-950";
-                    titleColor = "text-amber-900";
+                    cardStyle = "bg-amber-50/70 border-amber-200 text-amber-950";
+                    titleColor = "text-amber-800";
                   } else if (title.includes("Preocupações")) {
-                    cardStyle = "bg-blue-50/70 border-blue-200/80 text-blue-950";
-                    titleColor = "text-blue-900";
+                    cardStyle = "bg-sky-50/70 border-sky-200 text-sky-950";
+                    titleColor = "text-sky-800";
                   } else if (title.includes("Plano de Ação") || title.includes("Como Melhorar")) {
-                    cardStyle = "bg-gradient-to-br from-green-900 to-emerald-900 border-green-700 text-white shadow-lg";
-                    titleColor = "text-emerald-300";
+                    cardStyle = "bg-[#DCEDE4]/80 border-[#218568]/40 text-[#20332C]";
+                    titleColor = "text-[#145C46]";
                   }
 
                   return (
-                    <div key={idx} className={`p-6 rounded-2xl border ${cardStyle} transition-all space-y-3`}>
-                      <h3 className={`text-base font-black tracking-tight flex items-center gap-2 ${titleColor}`}>
+                    <div key={idx} className={`p-5 rounded-xl border ${cardStyle} transition-all space-y-2.5`}>
+                      <h3 className={`text-base font-semibold leading-snug flex items-center gap-2 ${titleColor}`}>
                         {title}
                       </h3>
-                      <div className="text-xs md:text-sm font-medium leading-relaxed whitespace-pre-line">
+                      <div className="text-sm font-normal leading-relaxed whitespace-pre-line">
                         {body}
                       </div>
                     </div>
@@ -307,9 +305,9 @@ const AiConsultant: React.FC<AiConsultantProps> = ({ farmData, farmName = "Sua F
               </div>
             </div>
           ) : (
-            <div className="bg-white rounded-[2.5rem] p-12 shadow-sm border border-gray-100 text-center space-y-4">
-              <Bot size={48} className="text-green-300 mx-auto" />
-              <p className="text-sm font-bold text-gray-600">Clique em "Atualizar Diagnóstico" para ler os dados da sua fazenda.</p>
+            <div className="agro-card p-12 text-center space-y-3">
+              <Bot size={44} className="text-[#218568] mx-auto" />
+              <p className="text-sm font-medium text-[#64766C]">Clique em "Atualizar Diagnóstico" para ler os dados da sua fazenda.</p>
             </div>
           )}
         </div>
@@ -317,17 +315,17 @@ const AiConsultant: React.FC<AiConsultantProps> = ({ farmData, farmName = "Sua F
 
       {/* CONTEÚDO DA ABA 2: CHAT IA */}
       {activeTab === 'chat' && (
-        <div className="bg-white rounded-[2.5rem] shadow-sm border border-gray-100 overflow-hidden flex flex-col h-[650px]">
+        <div className="agro-card overflow-hidden flex flex-col h-[650px]">
           {/* Header do Chat */}
-          <div className="p-4 md:p-6 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
+          <div className="p-4 md:p-5 bg-[#F6F8F5] border-b border-[#E3EAE6] flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-green-700 text-white flex items-center justify-center font-bold shadow-sm">
-                <Bot size={22} />
+              <div className="w-10 h-10 rounded-xl bg-[#145C46] text-white flex items-center justify-center shadow-xs">
+                <Bot size={20} />
               </div>
               <div>
-                <h3 className="text-sm font-black text-gray-900 uppercase tracking-tight">Consultor Pecuário IA</h3>
-                <p className="text-[11px] font-medium text-emerald-600 flex items-center gap-1">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span> Online para orientar a fazenda {farmName}
+                <h3 className="text-base font-semibold text-[#20332C] leading-snug">Consultor Pecuário IA</h3>
+                <p className="text-xs font-normal text-[#145C46] flex items-center gap-1.5 mt-0.5">
+                  <span className="w-2 h-2 rounded-full bg-[#218568]"></span> Online para orientar a fazenda {farmName}
                 </p>
               </div>
             </div>
@@ -341,37 +339,37 @@ const AiConsultant: React.FC<AiConsultantProps> = ({ farmData, farmName = "Sua F
                   timestamp: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
                 }
               ])}
-              className="text-gray-400 hover:text-gray-600 text-xs font-bold transition-colors flex items-center gap-1"
+              className="text-[#64766C] hover:text-[#20332C] text-xs font-semibold transition-colors flex items-center gap-1.5 cursor-pointer"
               title="Reiniciar Conversa"
             >
-              <RefreshCcw size={14} /> Limpar Conversa
+              <RefreshCcw size={14} /> Limpar conversa
             </button>
           </div>
 
           {/* Histórico do Chat */}
-          <div className="flex-1 p-4 md:p-6 overflow-y-auto space-y-4 custom-scrollbar bg-gray-50/50">
+          <div className="flex-1 p-4 md:p-6 overflow-y-auto space-y-4 custom-scrollbar bg-[#F6F8F5]/40">
             {chatMessages.map((msg, idx) => (
               <div
                 key={`${msg.id}-${idx}`}
                 className={`flex gap-3 max-w-3xl ${msg.role === 'user' ? 'ml-auto flex-row-reverse' : ''}`}
               >
                 <div
-                  className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 text-white font-bold text-xs ${
-                    msg.role === 'user' ? 'bg-green-800' : 'bg-emerald-600'
+                  className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 text-white font-semibold text-xs ${
+                    msg.role === 'user' ? 'bg-[#145C46]' : 'bg-[#218568]'
                   }`}
                 >
                   {msg.role === 'user' ? <User size={16} /> : <Bot size={16} />}
                 </div>
 
                 <div
-                  className={`p-4 rounded-2xl text-xs md:text-sm leading-relaxed space-y-1 ${
+                  className={`p-4 rounded-xl text-sm leading-relaxed space-y-1.5 ${
                     msg.role === 'user'
-                      ? 'bg-green-800 text-white font-medium rounded-tr-none'
-                      : 'bg-white border border-gray-100 text-gray-800 shadow-sm rounded-tl-none font-normal'
+                      ? 'bg-[#145C46] text-white font-normal rounded-tr-none'
+                      : 'bg-white border border-[#E3EAE6] text-[#20332C] shadow-2xs rounded-tl-none font-normal'
                   }`}
                 >
-                  <div className="whitespace-pre-line font-medium">{msg.content}</div>
-                  <p className={`text-[10px] text-right ${msg.role === 'user' ? 'text-green-200' : 'text-gray-400'}`}>
+                  <div className="whitespace-pre-line">{msg.content}</div>
+                  <p className={`text-xs text-right font-nums ${msg.role === 'user' ? 'text-[#DCEDE4]' : 'text-[#64766C]'}`}>
                     {msg.timestamp}
                   </p>
                 </div>
@@ -380,14 +378,14 @@ const AiConsultant: React.FC<AiConsultantProps> = ({ farmData, farmName = "Sua F
 
             {isSendingChat && (
               <div className="flex gap-3">
-                <div className="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0">
+                <div className="w-8 h-8 rounded-lg bg-[#218568] text-white flex items-center justify-center shrink-0">
                   <Bot size={16} />
                 </div>
-                <div className="bg-white border border-gray-100 p-4 rounded-2xl rounded-tl-none shadow-sm flex items-center gap-2 text-xs text-gray-500">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-bounce"></span>
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-bounce [animation-delay:0.2s]"></span>
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-bounce [animation-delay:0.4s]"></span>
-                  <span className="ml-1 font-bold text-gray-600">Consultor calculando recomendação...</span>
+                <div className="bg-white border border-[#E3EAE6] p-4 rounded-xl rounded-tl-none shadow-2xs flex items-center gap-2 text-xs text-[#64766C]">
+                  <span className="w-2 h-2 rounded-full bg-[#218568] animate-bounce"></span>
+                  <span className="w-2 h-2 rounded-full bg-[#218568] animate-bounce [animation-delay:0.2s]"></span>
+                  <span className="w-2 h-2 rounded-full bg-[#218568] animate-bounce [animation-delay:0.4s]"></span>
+                  <span className="ml-1 font-medium text-[#20332C]">Consultor calculando recomendação...</span>
                 </div>
               </div>
             )}
@@ -395,16 +393,16 @@ const AiConsultant: React.FC<AiConsultantProps> = ({ farmData, farmName = "Sua F
           </div>
 
           {/* Dúvidas Rápidas */}
-          <div className="px-4 py-2 bg-white border-t border-gray-100 overflow-x-auto custom-scrollbar flex items-center gap-2">
-            <span className="text-[10px] font-black text-gray-400 uppercase tracking-wider shrink-0 flex items-center gap-1">
-              <Lightbulb size={12} className="text-amber-500" /> Dúvidas Frequentes:
+          <div className="px-4 py-2.5 bg-white border-t border-[#E3EAE6] overflow-x-auto custom-scrollbar flex items-center gap-2">
+            <span className="text-xs font-medium text-[#64766C] shrink-0 flex items-center gap-1">
+              <Lightbulb size={13} className="text-amber-500" /> Dúvidas frequentes:
             </span>
             {quickQuestions.map((q, i) => (
               <button
                 key={`quick-${i}-${q.slice(0, 15)}`}
                 onClick={() => handleSendMessage(q)}
                 disabled={isSendingChat}
-                className="bg-gray-50 hover:bg-green-50 text-gray-700 hover:text-green-800 border border-gray-200 hover:border-green-300 px-3 py-1.5 rounded-full text-[11px] font-bold shrink-0 transition-all cursor-pointer"
+                className="bg-[#F6F8F5] hover:bg-[#E5F2EB] text-[#20332C] hover:text-[#145C46] border border-[#E3EAE6] px-3 py-1.5 rounded-lg text-xs font-medium shrink-0 transition-all cursor-pointer"
               >
                 {q}
               </button>
@@ -412,13 +410,13 @@ const AiConsultant: React.FC<AiConsultantProps> = ({ farmData, farmName = "Sua F
           </div>
 
           {/* Input de Envio */}
-          <div className="p-4 bg-white border-t border-gray-100">
+          <div className="p-4 bg-white border-t border-[#E3EAE6]">
             <form
               onSubmit={(e) => {
                 e.preventDefault();
                 handleSendMessage();
               }}
-              className="flex items-center gap-2"
+              className="flex items-center gap-2.5"
             >
               <input
                 type="text"
@@ -426,12 +424,12 @@ const AiConsultant: React.FC<AiConsultantProps> = ({ farmData, farmName = "Sua F
                 onChange={(e) => setInputMessage(e.target.value)}
                 placeholder="Pergunte ao Consultor sobre manejo, nutrição, custos, sanidade..."
                 disabled={isSendingChat}
-                className="flex-1 bg-gray-50 border border-gray-200 rounded-2xl px-4 py-3 text-xs md:text-sm font-medium focus:outline-none focus:ring-2 focus:ring-green-600 focus:bg-white transition-all"
+                className="flex-1 bg-[#F6F8F5] border border-[#E3EAE6] rounded-lg px-4 py-2.5 text-sm font-normal text-[#20332C] focus:outline-none focus:ring-2 focus:ring-[#145C46] focus:bg-white transition-all"
               />
               <button
                 type="submit"
                 disabled={!inputMessage.trim() || isSendingChat}
-                className="bg-green-700 hover:bg-green-800 text-white p-3 rounded-2xl shadow-md transition-all disabled:opacity-40 cursor-pointer active:scale-95 shrink-0"
+                className="bg-[#145C46] hover:bg-[#0E4434] text-white p-2.5 rounded-lg shadow-xs transition-all disabled:opacity-40 cursor-pointer active:scale-95 shrink-0"
               >
                 <Send size={18} />
               </button>

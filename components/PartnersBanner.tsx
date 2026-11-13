@@ -207,64 +207,61 @@ const PartnersBanner: React.FC<PartnersBannerProps> = ({ currentUser }) => {
 
   return (
     <div className="w-full font-sans">
-      <div className="bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 rounded-2xl p-5 md:p-6 text-white shadow-xl border border-emerald-900/40 relative overflow-hidden">
+      <div className="bg-white rounded-xl p-4 sm:p-5 text-[#20332C] shadow-xs border border-[#E3EAE6] relative overflow-hidden">
         
-        <div className="absolute top-0 right-0 -mt-8 -mr-8 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 left-1/3 -mb-8 w-64 h-64 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
-
         {/* Top Header of Banner */}
-        <div className="relative z-1 flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 mb-4 border-b border-slate-800">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-emerald-600/90 text-white flex items-center justify-center shadow-md shadow-emerald-950/40 border border-emerald-400/30 shrink-0">
-              <Handshake size={22} className="text-emerald-100" />
+        <div className="flex items-center justify-between gap-3 pb-3 mb-3 border-b border-[#E3EAE6]">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-8 h-8 rounded-lg bg-[#DCEDE4] text-[#145C46] flex items-center justify-center shrink-0 border border-[#DCEDE4]">
+              <Handshake size={18} />
             </div>
             <div className="min-w-0">
-              <div className="flex items-center gap-2 flex-wrap">
-                <h3 className="text-sm sm:text-base font-extrabold text-white tracking-tight">
+              <div className="flex items-center gap-2">
+                <h3 className="text-base font-semibold text-[#20332C] tracking-normal truncate">
                   Vitrine de Parceiros & Soluções
                 </h3>
-                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 shrink-0">
+                <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-[#DCEDE4] text-[#145C46] shrink-0">
                   3 Espaços
                 </span>
 
                 {isAdmin && (
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider bg-amber-500/20 text-amber-300 border border-amber-500/40 shrink-0">
-                    <ShieldCheck size={10} />
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium bg-amber-50 text-amber-800 border border-amber-200 shrink-0">
+                    <ShieldCheck size={12} />
                     <span>Admin</span>
                   </span>
                 )}
               </div>
-              <p className="text-xs text-slate-300 line-clamp-2 sm:line-clamp-none">
+              <p className="text-xs text-[#64766C] truncate mt-0.5">
                 Insumos, equipamentos e cupons de desconto para pecuária de alta rentabilidade.
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 self-start sm:self-auto shrink-0 flex-wrap">
+          <div className="flex items-center gap-2 shrink-0">
             <button
               onClick={() => handleOpenContact()}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-emerald-200 bg-emerald-950/80 hover:bg-emerald-900 rounded-xl border border-emerald-700/60 transition-all active:scale-95 shadow-sm cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 text-sm font-semibold text-white bg-[#145C46] hover:bg-[#0E4434] rounded-lg transition-all active:scale-95 shadow-xs cursor-pointer"
               title="Informações para anunciar sua empresa"
             >
-              <Megaphone size={14} className="text-emerald-300" />
+              <Megaphone size={14} />
               <span>Anuncie Aqui</span>
             </button>
 
             {isAdmin && (
               <button
                 onClick={() => openEditor(0)}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-amber-300 bg-amber-950/60 hover:bg-amber-900/80 hover:text-white rounded-xl border border-amber-700/50 transition-all active:scale-95 shadow-sm cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-semibold text-amber-900 bg-amber-50 hover:bg-amber-100 rounded-lg border border-amber-200 transition-all active:scale-95 shadow-xs cursor-pointer"
                 title="Gerenciar e editar os 3 espaços de parceiros (Apenas Administrador)"
               >
-                <Settings size={14} className="text-amber-400" />
-                <span className="hidden xs:inline">Gerenciar Espaços</span>
+                <Settings size={14} className="text-amber-700" />
+                <span className="hidden md:inline">Gerenciar</span>
               </button>
             )}
           </div>
         </div>
 
-        {/* 3 Partner Slots */}
-        <div className="relative z-1 grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* 3 Partner Slots - Spacious Grid with 10-15% more height and comfortable typography */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
           {partnerSlots.map((slot, index) => {
             const isOccupied = slot.isOccupied;
             const hasCoupon = Boolean(slot.couponCode && slot.couponCode.trim().length > 0);
@@ -273,43 +270,43 @@ const PartnersBanner: React.FC<PartnersBannerProps> = ({ currentUser }) => {
               <div 
                 key={slot.id || `slot-${index}`}
                 className={`
-                  rounded-xl p-4 transition-all duration-200 flex flex-col justify-between relative group
+                  rounded-xl p-3.5 sm:p-4 transition-all duration-200 flex flex-col justify-between relative group min-h-[195px]
                   ${isOccupied 
-                    ? 'bg-slate-900/90 border border-slate-800 hover:border-emerald-500/70 shadow-md' 
-                    : 'bg-slate-900/40 border border-dashed border-slate-800 hover:border-emerald-500/60 hover:bg-slate-900/60'}
+                    ? 'bg-[#FAFCFA] border border-[#E3EAE6] hover:border-[#145C46] shadow-xs' 
+                    : 'bg-[#F6F8F5] border border-dashed border-[#CBD5E1] hover:border-[#145C46]'}
                 `}
               >
                 {/* Header Tag and Badge */}
-                <div className="flex items-center justify-between gap-2 mb-3">
-                  <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 bg-slate-800/80 border border-slate-700 px-2 py-0.5 rounded-md">
+                <div className="flex items-center justify-between gap-2 mb-2.5">
+                  <span className="text-xs font-medium text-[#64766C] bg-white border border-[#E3EAE6] px-2 py-0.5 rounded-md">
                     Espaço #{String(slot.slotNumber || index + 1).padStart(2, '0')}
                   </span>
 
                   <div className="flex items-center gap-1.5">
                     {hasCoupon && (
-                      <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 flex items-center gap-1 animate-pulse">
-                        <Ticket size={10} />
+                      <span className="text-xs font-semibold px-2 py-0.5 rounded-md bg-amber-100 text-amber-800 border border-amber-300 flex items-center gap-1">
+                        <Ticket size={11} />
                         <span>{slot.couponDiscount || 'Cupom'}</span>
                       </span>
                     )}
 
-                    <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${
+                    <span className={`text-xs font-medium px-2 py-0.5 rounded-md border ${
                       isOccupied 
-                        ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30' 
-                        : 'bg-amber-500/15 text-amber-300 border-amber-500/30 animate-pulse'
+                        ? 'bg-[#DCEDE4] text-[#145C46] border-[#DCEDE4]' 
+                        : 'bg-amber-50 text-amber-700 border-amber-200'
                     }`}>
-                      {slot.badge || (isOccupied ? 'Parceiro Oficial' : 'Espaço Disponível')}
+                      {slot.badge || (isOccupied ? 'Parceiro' : 'Disponível')}
                     </span>
                   </div>
                 </div>
 
                 {/* Main Content */}
                 <div className="space-y-2 mb-3">
-                  <div className="flex items-start gap-3">
-                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 border overflow-hidden p-1 ${
+                  <div className="flex items-center gap-3">
+                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 border overflow-hidden p-1 ${
                       isOccupied 
-                        ? 'bg-slate-950 border-slate-700 shadow-inner' 
-                        : 'bg-slate-800/50 border-dashed border-slate-700'
+                        ? 'bg-white border-[#E3EAE6] shadow-xs' 
+                        : 'bg-white border-dashed border-[#CBD5E1]'
                     }`}>
                       {slot.logoUrl ? (
                         <img 
@@ -327,16 +324,16 @@ const PartnersBanner: React.FC<PartnersBannerProps> = ({ currentUser }) => {
                     </div>
 
                     <div className="min-w-0 flex-1">
-                      <h4 className="text-sm font-bold text-white tracking-tight truncate group-hover:text-emerald-300 transition-colors">
+                      <h4 className="text-sm font-semibold text-[#20332C] truncate group-hover:text-[#145C46] transition-colors leading-snug">
                         {slot.name}
                       </h4>
-                      <p className="text-[11px] font-semibold text-emerald-400 truncate">
+                      <p className="text-xs font-medium text-[#145C46] truncate leading-tight mt-0.5">
                         {slot.category}
                       </p>
                     </div>
                   </div>
 
-                  <p className="text-xs text-slate-300 line-clamp-2 leading-relaxed">
+                  <p className="text-xs text-[#64766C] line-clamp-2 leading-relaxed font-normal">
                     {slot.description}
                   </p>
 
@@ -344,48 +341,48 @@ const PartnersBanner: React.FC<PartnersBannerProps> = ({ currentUser }) => {
                   {isOccupied && hasCoupon && (
                     <div 
                       onClick={(e) => handleDirectCopyCoupon(slot, e)}
-                      className={`mt-2.5 p-2.5 rounded-xl flex items-center justify-between cursor-pointer border transition-all active:scale-98 ${
+                      className={`p-2 rounded-lg flex items-center justify-between cursor-pointer border transition-all active:scale-98 ${
                         copiedCardSlotId === (slot.id || `slot-${slot.slotNumber}`)
-                          ? 'bg-emerald-950/90 border-emerald-500 shadow-md shadow-emerald-950/40 text-emerald-200'
-                          : 'bg-gradient-to-r from-amber-500/10 via-emerald-500/10 to-amber-500/10 border-amber-500/30 hover:border-amber-400 hover:bg-slate-800/80'
+                          ? 'bg-[#DCEDE4] border-[#145C46] text-[#145C46]'
+                          : 'bg-amber-50/90 border-amber-200 hover:border-amber-400 hover:bg-amber-100/50'
                       }`}
                       title={`Clique para copiar o cupom ${slot.couponCode}`}
                     >
                       <div className="flex items-center gap-2 min-w-0">
-                        <div className={`p-1.5 rounded-lg shrink-0 ${
+                        <div className={`p-1 rounded shrink-0 ${
                           copiedCardSlotId === (slot.id || `slot-${slot.slotNumber}`)
-                            ? 'bg-emerald-500/30 text-emerald-300'
-                            : 'bg-amber-500/20 text-amber-300'
+                            ? 'bg-[#145C46] text-white'
+                            : 'bg-amber-200 text-amber-900'
                         }`}>
-                          <Ticket size={14} />
+                          <Ticket size={12} />
                         </div>
-                        <div className="truncate">
-                          <p className="text-[10px] uppercase font-extrabold text-amber-300 leading-none mb-0.5">
-                            {slot.couponDiscount ? `Cupom: ${slot.couponDiscount}` : 'Cupom Promocional'}
-                          </p>
-                          <p className="text-xs font-mono font-black text-white tracking-wider truncate">
+                        <div className="truncate flex items-center gap-1.5">
+                          <span className="text-xs font-semibold text-amber-900">
+                            {slot.couponDiscount ? slot.couponDiscount : 'Cupom'}:
+                          </span>
+                          <span className="text-xs font-nums font-semibold text-[#20332C] truncate">
                             {slot.couponCode}
-                          </p>
+                          </span>
                         </div>
                       </div>
 
                       <button
                         type="button"
                         onClick={(e) => handleDirectCopyCoupon(slot, e)}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 shrink-0 transition-all shadow-sm ${
+                        className={`px-2.5 py-1 rounded text-xs font-semibold flex items-center gap-1 shrink-0 transition-all ${
                           copiedCardSlotId === (slot.id || `slot-${slot.slotNumber}`)
-                            ? 'bg-emerald-500 text-slate-950'
-                            : 'bg-amber-500/20 hover:bg-amber-400 text-amber-200 hover:text-slate-950 border border-amber-500/40'
+                            ? 'bg-[#145C46] text-white'
+                            : 'bg-amber-500 hover:bg-amber-600 text-white'
                         }`}
                       >
                         {copiedCardSlotId === (slot.id || `slot-${slot.slotNumber}`) ? (
                           <>
-                            <Check size={13} className="stroke-[3]" />
-                            <span>Copiado!</span>
+                            <Check size={12} className="stroke-[2.5]" />
+                            <span>Copiado</span>
                           </>
                         ) : (
                           <>
-                            <Copy size={13} />
+                            <Copy size={11} />
                             <span>Copiar</span>
                           </>
                         )}
@@ -394,15 +391,15 @@ const PartnersBanner: React.FC<PartnersBannerProps> = ({ currentUser }) => {
                   )}
                 </div>
 
-                {/* Card Actions */}
-                <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between gap-2 mt-auto">
+                {/* Card Actions - 14px Buttons */}
+                <div className="pt-2.5 border-t border-[#E3EAE6] flex items-center justify-between gap-2 mt-auto">
                   {isOccupied ? (
                     <>
                       <a
                         href={slot.linkUrl || 'https://instagram.com.br/vivendoapecuaria'}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex-1 inline-flex items-center justify-center gap-1.5 py-2 px-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-bold text-xs shadow-sm transition-all active:scale-95"
+                        className="flex-1 inline-flex items-center justify-center gap-1.5 py-2 px-3 bg-[#145C46] hover:bg-[#0E4434] text-white rounded-lg font-semibold text-sm shadow-xs transition-all active:scale-95"
                       >
                         <span>Conhecer Parceiro</span>
                         <ExternalLink size={13} />
@@ -413,13 +410,13 @@ const PartnersBanner: React.FC<PartnersBannerProps> = ({ currentUser }) => {
                           onClick={(e) => handleDirectCopyCoupon(slot, e)}
                           className={`p-2 rounded-lg border transition-colors ${
                             copiedCardSlotId === (slot.id || `slot-${slot.slotNumber}`)
-                              ? 'text-emerald-300 bg-emerald-950 border-emerald-500'
-                              : 'text-amber-300 hover:text-white bg-amber-950/70 hover:bg-amber-900 border-amber-700/60'
+                              ? 'text-[#145C46] bg-[#DCEDE4] border-[#145C46]'
+                              : 'text-amber-800 hover:text-amber-900 bg-amber-50 hover:bg-amber-100 border-amber-200'
                           }`}
                           title={copiedCardSlotId === (slot.id || `slot-${slot.slotNumber}`) ? "Cupom copiado!" : `Copiar cupom (${slot.couponCode})`}
                         >
                           {copiedCardSlotId === (slot.id || `slot-${slot.slotNumber}`) ? (
-                            <Check size={14} className="text-emerald-400 stroke-[2.5]" />
+                            <Check size={14} className="text-[#145C46] stroke-[2.5]" />
                           ) : (
                             <Copy size={14} />
                           )}
@@ -429,7 +426,7 @@ const PartnersBanner: React.FC<PartnersBannerProps> = ({ currentUser }) => {
                       {isAdmin && (
                         <button
                           onClick={() => openEditor(index)}
-                          className="p-2 text-amber-300 hover:text-white bg-slate-800 hover:bg-amber-950 rounded-lg border border-slate-700 hover:border-amber-700 transition-colors"
+                          className="p-2 text-amber-700 hover:text-amber-900 bg-amber-50 hover:bg-amber-100 rounded-lg border border-amber-200 transition-colors"
                           title="Editar este espaço (Admin)"
                         >
                           <Edit3 size={14} />
@@ -440,7 +437,7 @@ const PartnersBanner: React.FC<PartnersBannerProps> = ({ currentUser }) => {
                     <>
                       <button
                         onClick={() => handleOpenContact(slot)}
-                        className="flex-1 inline-flex items-center justify-center gap-1.5 py-2 px-3 bg-gradient-to-r from-amber-600 to-emerald-600 hover:from-amber-500 hover:to-emerald-500 text-white rounded-lg font-bold text-xs shadow-sm transition-all active:scale-95"
+                        className="flex-1 inline-flex items-center justify-center gap-1.5 py-2 px-3 bg-[#218568] hover:bg-[#145C46] text-white rounded-lg font-semibold text-sm shadow-xs transition-all active:scale-95"
                       >
                         <span>Quero Anunciar</span>
                         <ArrowRight size={13} />
@@ -449,7 +446,7 @@ const PartnersBanner: React.FC<PartnersBannerProps> = ({ currentUser }) => {
                       {isAdmin && (
                         <button
                           onClick={() => openEditor(index)}
-                          className="p-2 text-emerald-300 hover:text-white bg-emerald-950 hover:bg-emerald-900 rounded-lg border border-emerald-800 transition-colors"
+                          className="p-2 text-[#145C46] hover:text-[#0E4434] bg-[#DCEDE4] hover:bg-[#E5F2EB] rounded-lg border border-[#DCEDE4] transition-colors"
                           title="Cadastrar marca neste espaço (Admin)"
                         >
                           <Plus size={14} />
@@ -463,22 +460,22 @@ const PartnersBanner: React.FC<PartnersBannerProps> = ({ currentUser }) => {
           })}
         </div>
 
-        {/* Footer info & Admin lock */}
-        <div className="relative z-1 mt-4 pt-3 border-t border-slate-800/80 flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-400">
-          <div className="flex items-center gap-4">
+        {/* Footer info & Admin lock - Compact */}
+        <div className="mt-2.5 pt-2.5 border-t border-[#E3EAE6] flex flex-wrap items-center justify-between gap-2 text-xs text-[#64766C]">
+          <div className="flex items-center gap-3">
             <span className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-emerald-400" />
+              <span className="w-1.5 h-1.5 rounded-full bg-[#145C46]" />
               <span>{occupiedCount} Parceiro(s) Ativo(s)</span>
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
-              <span>{availableCount} Espaço(s) Disponível(is)</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+              <span>{availableCount} Disponível(is)</span>
             </span>
           </div>
 
-          <div className="flex items-center gap-3">
-            <span className="text-slate-400">
-              Interesse em parcerias? Contate <a href="https://instagram.com.br/vivendoapecuaria" target="_blank" rel="noopener noreferrer" className="text-emerald-400 font-bold hover:underline">@vivendoapecuaria</a>
+          <div className="flex items-center gap-2">
+            <span className="text-[#64766C]">
+              Interesse em parcerias? Contate <a href="https://instagram.com.br/vivendoapecuaria" target="_blank" rel="noopener noreferrer" className="text-[#145C46] font-semibold hover:underline">@vivendoapecuaria</a>
             </span>
 
             <button
@@ -489,10 +486,10 @@ const PartnersBanner: React.FC<PartnersBannerProps> = ({ currentUser }) => {
                   setIsPinModalOpen(true);
                 }
               }}
-              className="text-slate-600 hover:text-slate-400 transition-colors p-1"
+              className="text-[#64766C] hover:text-[#20332C] transition-colors p-1 cursor-pointer"
               title={isAdmin ? "Modo Admin Ativo (clique para fechar sessão)" : "Acesso do Administrador"}
             >
-              {isAdmin ? <Unlock size={12} className="text-amber-400" /> : <Lock size={12} />}
+              {isAdmin ? <Unlock size={13} className="text-amber-600" /> : <Lock size={13} />}
             </button>
           </div>
         </div>
@@ -500,24 +497,24 @@ const PartnersBanner: React.FC<PartnersBannerProps> = ({ currentUser }) => {
 
       {/* Modal: Exibir Cupom de Desconto */}
       {isCouponModalOpen && selectedSlotForCoupon && (
-        <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/75 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-          <div className="bg-slate-900 w-full max-w-md rounded-2xl shadow-2xl overflow-hidden border border-amber-500/40 text-white relative">
+        <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/50 backdrop-blur-xs p-4 animate-in fade-in duration-200 font-sans">
+          <div className="bg-white w-full max-w-md rounded-2xl shadow-xl overflow-hidden border border-[#E3EAE6] text-[#20332C] relative">
             
             <button 
               onClick={() => setIsCouponModalOpen(false)}
-              className="absolute top-4 right-4 p-1.5 text-slate-400 hover:text-white rounded-lg bg-slate-800/80 hover:bg-slate-800 transition-colors z-10"
+              className="absolute top-4 right-4 p-1.5 text-white/80 hover:text-white rounded-lg hover:bg-white/10 transition-colors z-10 cursor-pointer"
             >
               <X size={18} />
             </button>
 
-            <div className="bg-gradient-to-r from-amber-600 via-emerald-600 to-amber-600 p-6 text-center relative overflow-hidden">
-              <div className="inline-flex p-3 bg-white/10 rounded-2xl backdrop-blur-md mb-2 border border-white/20">
-                <Gift size={28} className="text-amber-200" />
+            <div className="bg-[#145C46] p-6 text-center relative overflow-hidden text-white">
+              <div className="inline-flex p-3 bg-white/10 rounded-xl mb-2 border border-white/20">
+                <Gift size={26} className="text-amber-200" />
               </div>
-              <h3 className="text-xl font-extrabold tracking-tight text-white">
+              <h3 className="text-lg font-semibold leading-snug text-white">
                 Cupom Exclusivo de Parceiro
               </h3>
-              <p className="text-xs text-amber-100 font-medium mt-1">
+              <p className="text-xs text-[#DCEDE4] font-normal mt-1">
                 {selectedSlotForCoupon.name}
               </p>
             </div>
@@ -526,43 +523,43 @@ const PartnersBanner: React.FC<PartnersBannerProps> = ({ currentUser }) => {
               
               {selectedSlotForCoupon.couponDiscount && (
                 <div className="text-center">
-                  <span className="inline-block px-3 py-1 bg-amber-500/20 text-amber-300 border border-amber-500/40 rounded-full text-xs font-bold uppercase tracking-wider">
+                  <span className="inline-block px-3 py-1 bg-amber-50 text-amber-800 border border-amber-200 rounded-md text-xs font-semibold">
                     {selectedSlotForCoupon.couponDiscount}
                   </span>
                 </div>
               )}
 
               {selectedSlotForCoupon.couponDescription && (
-                <p className="text-xs text-slate-300 text-center leading-relaxed">
+                <p className="text-[13px] text-[#64766C] text-center leading-relaxed">
                   {selectedSlotForCoupon.couponDescription}
                 </p>
               )}
 
               {/* Cupom Box with Copy */}
-              <div className="p-4 bg-slate-950 border border-dashed border-amber-500/50 rounded-xl flex items-center justify-between gap-3">
+              <div className="p-4 bg-[#F6F8F5] border border-dashed border-amber-400 rounded-xl flex items-center justify-between gap-3">
                 <div className="min-w-0">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">Código do Cupom:</span>
-                  <span className="text-lg font-mono font-black text-amber-400 tracking-wider">
+                  <span className="text-xs font-medium text-[#64766C] block">Código do cupom:</span>
+                  <span className="text-lg font-nums font-semibold text-[#20332C]">
                     {selectedSlotForCoupon.couponCode}
                   </span>
                 </div>
 
                 <button
                   onClick={() => handleCopyCouponCode(selectedSlotForCoupon.couponCode || '')}
-                  className={`px-3.5 py-2.5 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-all ${
+                  className={`px-4 py-2.5 rounded-lg font-semibold text-sm flex items-center gap-1.5 transition-all cursor-pointer ${
                     copiedCoupon
-                      ? 'bg-emerald-600 text-white'
-                      : 'bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-md'
+                      ? 'bg-[#145C46] text-white'
+                      : 'bg-amber-500 hover:bg-amber-600 text-white shadow-xs'
                   }`}
                 >
                   {copiedCoupon ? (
                     <>
-                      <Check size={14} />
+                      <Check size={15} />
                       <span>Copiado!</span>
                     </>
                   ) : (
                     <>
-                      <Copy size={14} />
+                      <Copy size={15} />
                       <span>Copiar</span>
                     </>
                   )}
@@ -570,13 +567,13 @@ const PartnersBanner: React.FC<PartnersBannerProps> = ({ currentUser }) => {
               </div>
 
               {/* Instructions */}
-              <div className="p-3 bg-slate-800/60 rounded-xl border border-slate-700/60 text-[11px] text-slate-300 space-y-1">
-                <p className="font-bold text-white">Como usar:</p>
+              <div className="p-3.5 bg-[#F6F8F5] rounded-xl border border-[#E3EAE6] text-xs text-[#64766C] space-y-1 leading-relaxed">
+                <p className="font-semibold text-[#20332C]">Como usar:</p>
                 <p>1. Copie o código acima.</p>
                 <p>2. Informe ao parceiro no WhatsApp ou no carrinho de compras no site oficial.</p>
               </div>
 
-              <div className="space-y-2 pt-2">
+              <div className="space-y-2.5 pt-2">
                 {selectedSlotForCoupon.phoneOrWhatsapp && (
                   <a
                     href={`https://wa.me/55${selectedSlotForCoupon.phoneOrWhatsapp.replace(/\D/g, '')}?text=${encodeURIComponent(
@@ -584,7 +581,7 @@ const PartnersBanner: React.FC<PartnersBannerProps> = ({ currentUser }) => {
                     )}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold text-xs shadow-md flex items-center justify-center gap-2 transition-all active:scale-98"
+                    className="w-full py-2.5 px-4 bg-[#145C46] hover:bg-[#0E4434] text-white rounded-lg font-semibold text-sm shadow-xs flex items-center justify-center gap-2 transition-all"
                   >
                     <MessageCircle size={16} />
                     <span>Usar via WhatsApp ({selectedSlotForCoupon.phoneOrWhatsapp})</span>
@@ -596,7 +593,7 @@ const PartnersBanner: React.FC<PartnersBannerProps> = ({ currentUser }) => {
                     href={selectedSlotForCoupon.linkUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-full py-2.5 px-4 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl font-bold text-xs border border-slate-700 flex items-center justify-center gap-2 transition-all"
+                    className="w-full py-2.5 px-4 bg-[#F6F8F5] hover:bg-[#E5F2EB] text-[#20332C] rounded-lg font-semibold text-sm border border-[#E3EAE6] flex items-center justify-center gap-2 transition-all"
                   >
                     <span>Ir para o Site do Parceiro</span>
                     <ExternalLink size={14} />
@@ -611,34 +608,34 @@ const PartnersBanner: React.FC<PartnersBannerProps> = ({ currentUser }) => {
 
       {/* Modal: Validação de PIN de Administrador */}
       {isPinModalOpen && (
-        <div className="fixed inset-0 z-[75] flex items-center justify-center bg-black/75 backdrop-blur-sm p-4 animate-in fade-in duration-150">
-          <div className="bg-white w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden border border-slate-200">
-            <div className="bg-slate-900 p-5 text-white flex items-center justify-between border-b border-slate-800">
+        <div className="fixed inset-0 z-[75] flex items-center justify-center bg-black/50 backdrop-blur-xs p-4 animate-in fade-in duration-150 font-sans">
+          <div className="bg-white w-full max-w-sm rounded-2xl shadow-xl overflow-hidden border border-[#E3EAE6]">
+            <div className="bg-[#145C46] p-5 text-white flex items-center justify-between">
               <div className="flex items-center gap-2.5">
-                <div className="p-2 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                <div className="p-2 rounded-lg bg-white/10 text-white">
                   <KeyRound size={18} />
                 </div>
                 <div>
-                  <h4 className="text-sm font-extrabold text-white">Acesso do Administrador</h4>
-                  <p className="text-[11px] text-slate-400">Gerenciamento dos Parceiros</p>
+                  <h4 className="text-base font-semibold text-white leading-snug">Acesso do Administrador</h4>
+                  <p className="text-xs text-[#DCEDE4] font-normal">Gerenciamento dos Parceiros</p>
                 </div>
               </div>
               <button 
                 onClick={() => { setIsPinModalOpen(false); setPinError(''); setInputPin(''); }}
-                className="p-1 text-slate-400 hover:text-white rounded-lg"
+                className="p-1.5 text-white/80 hover:text-white rounded-lg cursor-pointer"
               >
                 <X size={18} />
               </button>
             </div>
 
             <form onSubmit={handleVerifyPin} className="p-5 space-y-4">
-              <p className="text-xs text-slate-600 leading-relaxed">
+              <p className="text-[13px] text-[#64766C] leading-relaxed">
                 Insira a senha mestra ou PIN de administrador para desbloquear o gerenciamento dos espaços de parceiros:
               </p>
 
               <div className="space-y-1.5">
-                <label className="text-[11px] font-bold text-slate-700 uppercase tracking-wider">
-                  PIN Administrativo
+                <label className="text-xs font-medium text-[#64766C] block">
+                  PIN administrativo
                 </label>
                 <input 
                   type="password"
@@ -647,12 +644,12 @@ const PartnersBanner: React.FC<PartnersBannerProps> = ({ currentUser }) => {
                   value={inputPin}
                   onChange={(e) => { setInputPin(e.target.value); setPinError(''); }}
                   placeholder="Digite a senha..."
-                  className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 focus:ring-2 focus:ring-emerald-500 outline-none"
+                  className="w-full border border-[#E3EAE6] rounded-lg px-3.5 py-2.5 text-sm text-[#20332C] bg-[#F6F8F5] focus:bg-white focus:ring-2 focus:ring-[#145C46] outline-none"
                 />
               </div>
 
               {pinError && (
-                <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-xl font-medium flex items-center gap-2">
+                <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-lg font-medium flex items-center gap-2">
                   <ShieldAlert size={15} className="shrink-0 text-rose-600" />
                   <span>{pinError}</span>
                 </div>
@@ -662,13 +659,13 @@ const PartnersBanner: React.FC<PartnersBannerProps> = ({ currentUser }) => {
                 <button
                   type="button"
                   onClick={() => { setIsPinModalOpen(false); setPinError(''); setInputPin(''); }}
-                  className="px-3.5 py-2 text-slate-600 hover:bg-slate-100 rounded-xl text-xs font-bold transition-colors"
+                  className="px-4 py-2 text-[#64766C] hover:bg-[#F6F8F5] rounded-lg text-sm font-semibold transition-colors cursor-pointer"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-md transition-all flex items-center gap-1.5"
+                  className="px-4 py-2 bg-[#145C46] hover:bg-[#0E4434] text-white rounded-lg text-sm font-semibold shadow-xs transition-all flex items-center gap-1.5 cursor-pointer"
                 >
                   <Check size={15} />
                   <span>Confirmar</span>
@@ -681,38 +678,38 @@ const PartnersBanner: React.FC<PartnersBannerProps> = ({ currentUser }) => {
 
       {/* Modal: Gerenciar / Editar os 3 Espaços (Exclusivo Admin) */}
       {isEditModalOpen && isAdmin && (
-        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 overflow-y-auto">
-          <div className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden border border-slate-200 animate-in zoom-in-95 duration-200 my-8">
+        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/50 backdrop-blur-xs p-4 overflow-y-auto font-sans">
+          <div className="bg-white w-full max-w-2xl rounded-2xl shadow-xl overflow-hidden border border-[#E3EAE6] animate-in zoom-in-95 duration-200 my-8">
             
-            <div className="bg-slate-900 p-5 text-white flex items-center justify-between border-b border-slate-800">
+            <div className="bg-[#145C46] p-5 text-white flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="p-2.5 rounded-xl bg-amber-600 text-white">
+                <div className="p-2.5 rounded-lg bg-white/10 text-white">
                   <Settings size={20} />
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <h3 className="text-base font-extrabold text-white">
+                    <h3 className="text-lg font-semibold text-white leading-snug">
                       Configuração dos 3 Espaços de Parceiros
                     </h3>
-                    <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                    <span className="px-2 py-0.5 rounded-md text-xs font-medium bg-white/15 text-white">
                       Painel Admin
                     </span>
                   </div>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-[#DCEDE4] font-normal mt-0.5">
                     Defina marcas, cupons de desconto, logos e links de cada slot.
                   </p>
                 </div>
               </div>
               <button 
                 onClick={() => setIsEditModalOpen(false)}
-                className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors"
+                className="p-1.5 text-white/80 hover:text-white rounded-lg hover:bg-white/10 transition-colors cursor-pointer"
               >
                 <X size={20} />
               </button>
             </div>
 
             {/* Slot Tab Switcher (Slots 1, 2, 3) */}
-            <div className="p-4 bg-slate-100 border-b border-slate-200 flex items-center gap-2">
+            <div className="p-3.5 bg-[#F6F8F5] border-b border-[#E3EAE6] flex items-center gap-2">
               {[0, 1, 2].map((idx) => {
                 const s = editingSlots[idx];
                 const isActive = activeEditSlotIndex === idx;
@@ -722,14 +719,14 @@ const PartnersBanner: React.FC<PartnersBannerProps> = ({ currentUser }) => {
                     type="button"
                     onClick={() => setActiveEditSlotIndex(idx)}
                     className={`
-                      flex-1 py-2.5 px-3 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-2
+                      flex-1 py-2 px-3 rounded-lg font-semibold text-sm transition-all flex items-center justify-center gap-2 cursor-pointer
                       ${isActive 
-                        ? 'bg-white text-emerald-800 shadow-sm border border-emerald-300 ring-2 ring-emerald-500/20' 
-                        : 'bg-slate-200/80 text-slate-600 hover:bg-white hover:text-slate-900'}
+                        ? 'bg-white text-[#145C46] shadow-2xs border border-[#218568]' 
+                        : 'bg-transparent text-[#64766C] hover:bg-white hover:text-[#20332C]'}
                     `}
                   >
                     <span>Espaço 0{idx + 1}</span>
-                    <span className={`w-2 h-2 rounded-full ${s?.isOccupied ? 'bg-emerald-500' : 'bg-amber-400'}`} />
+                    <span className={`w-2 h-2 rounded-full ${s?.isOccupied ? 'bg-[#218568]' : 'bg-amber-400'}`} />
                   </button>
                 );
               })}
@@ -739,15 +736,15 @@ const PartnersBanner: React.FC<PartnersBannerProps> = ({ currentUser }) => {
             <form onSubmit={handleSaveEdits} className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
               
               {/* Status do Espaço */}
-              <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between">
+              <div className="p-4 bg-[#F6F8F5] border border-[#E3EAE6] rounded-xl flex items-center justify-between gap-3">
                 <div>
-                  <label className="text-xs font-extrabold text-slate-800 block">
+                  <label className="text-sm font-semibold text-[#20332C] block">
                     Status do Espaço #{activeEditSlotIndex + 1}
                   </label>
-                  <p className="text-[11px] text-slate-500">
+                  <p className="text-xs text-[#64766C] mt-0.5">
                     {currentEditSlot?.isOccupied 
-                      ? 'Espaço ATIVO com dados da empresa preenchidos.' 
-                      : 'Espaço DISPONÍVEL com convite para anunciantes.'}
+                      ? 'Espaço ativo com dados da empresa preenchidos.' 
+                      : 'Espaço disponível com convite para anunciantes.'}
                   </p>
                 </div>
 
@@ -755,10 +752,10 @@ const PartnersBanner: React.FC<PartnersBannerProps> = ({ currentUser }) => {
                   <button
                     type="button"
                     onClick={() => updateCurrentEditField('isOccupied', true)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                       currentEditSlot?.isOccupied 
-                        ? 'bg-emerald-600 text-white shadow-sm' 
-                        : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
+                        ? 'bg-[#145C46] text-white shadow-2xs' 
+                        : 'bg-white border border-[#E3EAE6] text-[#64766C] hover:text-[#20332C]'
                     }`}
                   >
                     Ativo / Ocupado
@@ -766,10 +763,10 @@ const PartnersBanner: React.FC<PartnersBannerProps> = ({ currentUser }) => {
                   <button
                     type="button"
                     onClick={() => updateCurrentEditField('isOccupied', false)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                       !currentEditSlot?.isOccupied 
-                        ? 'bg-amber-500 text-white shadow-sm' 
-                        : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
+                        ? 'bg-amber-500 text-white shadow-2xs' 
+                        : 'bg-white border border-[#E3EAE6] text-[#64766C] hover:text-[#20332C]'
                     }`}
                   >
                     Disponível (Vago)
@@ -780,71 +777,71 @@ const PartnersBanner: React.FC<PartnersBannerProps> = ({ currentUser }) => {
               {/* Nome e Categoria */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-700">Nome da Marca / Parceiro</label>
+                  <label className="text-xs font-medium text-[#64766C] block">Nome da marca / parceiro</label>
                   <input 
                     type="text"
                     required
                     value={currentEditSlot?.name || ''}
                     onChange={(e) => updateCurrentEditField('name', e.target.value)}
                     placeholder="Ex: Constant Balanças"
-                    className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
+                    className="w-full border border-[#E3EAE6] rounded-lg px-3.5 py-2.5 text-sm text-[#20332C] bg-[#F6F8F5] focus:bg-white focus:ring-2 focus:ring-[#145C46] outline-none"
                   />
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-700">Categoria / Segmento</label>
+                  <label className="text-xs font-medium text-[#64766C] block">Categoria / segmento</label>
                   <input 
                     type="text"
                     required
                     value={currentEditSlot?.category || ''}
                     onChange={(e) => updateCurrentEditField('category', e.target.value)}
                     placeholder="Ex: Balanças & Pesagem Pecuária"
-                    className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
+                    className="w-full border border-[#E3EAE6] rounded-lg px-3.5 py-2.5 text-sm text-[#20332C] bg-[#F6F8F5] focus:bg-white focus:ring-2 focus:ring-[#145C46] outline-none"
                   />
                 </div>
               </div>
 
               {/* Seção de Cupom de Desconto */}
-              <div className="p-3.5 bg-amber-50/60 border border-amber-200 rounded-xl space-y-3">
+              <div className="p-4 bg-amber-50/60 border border-amber-200 rounded-xl space-y-3">
                 <div className="flex items-center gap-2">
                   <Ticket size={16} className="text-amber-700" />
-                  <label className="text-xs font-extrabold text-amber-900">
+                  <label className="text-sm font-semibold text-amber-900">
                     Cupom de Desconto & Vantagem Promocional
                   </label>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="space-y-1">
-                    <label className="text-[11px] font-bold text-slate-700">Código do Cupom</label>
+                    <label className="text-xs font-medium text-[#64766C] block">Código do cupom</label>
                     <input 
                       type="text"
                       value={currentEditSlot?.couponCode || ''}
                       onChange={(e) => updateCurrentEditField('couponCode', e.target.value.toUpperCase())}
                       placeholder="Ex: CONSTANTVIP"
-                      className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs font-mono uppercase text-slate-900 focus:ring-2 focus:ring-amber-500 outline-none bg-white"
+                      className="w-full border border-[#E3EAE6] rounded-lg px-3 py-2 text-sm font-nums text-[#20332C] focus:ring-2 focus:ring-amber-500 outline-none bg-white"
                     />
                   </div>
 
                   <div className="space-y-1">
-                    <label className="text-[11px] font-bold text-slate-700">Texto de Destaque / Desconto</label>
+                    <label className="text-xs font-medium text-[#64766C] block">Texto de destaque / desconto</label>
                     <input 
                       type="text"
                       value={currentEditSlot?.couponDiscount || ''}
                       onChange={(e) => updateCurrentEditField('couponDiscount', e.target.value)}
                       placeholder="Ex: 10% OFF ou Frete Grátis"
-                      className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-900 focus:ring-2 focus:ring-amber-500 outline-none bg-white"
+                      className="w-full border border-[#E3EAE6] rounded-lg px-3 py-2 text-sm text-[#20332C] focus:ring-2 focus:ring-amber-500 outline-none bg-white"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-[11px] font-bold text-slate-700">Regulamento / Descrição do Cupom</label>
+                  <label className="text-xs font-medium text-[#64766C] block">Regulamento / descrição do cupom</label>
                   <input 
                     type="text"
                     value={currentEditSlot?.couponDescription || ''}
                     onChange={(e) => updateCurrentEditField('couponDescription', e.target.value)}
                     placeholder="Ex: Desconto exclusivo na compra de balanças para fazendas cadastradas."
-                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-900 focus:ring-2 focus:ring-amber-500 outline-none bg-white"
+                    className="w-full border border-[#E3EAE6] rounded-lg px-3 py-2 text-sm text-[#20332C] focus:ring-2 focus:ring-amber-500 outline-none bg-white"
                   />
                 </div>
               </div>
@@ -852,94 +849,94 @@ const PartnersBanner: React.FC<PartnersBannerProps> = ({ currentUser }) => {
               {/* Selo / Telefone */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-700">Selo / Badge de Destaque</label>
+                  <label className="text-xs font-medium text-[#64766C] block">Selo / badge de destaque</label>
                   <input 
                     type="text"
                     value={currentEditSlot?.badge || ''}
                     onChange={(e) => updateCurrentEditField('badge', e.target.value)}
                     placeholder="Ex: Parceiro Oficial, Destaque"
-                    className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
+                    className="w-full border border-[#E3EAE6] rounded-lg px-3.5 py-2.5 text-sm text-[#20332C] bg-[#F6F8F5] focus:bg-white focus:ring-2 focus:ring-[#145C46] outline-none"
                   />
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-700">Telefone / WhatsApp de Contato</label>
+                  <label className="text-xs font-medium text-[#64766C] block">Telefone / WhatsApp de contato</label>
                   <input 
                     type="text"
                     value={currentEditSlot?.phoneOrWhatsapp || ''}
                     onChange={(e) => updateCurrentEditField('phoneOrWhatsapp', e.target.value)}
                     placeholder="Ex: (27) 99631-4111"
-                    className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
+                    className="w-full border border-[#E3EAE6] rounded-lg px-3.5 py-2.5 text-sm text-[#20332C] bg-[#F6F8F5] focus:bg-white focus:ring-2 focus:ring-[#145C46] outline-none"
                   />
                 </div>
               </div>
 
               {/* Descrição Curta */}
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-700">Descrição Comercial Curta</label>
+                <label className="text-xs font-medium text-[#64766C] block">Descrição comercial curta</label>
                 <textarea 
                   rows={2}
                   value={currentEditSlot?.description || ''}
                   onChange={(e) => updateCurrentEditField('description', e.target.value)}
                   placeholder="Resumo dos produtos ou serviços oferecidos..."
-                  className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none resize-none"
+                  className="w-full border border-[#E3EAE6] rounded-lg px-3.5 py-2.5 text-sm text-[#20332C] bg-[#F6F8F5] focus:bg-white focus:ring-2 focus:ring-[#145C46] outline-none resize-none leading-relaxed"
                 />
               </div>
 
               {/* Links e Imagem */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-700">Link de Destino (Site / WhatsApp)</label>
+                  <label className="text-xs font-medium text-[#64766C] block">Link de destino (Site / WhatsApp)</label>
                   <input 
                     type="url"
                     value={currentEditSlot?.linkUrl || ''}
                     onChange={(e) => updateCurrentEditField('linkUrl', e.target.value)}
                     placeholder="https://suaempresa.com.br"
-                    className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
+                    className="w-full border border-[#E3EAE6] rounded-lg px-3.5 py-2.5 text-sm text-[#20332C] bg-[#F6F8F5] focus:bg-white focus:ring-2 focus:ring-[#145C46] outline-none"
                   />
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-700">URL do Logotipo (Opcional)</label>
+                  <label className="text-xs font-medium text-[#64766C] block">URL do logotipo (opcional)</label>
                   <input 
                     type="text"
                     value={currentEditSlot?.logoUrl || ''}
                     onChange={(e) => updateCurrentEditField('logoUrl', e.target.value)}
                     placeholder="URL da imagem do logo"
-                    className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
+                    className="w-full border border-[#E3EAE6] rounded-lg px-3.5 py-2.5 text-sm text-[#20332C] bg-[#F6F8F5] focus:bg-white focus:ring-2 focus:ring-[#145C46] outline-none"
                   />
                 </div>
               </div>
 
               {saveSuccessNotice && (
-                <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-xs font-bold flex items-center gap-2 animate-in fade-in">
-                  <CheckCircle2 size={16} className="text-emerald-600" />
+                <div className="p-3 bg-[#DCEDE4] border border-[#218568]/40 text-[#145C46] rounded-lg text-xs font-semibold flex items-center gap-2 animate-in fade-in">
+                  <CheckCircle2 size={16} className="text-[#145C46]" />
                   <span>Espaços atualizados com sucesso!</span>
                 </div>
               )}
 
               {/* Action Buttons */}
-              <div className="pt-4 border-t border-slate-100 flex items-center justify-between gap-3">
+              <div className="pt-4 border-t border-[#E3EAE6] flex items-center justify-between gap-3">
                 <button
                   type="button"
                   onClick={handleReset}
-                  className="px-3.5 py-2.5 text-slate-500 hover:text-rose-600 text-xs font-bold flex items-center gap-1.5 transition-colors"
+                  className="px-3.5 py-2 text-[#64766C] hover:text-rose-600 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
                 >
                   <RefreshCw size={14} />
-                  <span>Restaurar Padrão</span>
+                  <span>Restaurar padrão</span>
                 </button>
 
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
                     onClick={() => setIsEditModalOpen(false)}
-                    className="px-4 py-2.5 text-slate-600 hover:bg-slate-100 rounded-xl text-xs font-bold transition-colors"
+                    className="px-4 py-2.5 text-[#64766C] hover:bg-[#F6F8F5] rounded-lg text-sm font-semibold transition-colors cursor-pointer"
                   >
                     Cancelar
                   </button>
                   <button
                     type="submit"
-                    className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-md shadow-emerald-950/20 transition-all flex items-center gap-2"
+                    className="px-5 py-2.5 bg-[#145C46] hover:bg-[#0E4434] text-white rounded-lg text-sm font-semibold shadow-xs transition-all flex items-center gap-2 cursor-pointer"
                   >
                     <Check size={16} />
                     <span>Salvar Alterações</span>
@@ -953,26 +950,26 @@ const PartnersBanner: React.FC<PartnersBannerProps> = ({ currentUser }) => {
 
       {/* Modal: Quero Anunciar */}
       {isContactModalOpen && (
-        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 overflow-y-auto">
-          <div className="bg-white w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden border border-slate-200 animate-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/50 backdrop-blur-xs p-4 overflow-y-auto font-sans">
+          <div className="bg-white w-full max-w-lg rounded-2xl shadow-xl overflow-hidden border border-[#E3EAE6] animate-in zoom-in-95 duration-200">
             
-            <div className="bg-gradient-to-r from-emerald-950 to-slate-900 p-6 text-white relative">
+            <div className="bg-[#145C46] p-6 text-white relative">
               <button 
                 onClick={() => setIsContactModalOpen(false)}
-                className="absolute top-4 right-4 p-1 text-slate-400 hover:text-white rounded-lg"
+                className="absolute top-4 right-4 p-1.5 text-white/80 hover:text-white rounded-lg cursor-pointer"
               >
                 <X size={20} />
               </button>
               
-              <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 text-[10px] font-black uppercase tracking-wider mb-2">
-                <Sparkles size={12} />
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-white/15 text-white text-xs font-medium mb-2">
+                <Sparkles size={13} />
                 <span>Parcerias & Divulgação</span>
               </div>
 
-              <h3 className="text-xl font-extrabold tracking-tight text-white">
+              <h3 className="text-lg font-semibold leading-snug text-white">
                 Anuncie no Espaço de Parceiros
               </h3>
-              <p className="text-xs text-slate-300 mt-1">
+              <p className="text-xs text-[#DCEDE4] font-normal mt-1">
                 Conecte sua empresa a pecuaristas e gestores de fazendas em todo o Brasil.
               </p>
             </div>
@@ -980,35 +977,35 @@ const PartnersBanner: React.FC<PartnersBannerProps> = ({ currentUser }) => {
             <div className="p-6 space-y-4">
               
               {selectedSlotForContact && (
-                <div className="p-3.5 bg-emerald-50/80 border border-emerald-200 rounded-xl text-xs text-emerald-900">
-                  <p className="font-extrabold text-emerald-800">
+                <div className="p-3.5 bg-[#DCEDE4]/60 border border-[#DCEDE4] rounded-xl text-xs text-[#20332C]">
+                  <p className="font-semibold text-[#145C46] text-sm">
                     Interesse no Espaço #{selectedSlotForContact.slotNumber}: {selectedSlotForContact.category}
                   </p>
-                  <p className="text-[11px] text-emerald-700 mt-0.5">
+                  <p className="text-xs text-[#64766C] mt-1 leading-relaxed">
                     Garanta a visibilidade exclusiva da sua marca neste nicho dentro da plataforma.
                   </p>
                 </div>
               )}
 
-              <div className="space-y-2.5 text-xs text-slate-700">
-                <div className="flex items-start gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100">
-                  <div className="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-black shrink-0">1</div>
-                  <p className="pt-0.5 leading-tight"><strong className="text-slate-900">Público Qualificado:</strong> Produtores rurais com foco em ganho de peso, pesagem e rentabilidade.</p>
+              <div className="space-y-2.5 text-[13px] text-[#64766C]">
+                <div className="flex items-start gap-3 p-3 bg-[#F6F8F5] rounded-xl border border-[#E3EAE6]">
+                  <div className="w-7 h-7 rounded-lg bg-[#DCEDE4] text-[#145C46] flex items-center justify-center font-semibold text-xs shrink-0">1</div>
+                  <p className="pt-0.5 leading-relaxed"><strong className="font-semibold text-[#20332C]">Público Qualificado:</strong> Produtores rurais com foco em ganho de peso, pesagem e rentabilidade.</p>
                 </div>
 
-                <div className="flex items-start gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100">
-                  <div className="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-black shrink-0">2</div>
-                  <p className="pt-0.5 leading-tight"><strong className="text-slate-900">Cupom de Desconto:</strong> Destaque com código promocional para impulsionar suas conversões.</p>
+                <div className="flex items-start gap-3 p-3 bg-[#F6F8F5] rounded-xl border border-[#E3EAE6]">
+                  <div className="w-7 h-7 rounded-lg bg-[#DCEDE4] text-[#145C46] flex items-center justify-center font-semibold text-xs shrink-0">2</div>
+                  <p className="pt-0.5 leading-relaxed"><strong className="font-semibold text-[#20332C]">Cupom de Desconto:</strong> Destaque com código promocional para impulsionar suas conversões.</p>
                 </div>
 
-                <div className="flex items-start gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100">
-                  <div className="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-black shrink-0">3</div>
-                  <p className="pt-0.5 leading-tight"><strong className="text-slate-900">Apenas 3 Vagas:</strong> Exclusividade garantida sem poluição visual ou concorrência excessiva.</p>
+                <div className="flex items-start gap-3 p-3 bg-[#F6F8F5] rounded-xl border border-[#E3EAE6]">
+                  <div className="w-7 h-7 rounded-lg bg-[#DCEDE4] text-[#145C46] flex items-center justify-center font-semibold text-xs shrink-0">3</div>
+                  <p className="pt-0.5 leading-relaxed"><strong className="font-semibold text-[#20332C]">Apenas 3 Vagas:</strong> Exclusividade garantida sem poluição visual ou concorrência excessiva.</p>
                 </div>
               </div>
 
               {/* Action Buttons */}
-              <div className="pt-3 border-t border-slate-100 space-y-2.5">
+              <div className="pt-3 border-t border-[#E3EAE6] space-y-2.5">
                 <a
                   href={`https://wa.me/5567999990000?text=${encodeURIComponent(
                     `Olá! Tenho interesse em anunciar no Espaço de Parceiros da plataforma Gestão Pecuária ${
@@ -1017,7 +1014,7 @@ const PartnersBanner: React.FC<PartnersBannerProps> = ({ currentUser }) => {
                   )}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-xs shadow-md shadow-emerald-950/20 flex items-center justify-center gap-2 transition-all active:scale-98"
+                  className="w-full py-2.5 px-4 bg-[#145C46] hover:bg-[#0E4434] text-white rounded-lg font-semibold text-sm shadow-xs flex items-center justify-center gap-2 transition-all"
                 >
                   <MessageCircle size={16} />
                   <span>Falar via WhatsApp Comercial</span>
@@ -1027,17 +1024,17 @@ const PartnersBanner: React.FC<PartnersBannerProps> = ({ currentUser }) => {
                   href="https://instagram.com.br/vivendoapecuaria"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-full py-3 px-4 bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white rounded-xl font-bold text-xs shadow-md flex items-center justify-center gap-2 transition-all active:scale-98"
+                  className="w-full py-2.5 px-4 bg-[#F6F8F5] hover:bg-[#E5F2EB] text-[#20332C] border border-[#E3EAE6] rounded-lg font-semibold text-sm flex items-center justify-center gap-2 transition-all"
                 >
                   <span>Contatar no Instagram @vivendoapecuaria</span>
                 </a>
               </div>
             </div>
 
-            <div className="p-3.5 bg-slate-50 border-t border-slate-100 text-center">
+            <div className="p-3.5 bg-[#F6F8F5] border-t border-[#E3EAE6] text-center">
               <button 
                 onClick={() => setIsContactModalOpen(false)}
-                className="text-xs font-bold text-slate-500 hover:text-slate-800"
+                className="text-sm font-semibold text-[#64766C] hover:text-[#20332C] cursor-pointer"
               >
                 Fechar
               </button>
