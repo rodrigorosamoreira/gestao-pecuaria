@@ -24,8 +24,7 @@ import {
   Trash2,
   KeyRound,
   BarChart4,
-  Sparkles,
-  Database
+  Sparkles
 } from 'lucide-react';
 import { User, Animal, InventoryItem, HealthRecord, HealthSeverity, Task, Farm } from '../types';
 import { APP_LOGO_DATA_URI } from '../src/assets/logoData';
@@ -47,7 +46,6 @@ interface LayoutProps {
   onDeleteFarm?: (id: string) => void;
   onCreateFarm?: () => void;
   onOpenResetPassword?: () => void;
-  onOpenSupabaseConfig?: () => void;
 }
 
 const Layout: React.FC<LayoutProps> = ({ 
@@ -65,8 +63,7 @@ const Layout: React.FC<LayoutProps> = ({
   onSelectFarm,
   onDeleteFarm,
   onCreateFarm,
-  onOpenResetPassword,
-  onOpenSupabaseConfig
+  onOpenResetPassword
 }) => {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
@@ -344,7 +341,7 @@ const Layout: React.FC<LayoutProps> = ({
               <div className="min-w-0 text-left">
                 <p className="text-sm font-semibold text-[#20332C] truncate leading-tight">{user.name}</p>
                 <p className="text-xs text-[#64766C] truncate leading-tight mt-0.5 font-normal">
-                  {user.provider === 'guest' ? 'Acesso Local' : (isAdmin ? 'Administrador' : 'Proprietário')}
+                  {isAdmin ? 'Administrador' : 'Proprietário'}
                 </p>
               </div>
             </div>
@@ -357,15 +354,6 @@ const Layout: React.FC<LayoutProps> = ({
                   title="Alterar Senha"
                 >
                   <KeyRound size={16} />
-                </button>
-              )}
-              {isAdmin && onOpenSupabaseConfig && (
-                <button 
-                  onClick={onOpenSupabaseConfig}
-                  className="p-1.5 text-[#64766C] hover:text-[#145C46] hover:bg-[#E5F2EB] rounded-lg transition-colors cursor-pointer"
-                  title="Configurar Banco (Admin)"
-                >
-                  <Database size={16} />
                 </button>
               )}
               <button 
@@ -511,49 +499,17 @@ const Layout: React.FC<LayoutProps> = ({
               </div>
 
               <div className="flex items-center space-x-2 sm:space-x-3 pl-2 sm:pl-3 border-l border-[#E3EAE6]">
-                {user.provider === 'guest' ? (
-                  isAdmin ? (
-                    <button
-                      onClick={onOpenSupabaseConfig}
-                      className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#DCEDE4] hover:bg-[#E5F2EB] border border-[#DCEDE4] text-xs font-medium text-[#145C46] transition-colors cursor-pointer"
-                      title="Modo Local: Dados salvos no seu dispositivo. Clique para configurar conexão com a nuvem."
-                    >
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#145C46]" />
-                      <span>Modo Local</span>
-                    </button>
-                  ) : (
-                    <div
-                      className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#DCEDE4] border border-[#DCEDE4] text-xs font-medium text-[#145C46] select-none"
-                      title="Modo Local: Seus dados estão salvos com segurança neste dispositivo."
-                    >
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#145C46]" />
-                      <span>Modo Local</span>
-                    </div>
-                  )
-                ) : (
-                  isAdmin ? (
-                    <button
-                      onClick={onOpenSupabaseConfig}
-                      className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#F6F8F5] hover:bg-[#E5F2EB] border border-[#E3EAE6] text-xs font-medium text-[#20332C] transition-colors cursor-pointer"
-                      title="Sincronização em nuvem ativa. Clique para gerenciar o banco."
-                    >
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#145C46]" />
-                      <span>Nuvem</span>
-                    </button>
-                  ) : (
-                    <div
-                      className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#F6F8F5] border border-[#E3EAE6] text-xs font-medium text-[#20332C] select-none"
-                      title="Sincronização em nuvem ativa."
-                    >
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#145C46]" />
-                      <span>Nuvem</span>
-                    </div>
-                  )
-                )}
+                <div
+                  className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#F6F8F5] border border-[#E3EAE6] text-xs font-medium text-[#20332C] select-none"
+                  title="Sincronização em nuvem ativa."
+                >
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#145C46]" />
+                  <span>Nuvem</span>
+                </div>
                 <div className="hidden sm:block text-right">
                   <p className="text-sm font-semibold text-[#20332C] truncate max-w-[140px] leading-tight">{user.name}</p>
                   <p className="text-xs text-[#145C46] font-normal leading-tight mt-0.5">
-                    {user.provider === 'guest' ? 'Acesso Local' : 'Proprietário'}
+                    {isAdmin ? 'Administrador' : 'Proprietário'}
                   </p>
                 </div>
                 <div className="h-8 w-8 sm:h-9 sm:w-9 rounded-xl bg-[#145C46] text-white flex items-center justify-center font-semibold text-xs shadow-xs overflow-hidden shrink-0">

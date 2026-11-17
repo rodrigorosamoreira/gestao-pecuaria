@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Layout from './components/Layout';
 import Login from './components/Login';
 import Dashboard from './components/Dashboard';
@@ -13,7 +13,6 @@ import AiConsultant from './components/AiConsultant';
 import HealthManager from './components/HealthManager';
 import TaskManager from './components/TaskManager';
 import ResetPasswordModal from './components/ResetPasswordModal';
-import { SupabaseConfigModal } from './components/SupabaseConfigModal';
 import { createDefaultSampleFarm } from './services/sampleData';
 import { supabase, clearSupabaseAuth } from './lib/supabase';
 import { 
@@ -30,7 +29,40 @@ import {
   Task,
   Farm
 } from './types';
-import { Database, Copy, CheckCircle, AlertTriangle, Tractor, X, Loader2 } from 'lucide-react';
+import { Database, AlertTriangle, X, RefreshCw } from 'lucide-react';
+
+const generateUuid = () => {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
+  }
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    const v = c === 'x' ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+};
+
+const normalizeFarmData = (raw: any, defaultLot: Lot): FarmData => {
+  let parsed = raw;
+  if (typeof raw === 'string') {
+    try {
+      parsed = JSON.parse(raw);
+    } catch {
+      parsed = {};
+    }
+  }
+  const obj = parsed && typeof parsed === 'object' ? parsed : {};
+  return {
+    animals: Array.isArray(obj.animals) ? obj.animals : [],
+    transactions: Array.isArray(obj.transactions) ? obj.transactions : [],
+    inventory: Array.isArray(obj.inventory) ? obj.inventory : [],
+    lots: Array.isArray(obj.lots) ? obj.lots : [defaultLot],
+    healthRecords: Array.isArray(obj.healthRecords) ? obj.healthRecords : [],
+    tasks: Array.isArray(obj.tasks) ? obj.tasks : [],
+    globalDailyCost: typeof obj.globalDailyCost === 'number' ? obj.globalDailyCost : 0,
+    calculatorConfig: obj.calculatorConfig
+  };
+};
 
 const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -38,6 +70,7 @@ const App: React.FC = () => {
   const [isSyncing, setIsSyncing] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
   const [dbError, setDbError] = useState<string | null>(null);
+  const [syncError, setSyncError] = useState<string | null>(null);
   const [showWelcome, setShowWelcome] = useState(false);
   
   const [farms, setFarms] = useState<Farm[]>([]);
@@ -45,7 +78,15 @@ const App: React.FC = () => {
   const [isCreatingFarm, setIsCreatingFarm] = useState(false);
   const [newFarmName, setNewFarmName] = useState('');
   const [isResetPasswordOpen, setIsResetPasswordOpen] = useState(false);
-  const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
+
+  const farmsRef = useRef<Farm[]>([]);
+  const userRef = useRef<User | null>(null);
+  const dirtyFarmIdsRef = useRef<Set<string>>(new Set());
+  const syncTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isSyncingRef = useRef(false);
+
+  farmsRef.current = farms;
+  userRef.current = user;
 
   const DEFAULT_FAZENDA_LOT: Lot = {
     id: 'lot-fazenda-default',
@@ -73,22 +114,42 @@ const App: React.FC = () => {
   };
 
   useEffect(() => {
-    // Check saved local user session first
-    const savedLocal = localStorage.getItem('local_user');
-    if (savedLocal) {
-      try {
-        const parsed = JSON.parse(savedLocal);
-        if (parsed && parsed.id) {
-          setUser(parsed);
-        }
-      } catch (e) {
-        console.warn('Erro ao restaurar usuário local:', e);
-      }
-    }
+    // Remove qualquer vestígio antigo do modo local para exigir autenticação em nuvem
+    try {
+      localStorage.removeItem('local_user');
+    } catch (_) {}
 
     if (window.location.hash && window.location.hash.includes('type=recovery')) {
       setIsResetPasswordOpen(true);
     }
+
+    const applyAuthenticatedUser = (sessionUser: any) => {
+      const nextUser: User = {
+        id: sessionUser.id,
+        name: String(sessionUser.user_metadata?.full_name || sessionUser.email?.split('@')[0] || 'Usuário'),
+        email: sessionUser.email || '',
+        provider: 'email'
+      };
+      setUser(prev =>
+        prev && prev.id === nextUser.id && prev.email === nextUser.email && prev.name === nextUser.name
+          ? prev
+          : nextUser
+      );
+    };
+
+    const resetSessionState = () => {
+      dirtyFarmIdsRef.current.clear();
+      if (syncTimerRef.current) {
+        clearTimeout(syncTimerRef.current);
+        syncTimerRef.current = null;
+      }
+      setUser(null);
+      setIsLoaded(false);
+      setFarms([]);
+      setActiveFarmId(null);
+      setDbError(null);
+      setSyncError(null);
+    };
 
     const handleAuthError = (err: any) => {
       const msg = String(err?.message || err || '');
@@ -97,30 +158,28 @@ const App: React.FC = () => {
         msg.includes('Refresh Token Not Found') ||
         msg.includes('refresh_token')
       ) {
-        console.warn('Refresh token inválido detectado. Limpando armazenamento local...');
+        console.warn('Sessão expirada detectada. Limpando armazenamento de autenticação...');
         clearSupabaseAuth();
-        supabase.auth.signOut().catch(() => {});
-        if (!localStorage.getItem('local_user')) {
-          setUser(null);
-        }
+        resetSessionState();
       }
     };
+
+    const handleSessionExpiredEvent = () => {
+      clearSupabaseAuth();
+      resetSessionState();
+    };
+    window.addEventListener('supabase-session-expired', handleSessionExpiredEvent);
 
     supabase.auth.getSession().then(({ data, error }) => {
       if (error) {
         handleAuthError(error);
         return;
       }
-      if (data?.session) {
-        setUser({
-          id: data.session.user.id,
-          name: String(data.session.user.user_metadata?.full_name || data.session.user.email?.split('@')[0] || 'Usuário'),
-          email: data.session.user.email || '',
-          provider: 'email'
-        });
+      if (data?.session?.user) {
+        applyAuthenticatedUser(data.session.user);
       }
     }).catch(err => {
-      console.warn('Falha silenciosa ao obter sessão do Supabase:', err);
+      console.warn('Falha ao obter sessão do Supabase:', err);
       handleAuthError(err);
     });
 
@@ -129,148 +188,150 @@ const App: React.FC = () => {
         setIsResetPasswordOpen(true);
       }
 
-      if (session) {
-        setUser({
-          id: session.user.id,
-          name: String(session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'Usuário'),
-          email: session.user.email || '',
-          provider: 'email'
-        });
-      } else {
-        const hasLocal = localStorage.getItem('local_user');
-        if (!hasLocal) {
-          setUser(null);
-          setIsLoaded(false);
-          setFarms([]);
-          setActiveFarmId(null);
-          setDbError(null);
-        }
+      if (session?.user) {
+        applyAuthenticatedUser(session.user);
+      } else if (event === 'SIGNED_OUT') {
+        resetSessionState();
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      window.removeEventListener('supabase-session-expired', handleSessionExpiredEvent);
+      subscription.unsubscribe();
+    };
   }, []);
 
-  useEffect(() => {
-    if (user) {
-      const fetchFarms = async () => {
-        try {
-          // If guest, load from localStorage directly
-          if (user.provider === 'guest') {
-            const localData = localStorage.getItem(`farms_${user.id}`);
-            if (localData) {
-              try {
-                const parsed = JSON.parse(localData);
-                if (Array.isArray(parsed) && parsed.length > 0) {
-                  setFarms(parsed);
-                  const savedActiveId = localStorage.getItem(`activeFarm_${user.id}`);
-                  if (savedActiveId && parsed.some((f: Farm) => f.id === savedActiveId)) {
-                    setActiveFarmId(savedActiveId);
-                  } else {
-                    setActiveFarmId(parsed[0].id);
-                  }
-                  setIsLoaded(true);
-                  return;
-                }
-              } catch (_) {}
-            }
-            // Generate starter sample farm for new local user
-            const sample = createDefaultSampleFarm(user.id, 'Fazenda Modelo');
-            setFarms([sample]);
-            setActiveFarmId(sample.id);
-            localStorage.setItem(`farms_${user.id}`, JSON.stringify([sample]));
-            localStorage.setItem(`activeFarm_${user.id}`, sample.id);
-            setIsLoaded(true);
-            return;
-          }
+  const insertFarmToDatabase = useCallback(async (userId: string, name: string, data: FarmData): Promise<Farm | null> => {
+    let { data: inserted, error } = await supabase
+      .from('user_data')
+      .insert({
+        user_id: userId,
+        name,
+        data
+      })
+      .select()
+      .single();
 
-          // Real Supabase user
-          const { data, error } = await supabase
-            .from('user_data')
-            .select('*')
-            .eq('user_id', user.id);
-
-          if (error) {
-            console.warn('Erro ao consultar Supabase, ativando fallback local:', error.message);
-            const localData = localStorage.getItem(`farms_${user.id}`);
-            if (localData) {
-              try {
-                const parsed = JSON.parse(localData);
-                if (Array.isArray(parsed) && parsed.length > 0) {
-                  setFarms(parsed);
-                  const savedActiveId = localStorage.getItem(`activeFarm_${user.id}`);
-                  if (savedActiveId && parsed.some((f: Farm) => f.id === savedActiveId)) {
-                    setActiveFarmId(savedActiveId);
-                  } else {
-                    setActiveFarmId(parsed[0].id);
-                  }
-                  setIsLoaded(true);
-                  return;
-                }
-              } catch (_) {}
-            }
-            const sample = createDefaultSampleFarm(user.id, 'Fazenda Principal');
-            setFarms([sample]);
-            setActiveFarmId(sample.id);
-            localStorage.setItem(`farms_${user.id}`, JSON.stringify([sample]));
-            setIsLoaded(true);
-            return;
-          }
-
-          if (data && data.length > 0) {
-            setFarms(data);
-            localStorage.setItem(`farms_${user.id}`, JSON.stringify(data));
-            const savedActiveId = localStorage.getItem(`activeFarm_${user.id}`);
-            if (savedActiveId && data.some(f => f.id === savedActiveId)) {
-              setActiveFarmId(savedActiveId);
-            } else {
-              setActiveFarmId(data[0].id);
-            }
-          } else {
-            const localData = localStorage.getItem(`farms_${user.id}`);
-            if (localData) {
-              try {
-                const parsed = JSON.parse(localData);
-                if (Array.isArray(parsed) && parsed.length > 0) {
-                  setFarms(parsed);
-                  setActiveFarmId(parsed[0].id);
-                  setIsLoaded(true);
-                  return;
-                }
-              } catch (_) {}
-            }
-            const sample = createDefaultSampleFarm(user.id, 'Minha Fazenda');
-            setFarms([sample]);
-            setActiveFarmId(sample.id);
-            localStorage.setItem(`farms_${user.id}`, JSON.stringify([sample]));
-            supabase.from('user_data').insert({
-              id: sample.id,
-              user_id: user.id,
-              name: sample.name,
-              data: sample.data
-            }).then(() => {}, () => {});
-          }
-          setDbError(null);
-        } catch (err: any) {
-          console.warn('Falha na consulta ao banco, ativando cache local:', err);
-          const localData = localStorage.getItem(`farms_${user.id}`);
-          if (localData) {
-            try {
-              const parsed = JSON.parse(localData);
-              if (Array.isArray(parsed) && parsed.length > 0) {
-                setFarms(parsed);
-                setActiveFarmId(parsed[0].id);
-              }
-            } catch (_) {}
-          }
-        } finally {
-          setIsLoaded(true);
-        }
-      };
-
-      fetchFarms();
+    if (error) {
+      const retry = await supabase
+        .from('user_data')
+        .insert({
+          id: generateUuid(),
+          user_id: userId,
+          name,
+          data
+        })
+        .select()
+        .single();
+      inserted = retry.data;
+      error = retry.error;
     }
-  }, [user]);
+
+    if (error || !inserted) {
+      console.error('Erro ao gravar fazenda no banco de dados:', error);
+      return null;
+    }
+
+    return {
+      ...inserted,
+      data: normalizeFarmData(inserted.data, DEFAULT_FAZENDA_LOT)
+    };
+  }, []);
+
+  const fetchFarmsFromDatabase = useCallback(async (targetUser: User) => {
+    setIsLoaded(false);
+    setDbError(null);
+    dirtyFarmIdsRef.current.clear();
+
+    try {
+      const { data, error } = await supabase
+        .from('user_data')
+        .select('*')
+        .eq('user_id', targetUser.id);
+
+      if (error) {
+        console.error('Erro ao buscar fazendas no banco de dados:', error);
+        setDbError(error.message || 'Falha ao carregar os dados salvos no banco de dados.');
+        return;
+      }
+
+      if (data && data.length > 0) {
+        const normalizedFarms: Farm[] = data
+          .map((row: any) => ({
+            ...row,
+            data: normalizeFarmData(row.data, DEFAULT_FAZENDA_LOT)
+          }))
+          .sort((a: Farm, b: Farm) => {
+            const ta = a.created_at ? new Date(a.created_at).getTime() : 0;
+            const tb = b.created_at ? new Date(b.created_at).getTime() : 0;
+            return ta - tb;
+          });
+
+        setFarms(normalizedFarms);
+        const savedActiveId = localStorage.getItem(`activeFarm_${targetUser.id}`);
+        if (savedActiveId && normalizedFarms.some(f => f.id === savedActiveId)) {
+          setActiveFarmId(savedActiveId);
+        } else {
+          setActiveFarmId(normalizedFarms[0].id);
+        }
+        // Limpa eventual cache legado do modo antigo
+        localStorage.removeItem(`farms_${targetUser.id}`);
+      } else {
+        // Verifica se existem dados pendentes de migração do armazenamento antigo antes de criar amostra
+        let legacyFarms: Farm[] = [];
+        try {
+          const legacyRaw = localStorage.getItem(`farms_${targetUser.id}`);
+          if (legacyRaw) {
+            const parsed = JSON.parse(legacyRaw);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+              legacyFarms = parsed;
+            }
+          }
+        } catch (_) {}
+
+        if (legacyFarms.length > 0) {
+          const insertedList: Farm[] = [];
+          for (const lf of legacyFarms) {
+            const created = await insertFarmToDatabase(
+              targetUser.id,
+              lf.name || 'Minha Fazenda',
+              normalizeFarmData(lf.data, DEFAULT_FAZENDA_LOT)
+            );
+            if (created) insertedList.push(created);
+          }
+          if (insertedList.length > 0) {
+            setFarms(insertedList);
+            setActiveFarmId(insertedList[0].id);
+            localStorage.setItem(`activeFarm_${targetUser.id}`, insertedList[0].id);
+            localStorage.removeItem(`farms_${targetUser.id}`);
+            return;
+          }
+        }
+
+        // Primeiro acesso do usuário: cria fazenda inicial e salva imediatamente no banco de dados
+        const sample = createDefaultSampleFarm(targetUser.id, 'Minha Fazenda');
+        const createdSample = await insertFarmToDatabase(targetUser.id, sample.name, sample.data);
+        if (createdSample) {
+          setFarms([createdSample]);
+          setActiveFarmId(createdSample.id);
+          localStorage.setItem(`activeFarm_${targetUser.id}`, createdSample.id);
+        } else {
+          setDbError('Não foi possível inicializar seus dados no servidor. Clique em "Recarregar Dados" para tentar novamente.');
+        }
+      }
+    } catch (err: any) {
+      console.error('Exceção ao carregar dados do banco:', err);
+      setDbError(err?.message || 'Erro de conexão com o banco de dados.');
+    } finally {
+      setIsLoaded(true);
+    }
+  }, [insertFarmToDatabase]);
+
+  useEffect(() => {
+    if (user?.id) {
+      fetchFarmsFromDatabase(user);
+    }
+  }, [user?.id]);
 
   useEffect(() => {
     if (user && isLoaded) {
@@ -281,36 +342,105 @@ const App: React.FC = () => {
     }
   }, [user, isLoaded]);
 
-  useEffect(() => {
-    if (user && isLoaded && activeFarmId && activeFarm) {
-      // Persist to local storage immediately
-      localStorage.setItem(`farms_${user.id}`, JSON.stringify(farms));
+  const flushPendingSync = useCallback(async () => {
+    const currentUser = userRef.current;
+    if (!currentUser || dirtyFarmIdsRef.current.size === 0 || isSyncingRef.current) return;
 
-      if (user.provider !== 'guest' && !dbError) {
-        const syncData = async () => {
-          setIsSyncing(true);
-          try {
-            const { error } = await supabase
-              .from('user_data')
-              .update({ 
-                data: activeFarm.data,
-                updated_at: new Date().toISOString()
-              })
-              .eq('id', activeFarmId);
+    const idsToSync = Array.from(dirtyFarmIdsRef.current);
+    dirtyFarmIdsRef.current.clear();
 
-            if (error) console.warn('Aviso ao sincronizar na nuvem:', error.message);
-          } catch (err) {
-            console.warn('Falha silenciosa ao sincronizar:', err);
-          } finally {
-            setIsSyncing(false);
+    isSyncingRef.current = true;
+    setIsSyncing(true);
+    setSyncError(null);
+
+    try {
+      for (const farmId of idsToSync) {
+        const farm = farmsRef.current.find(f => f.id === farmId);
+        if (!farm) continue;
+
+        let { data: updatedRows, error } = await supabase
+          .from('user_data')
+          .update({
+            name: farm.name,
+            data: farm.data,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', farm.id)
+          .eq('user_id', currentUser.id)
+          .select('id');
+
+        if (error && String(error.message || '').toLowerCase().includes('updated_at')) {
+          const retryNoTimestamp = await supabase
+            .from('user_data')
+            .update({
+              name: farm.name,
+              data: farm.data
+            })
+            .eq('id', farm.id)
+            .eq('user_id', currentUser.id)
+            .select('id');
+          updatedRows = retryNoTimestamp.data;
+          error = retryNoTimestamp.error;
+        }
+
+        if (error) {
+          console.error('Erro ao salvar alterações no banco de dados:', error);
+          dirtyFarmIdsRef.current.add(farmId);
+          setSyncError('Falha ao salvar alterações no banco de dados. Tentando sincronizar...');
+          continue;
+        }
+
+        // Caso a linha ainda não exista no banco (ex.: id antigo), insere e atualiza o id real
+        if (!updatedRows || updatedRows.length === 0) {
+          const inserted = await insertFarmToDatabase(currentUser.id, farm.name, farm.data);
+          if (inserted) {
+            setFarms(prev => prev.map(f => (f.id === farmId ? inserted : f)));
+            setActiveFarmId(prevId => (prevId === farmId ? inserted.id : prevId));
+          } else {
+            dirtyFarmIdsRef.current.add(farmId);
+            setSyncError('Não foi possível gravar os dados no banco de dados.');
           }
-        };
-
-        const timer = setTimeout(() => syncData(), 2000);
-        return () => clearTimeout(timer);
+        }
+      }
+    } catch (err: any) {
+      console.error('Falha de conexão ao salvar no banco:', err);
+      idsToSync.forEach(id => dirtyFarmIdsRef.current.add(id));
+      setSyncError('Erro de conexão ao salvar no banco de dados.');
+    } finally {
+      isSyncingRef.current = false;
+      setIsSyncing(false);
+      // Se novas edições ocorreram durante o envio, agenda nova sincronização imediata
+      if (dirtyFarmIdsRef.current.size > 0) {
+        if (syncTimerRef.current) clearTimeout(syncTimerRef.current);
+        syncTimerRef.current = setTimeout(() => {
+          flushPendingSync();
+        }, 400);
       }
     }
-  }, [farms, activeFarmId]);
+  }, [insertFarmToDatabase]);
+
+  useEffect(() => {
+    const handleVisibilityOrHide = () => {
+      if (document.visibilityState === 'hidden' && dirtyFarmIdsRef.current.size > 0) {
+        flushPendingSync();
+      }
+    };
+    const handleBeforeUnload = () => {
+      if (dirtyFarmIdsRef.current.size > 0) {
+        flushPendingSync();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityOrHide);
+    window.addEventListener('pagehide', handleBeforeUnload);
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityOrHide);
+      window.removeEventListener('pagehide', handleBeforeUnload);
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [flushPendingSync]);
 
   const handleCreateFarm = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -323,54 +453,36 @@ const App: React.FC = () => {
         description: 'Lote principal da fazenda'
       };
 
-      const newFarmObj: Farm = {
-        id: `farm-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
-        user_id: user.id,
-        name: newFarmName.trim(),
-        data: {
-          animals: [],
-          transactions: [],
-          inventory: [],
-          lots: [defaultFazendaLot],
-          healthRecords: [],
-          tasks: [],
-          globalDailyCost: 0,
-          calculatorConfig: undefined
-        },
-        updated_at: new Date().toISOString(),
-        created_at: new Date().toISOString()
+      const initialFarmData: FarmData = {
+        animals: [],
+        transactions: [],
+        inventory: [],
+        lots: [defaultFazendaLot],
+        healthRecords: [],
+        tasks: [],
+        globalDailyCost: 0,
+        calculatorConfig: undefined
       };
 
-      if (user.provider !== 'guest') {
-        try {
-          const { data, error } = await supabase
-            .from('user_data')
-            .insert({
-              user_id: user.id,
-              name: newFarmName.trim(),
-              data: newFarmObj.data
-            })
-            .select()
-            .single();
-
-          if (!error && data) {
-            newFarmObj.id = data.id;
-          }
-        } catch (e) {
-          console.warn('Fazenda salva apenas localmente:', e);
-        }
+      setIsSyncing(true);
+      const createdFarm = await insertFarmToDatabase(user.id, newFarmName.trim(), initialFarmData);
+      if (!createdFarm) {
+        setSyncError('Não foi possível salvar a nova fazenda no banco de dados. Tente novamente.');
+        return;
       }
 
-      const updated = [...farms, newFarmObj];
+      const updated = [...farms, createdFarm];
       setFarms(updated);
-      localStorage.setItem(`farms_${user.id}`, JSON.stringify(updated));
-      setActiveFarmId(newFarmObj.id);
-      localStorage.setItem(`activeFarm_${user.id}`, newFarmObj.id);
+      setActiveFarmId(createdFarm.id);
+      localStorage.setItem(`activeFarm_${user.id}`, createdFarm.id);
       setIsCreatingFarm(false);
       setNewFarmName('');
+      setSyncError(null);
     } catch (err: any) {
       console.error(err);
-      alert('Erro ao criar fazenda: ' + (err.message || 'Tente novamente'));
+      setSyncError('Erro ao criar fazenda no banco: ' + (err.message || 'Tente novamente'));
+    } finally {
+      setIsSyncing(false);
     }
   };
 
@@ -378,22 +490,27 @@ const App: React.FC = () => {
     const farmToDelete = farms.find(f => f.id === id);
     if (!farmToDelete || !user) return;
 
-    const confirmMsg = `⚠️ EXCLUIR FAZENDA: "${farmToDelete.name.toUpperCase()}"?\n\nEsta ação é IRREVERSÍVEL. Todos os dados de animais, finanças e estoque desta fazenda serão apagados.`;
+    const confirmMsg = `EXCLUIR FAZENDA: "${farmToDelete.name.toUpperCase()}"?\n\nEsta ação é IRREVERSÍVEL. Todos os dados de animais, finanças e estoque desta fazenda serão apagados do banco de dados.`;
     
     if (!window.confirm(confirmMsg)) return;
 
     try {
-      if (user.provider !== 'guest') {
-        try {
-          await supabase.from('user_data').delete().eq('id', id);
-        } catch (e) {
-          console.warn('Exclusão na nuvem ignorada:', e);
-        }
+      setIsSyncing(true);
+      const { error } = await supabase
+        .from('user_data')
+        .delete()
+        .eq('id', id)
+        .eq('user_id', user.id);
+
+      if (error) {
+        console.error('Erro ao excluir fazenda do banco:', error);
+        setSyncError(`Erro ao excluir fazenda no banco: ${error.message}`);
+        return;
       }
 
+      dirtyFarmIdsRef.current.delete(id);
       const updatedFarms = farms.filter(f => f.id !== id);
       setFarms(updatedFarms);
-      localStorage.setItem(`farms_${user.id}`, JSON.stringify(updatedFarms));
 
       if (activeFarmId === id) {
         if (updatedFarms.length > 0) {
@@ -405,37 +522,55 @@ const App: React.FC = () => {
           localStorage.removeItem(`activeFarm_${user.id}`);
         }
       }
-      
-      alert(`Fazenda "${farmToDelete.name}" removida com sucesso.`);
+      setSyncError(null);
     } catch (err: any) {
-      console.error('Falha completa na exclusão:', err);
-      alert(`ERRO AO EXCLUIR: ${err.message || 'Erro desconhecido'}`);
+      console.error('Falha na exclusão:', err);
+      setSyncError(`Erro ao excluir fazenda: ${err.message || 'Erro desconhecido'}`);
+    } finally {
+      setIsSyncing(false);
     }
   };
 
   const updateActiveFarmData = (updater: (prev: FarmData) => FarmData) => {
     if (!activeFarmId) return;
-    setFarms(prev => prev.map(f => {
-      if (f.id !== activeFarmId) return f;
-      const currentData = f.data || {
-        animals: [],
-        transactions: [],
-        inventory: [],
-        lots: [],
-        healthRecords: [],
-        tasks: [],
-        globalDailyCost: 0
-      };
-      const ensuredLots = Array.isArray(currentData.lots)
-        ? currentData.lots
-        : [DEFAULT_FAZENDA_LOT];
-      const dataWithLots: FarmData = { ...currentData, lots: ensuredLots };
-      const updatedData = updater(dataWithLots);
-      return { ...f, data: updatedData };
-    }));
+    const targetFarmId = activeFarmId;
+
+    setFarms(prev => {
+      const next = prev.map(f => {
+        if (f.id !== targetFarmId) return f;
+        const currentData = f.data || {
+          animals: [],
+          transactions: [],
+          inventory: [],
+          lots: [],
+          healthRecords: [],
+          tasks: [],
+          globalDailyCost: 0
+        };
+        const ensuredLots = Array.isArray(currentData.lots)
+          ? currentData.lots
+          : [DEFAULT_FAZENDA_LOT];
+        const dataWithLots: FarmData = { ...currentData, lots: ensuredLots };
+        const updatedData = updater(dataWithLots);
+        return { ...f, data: updatedData };
+      });
+      farmsRef.current = next;
+      return next;
+    });
+
+    dirtyFarmIdsRef.current.add(targetFarmId);
+    if (syncTimerRef.current) {
+      clearTimeout(syncTimerRef.current);
+    }
+    syncTimerRef.current = setTimeout(() => {
+      flushPendingSync();
+    }, 500);
   };
 
   const handleSelectFarm = (id: string) => {
+    if (dirtyFarmIdsRef.current.size > 0) {
+      flushPendingSync();
+    }
     setActiveFarmId(id);
     if (user) localStorage.setItem(`activeFarm_${user.id}`, id);
   };
@@ -449,14 +584,24 @@ const App: React.FC = () => {
 
   const handleLogout = async () => {
     try {
+      await flushPendingSync();
       await supabase.auth.signOut();
     } catch (e) {
       console.warn('Erro ao encerrar sessão:', e);
     } finally {
       clearSupabaseAuth();
       localStorage.removeItem('local_user');
+      dirtyFarmIdsRef.current.clear();
+      if (syncTimerRef.current) {
+        clearTimeout(syncTimerRef.current);
+        syncTimerRef.current = null;
+      }
+      setFarms([]);
+      setActiveFarmId(null);
       setUser(null);
       setIsLoaded(false);
+      setDbError(null);
+      setSyncError(null);
       setCurrentView('dashboard');
     }
   };
@@ -810,18 +955,56 @@ const App: React.FC = () => {
       onDeleteFarm={handleDeleteFarm}
       onCreateFarm={() => setIsCreatingFarm(true)}
       onOpenResetPassword={() => setIsResetPasswordOpen(true)}
-      onOpenSupabaseConfig={() => setIsConfigModalOpen(true)}
     >
       <ResetPasswordModal 
         isOpen={isResetPasswordOpen} 
         onClose={() => setIsResetPasswordOpen(false)} 
       />
-      <SupabaseConfigModal 
-        isOpen={isConfigModalOpen} 
-        onClose={() => setIsConfigModalOpen(false)} 
-      />
-      {isSyncing && <div className="fixed bottom-4 right-4 bg-[#145C46] text-white text-xs font-semibold px-4 py-2 rounded-full shadow-md z-50 animate-pulse">Sincronizando...</div>}
-      {!isLoaded && <div className="fixed inset-0 bg-white/60 backdrop-blur-xs z-50 flex items-center justify-center text-sm font-medium text-[#20332C]">Acessando Banco...</div>}
+      {isSyncing && (
+        <div className="fixed bottom-4 right-4 bg-[#145C46] text-white text-xs font-semibold px-4 py-2 rounded-full shadow-md z-50 animate-pulse flex items-center gap-2">
+          <Database size={14} />
+          <span>Salvando no banco...</span>
+        </div>
+      )}
+      {syncError && (
+        <div className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-4 sm:max-w-md bg-rose-600 text-white text-xs font-medium px-4 py-3 rounded-xl shadow-lg z-50 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <AlertTriangle size={16} className="shrink-0" />
+            <span>{syncError}</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => flushPendingSync()}
+            className="px-2.5 py-1 bg-white/20 hover:bg-white/30 rounded-lg font-semibold shrink-0 cursor-pointer"
+          >
+            Tentar novamente
+          </button>
+        </div>
+      )}
+      {!isLoaded && (
+        <div className="fixed inset-0 bg-white/75 backdrop-blur-xs z-50 flex items-center justify-center text-sm font-medium text-[#20332C]">
+          Carregando seus dados do banco...
+        </div>
+      )}
+      {isLoaded && dbError && (
+        <div className="mb-5 p-4 bg-rose-50 border border-rose-200 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-rose-900">
+          <div className="flex items-start gap-2.5">
+            <AlertTriangle size={18} className="text-rose-600 shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm font-semibold">Erro de conexão com o banco de dados</p>
+              <p className="text-xs text-rose-700 mt-0.5">{dbError}</p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => user && fetchFarmsFromDatabase(user)}
+            className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 shrink-0 cursor-pointer transition-colors"
+          >
+            <RefreshCw size={14} />
+            <span>Recarregar Dados</span>
+          </button>
+        </div>
+      )}
       
       {showWelcome && (
         <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/50 backdrop-blur-xs p-3.5 sm:p-4">

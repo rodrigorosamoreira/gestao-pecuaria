@@ -18,14 +18,11 @@ import {
   Sparkles,
   BarChart3,
   Check,
-  Database,
   WifiOff,
-  Settings,
   AlertTriangle
 } from 'lucide-react';
 import { User } from '../types';
 import { supabase } from '../lib/supabase';
-import { SupabaseConfigModal } from './SupabaseConfigModal';
 import ranchBg from '../src/assets/images/ranch_login_bg_1786582194800.jpg';
 import { APP_LOGO_DATA_URI } from '../src/assets/logoData';
 
@@ -36,7 +33,6 @@ interface LoginProps {
 const Login: React.FC<LoginProps> = ({ onLogin }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [mode, setMode] = useState<'login' | 'register' | 'forgot'>('login');
-  const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
   
   // Form States
   const [email, setEmail] = useState('');
@@ -48,19 +44,6 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
   const [error, setError] = useState('');
   const [isConnectionError, setIsConnectionError] = useState(false);
   const [forgotSuccessMessage, setForgotSuccessMessage] = useState('');
-
-  const handleLocalAccess = () => {
-    const localUser: User = {
-      id: 'produtor-local',
-      name: name.trim() || 'Produtor Rural (Modo Local)',
-      email: email.trim() || 'produtor@fazenda.local',
-      provider: 'guest'
-    };
-    if (typeof window !== 'undefined' && window.localStorage) {
-      window.localStorage.setItem('local_user', JSON.stringify(localUser));
-    }
-    onLogin(localUser);
-  };
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -140,7 +123,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
         lowerMsg.includes('fetch');
 
       if (isPathError) {
-        userFriendlyMsg = 'A URL do servidor Supabase configurada contém um caminho ou rota inválida (ex: "/auth/v1" ou "/rest/v1" incluído na raiz). Ajuste para apenas "https://seu-projeto.supabase.co" ou utilize o Modo Local.';
+        userFriendlyMsg = 'Não foi possível conectar ao servidor de autenticação no momento. Tente novamente em instantes.';
         setIsConnectionError(true);
       } else if (lowerMsg.includes('invalid login credentials') || lowerMsg.includes('invalid credentials')) {
         userFriendlyMsg = 'E-mail ou senha incorretos. Verifique suas credenciais ou crie uma conta.';
@@ -194,15 +177,6 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
               </span>
             </div>
           </div>
-
-          <button
-            onClick={() => setIsConfigModalOpen(true)}
-            className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white/10 border border-white/20 text-white/90 hover:text-white hover:bg-white/20 text-xs font-medium backdrop-blur-md transition-all cursor-pointer"
-            title="Configurar servidor ou banco de dados"
-          >
-            <Settings size={15} className="text-[#8CE0BE]" />
-            <span className="hidden sm:inline">Configurar Conexão</span>
-          </button>
         </div>
 
         {/* Center Hero Message & Highlights */}
@@ -268,7 +242,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
         <div className="relative z-10 pt-6 border-t border-white/15 flex items-center justify-between text-xs font-normal text-white/75">
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-[#8CE0BE]" />
-            <span className="text-white/90 font-medium">Plataforma Ativa com Armazenamento Local Seguro</span>
+            <span className="text-white/90 font-medium">Plataforma Ativa com Sincronização em Banco de Dados</span>
           </div>
           <span className="text-white/60 text-xs">v2.5 • Pecuária 4.0</span>
         </div>
@@ -310,13 +284,13 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
               {mode === 'forgot' && 'Recuperação de Senha'}
             </h2>
             <p className="text-[#64766C] text-[13px] font-normal leading-normal mt-1">
-              {mode === 'login' && 'Insira suas credenciais ou use o Acesso Local sem servidor.'}
-              {mode === 'register' && 'Crie sua conta para começar a gerenciar seu rebanho.'}
+              {mode === 'login' && 'Insira suas credenciais para acessar seus dados salvos.'}
+              {mode === 'register' && 'Crie sua conta para começar a gerenciar seu rebanho na nuvem.'}
               {mode === 'forgot' && 'Digite seu e-mail e enviaremos um link de redefinição.'}
             </p>
           </div>
 
-          {/* Connection Error Banner with Immediate Local Mode CTA */}
+          {/* Connection Error Banner */}
           {error && (
             <div className={`p-4 border rounded-xl text-xs font-normal space-y-3 animate-in fade-in duration-200 ${
               isConnectionError 
@@ -331,36 +305,15 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                 )}
                 <div>
                   <p className="font-semibold text-sm leading-snug">
-                    {isConnectionError ? 'Servidor de Nuvem Supabase Indisponível' : 'Erro de Autenticação'}
+                    {isConnectionError ? 'Servidor Indisponível' : 'Erro de Autenticação'}
                   </p>
                   <p className="mt-1 leading-relaxed text-xs">
                     {isConnectionError 
-                      ? 'Não foi possível alcançar o servidor Supabase configurado. Você pode continuar no Modo Local imediatamente com todos os dados salvos no seu navegador!'
+                      ? 'Não foi possível alcançar o servidor no momento. Verifique sua conexão com a internet e tente novamente.'
                       : error}
                   </p>
                 </div>
               </div>
-
-              {isConnectionError && (
-                <div className="pt-1 flex flex-col sm:flex-row gap-2">
-                  <button
-                    type="button"
-                    onClick={handleLocalAccess}
-                    className="flex-1 bg-[#145C46] hover:bg-[#0E4434] text-white py-2.5 px-3 rounded-xl text-sm font-semibold leading-snug flex items-center justify-center gap-1.5 shadow-xs transition-all cursor-pointer"
-                  >
-                    <Database size={15} />
-                    <span>Entrar no Modo Local</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setIsConfigModalOpen(true)}
-                    className="bg-white hover:bg-[#F6F8F5] text-[#20332C] py-2.5 px-3 rounded-xl text-sm font-semibold leading-snug flex items-center justify-center gap-1.5 border border-[#E3EAE6] transition-all cursor-pointer"
-                  >
-                    <Settings size={15} />
-                    <span>Configurar URL</span>
-                  </button>
-                </div>
-              )}
             </div>
           )}
 
@@ -373,39 +326,6 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
               </div>
             </div>
           )}
-
-          {/* Quick Local Access Card (Recommended when offline or for fast evaluation) */}
-          <div className="p-4 bg-[#F6F8F5] border border-[#E3EAE6] rounded-xl space-y-3">
-            <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-2">
-                <Database size={16} className="text-[#145C46]" />
-                <span className="text-sm font-semibold text-[#20332C] leading-snug">Acesso Local & Demonstração</span>
-              </div>
-              <span className="px-2.5 py-0.5 rounded-md text-xs font-medium bg-[#DCEDE4] text-[#145C46]">
-                100% Funcional
-              </span>
-            </div>
-            <p className="text-xs font-normal text-[#64766C] leading-relaxed">
-              Use o sistema de forma instantânea sem necessidade de servidor externo. Seus dados ficam salvos com segurança no navegador.
-            </p>
-            <button
-              type="button"
-              onClick={handleLocalAccess}
-              className="w-full bg-white hover:bg-[#E5F2EB] text-[#145C46] py-2.5 px-4 rounded-xl text-sm font-semibold leading-snug border border-[#145C46]/30 flex items-center justify-center gap-2 transition-all shadow-2xs cursor-pointer"
-            >
-              <Database size={16} className="text-[#145C46]" />
-              <span>Entrar no Modo Local (Sem Servidor)</span>
-              <ArrowRight size={16} className="ml-1 opacity-75" />
-            </button>
-          </div>
-
-          <div className="relative flex items-center justify-center my-3">
-            <div className="border-t border-[#E3EAE6] w-full" />
-            <span className="bg-white px-3 text-xs font-medium text-[#64766C] whitespace-nowrap">
-              Ou acesse com conta na nuvem
-            </span>
-            <div className="border-t border-[#E3EAE6] w-full" />
-          </div>
 
           {/* Authentication Form */}
           <form onSubmit={handleAuth} className="space-y-4">
@@ -522,9 +442,9 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
               ) : (
                 <>
                   {mode === 'login' ? (
-                    <>Entrar com Supabase <ArrowRight size={17} /></>
+                    <>Entrar <ArrowRight size={17} /></>
                   ) : mode === 'register' ? (
-                    <>Criar Minha Conta na Nuvem <ArrowRight size={17} /></>
+                    <>Criar Conta <ArrowRight size={17} /></>
                   ) : (
                     <>Enviar E-mail de Recuperação <KeyRound size={17} /></>
                   )}
@@ -556,22 +476,13 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
             )}
           </div>
 
-          {/* Security & Settings Footer */}
+          {/* Security Footer */}
           <div className="pt-5 border-t border-[#E3EAE6] text-center space-y-2">
-            <div className="flex items-center justify-center gap-4 text-xs font-normal text-[#64766C]">
+            <div className="flex items-center justify-center gap-2 text-xs font-normal text-[#64766C]">
               <span className="flex items-center gap-1.5">
                 <ShieldCheck size={14} className="text-[#145C46]" />
                 <span>Dados Seguros</span>
               </span>
-              <span>•</span>
-              <button
-                type="button"
-                onClick={() => setIsConfigModalOpen(true)}
-                className="text-[#145C46] font-medium hover:underline flex items-center gap-1 cursor-pointer"
-              >
-                <Settings size={13} />
-                <span>Configurações do Banco</span>
-              </button>
             </div>
             <p className="text-xs font-normal text-[#64766C]">
               © {new Date().getFullYear()} Gestão Pecuária Systems. Todos os direitos reservados.
@@ -580,11 +491,6 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
 
         </div>
       </div>
-
-      <SupabaseConfigModal 
-        isOpen={isConfigModalOpen} 
-        onClose={() => setIsConfigModalOpen(false)} 
-      />
 
     </div>
   );

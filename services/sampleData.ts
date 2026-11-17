@@ -284,8 +284,19 @@ export const createDefaultSampleFarm = (userId: string, farmName: string = 'Faze
     ]
   };
 
+  const generateUuid = () => {
+    if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+      return crypto.randomUUID();
+    }
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+      const r = (Math.random() * 16) | 0;
+      const v = c === 'x' ? r : (r & 0x3) | 0x8;
+      return v.toString(16);
+    });
+  };
+
   return {
-    id: `farm-sample-${Date.now()}`,
+    id: generateUuid(),
     user_id: userId,
     name: farmName,
     data: sampleData,

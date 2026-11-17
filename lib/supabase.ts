@@ -1,15 +1,11 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
-export const SUPABASE_URL_STORAGE_KEY = 'custom_supabase_url';
-export const SUPABASE_KEY_STORAGE_KEY = 'custom_supabase_anon_key';
-
 export const DEFAULT_SUPABASE_URL = 'https://aolmpvdlmmadcyfdfzul.supabase.co';
 export const DEFAULT_SUPABASE_ANON_KEY = 'sb_publishable_qQnLFVTy0cQZGt2uc8098g_GwanqTTH';
 
 export const normalizeSupabaseUrl = (inputUrl: string): string => {
   if (!inputUrl) return '';
   let url = inputUrl.trim().replace(/\/+$/, '');
-  // Se o usuário colou com /auth/v1, /rest/v1, /storage/v1 etc., remove para evitar "Invalid path specified in request URL"
   url = url.replace(/\/auth(\/v1)?(\/.*)?$/i, '');
   url = url.replace(/\/rest(\/v1)?(\/.*)?$/i, '');
   url = url.replace(/\/storage(\/v1)?(\/.*)?$/i, '');
@@ -17,29 +13,23 @@ export const normalizeSupabaseUrl = (inputUrl: string): string => {
 };
 
 export const getSupabaseConfig = () => {
-  let customUrl = '';
-  let customKey = '';
   if (typeof window !== 'undefined' && window.localStorage) {
     try {
-      customUrl = window.localStorage.getItem(SUPABASE_URL_STORAGE_KEY)?.trim() || '';
-      customKey = window.localStorage.getItem(SUPABASE_KEY_STORAGE_KEY)?.trim() || '';
+      window.localStorage.removeItem('custom_supabase_url');
+      window.localStorage.removeItem('custom_supabase_anon_key');
     } catch (_) {}
   }
 
   const envUrl = ((import.meta as any).env?.VITE_SUPABASE_URL as string)?.trim() || '';
   const envKey = ((import.meta as any).env?.VITE_SUPABASE_ANON_KEY as string)?.trim() || '';
 
-  const rawUrl = customUrl || envUrl || DEFAULT_SUPABASE_URL;
+  const rawUrl = envUrl || DEFAULT_SUPABASE_URL;
   const url = normalizeSupabaseUrl(rawUrl);
-  const anonKey = customKey || envKey || DEFAULT_SUPABASE_ANON_KEY;
-  const isCustom = Boolean(customUrl || envUrl);
+  const anonKey = envKey || DEFAULT_SUPABASE_ANON_KEY;
 
   return {
     url,
-    anonKey,
-    isCustom,
-    hasCustomUrl: Boolean(customUrl),
-    hasEnvUrl: Boolean(envUrl)
+    anonKey
   };
 };
 
@@ -60,68 +50,6 @@ export const clearSupabaseAuth = () => {
   }
 };
 
-export const saveCustomSupabaseConfig = (url: string, key: string) => {
-  if (typeof window !== 'undefined' && window.localStorage) {
-    const cleanUrl = normalizeSupabaseUrl(url);
-    const cleanKey = key.trim();
-    if (cleanUrl) {
-      window.localStorage.setItem(SUPABASE_URL_STORAGE_KEY, cleanUrl);
-    } else {
-      window.localStorage.removeItem(SUPABASE_URL_STORAGE_KEY);
-    }
-    if (cleanKey) {
-      window.localStorage.setItem(SUPABASE_KEY_STORAGE_KEY, cleanKey);
-    } else {
-      window.localStorage.removeItem(SUPABASE_KEY_STORAGE_KEY);
-    }
-    clearSupabaseAuth();
-  }
-};
-
-export const resetSupabaseConfig = () => {
-  if (typeof window !== 'undefined' && window.localStorage) {
-    window.localStorage.removeItem(SUPABASE_URL_STORAGE_KEY);
-    window.localStorage.removeItem(SUPABASE_KEY_STORAGE_KEY);
-    clearSupabaseAuth();
-  }
-};
-
-export const testSupabaseConnection = async (targetUrl?: string, targetKey?: string): Promise<{ success: boolean; message: string }> => {
-  const config = getSupabaseConfig();
-  const rawUrl = targetUrl !== undefined ? targetUrl : config.url;
-  const url = normalizeSupabaseUrl(rawUrl);
-  const key = (targetKey !== undefined ? targetKey : config.anonKey).trim();
-
-  if (!url || !url.startsWith('http')) {
-    return { success: false, message: 'URL do Supabase inválida. Deve iniciar com https://' };
-  }
-
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 4000);
-
-  try {
-    const res = await fetch(`${url}/auth/v1/health`, {
-      method: 'GET',
-      headers: {
-        'apikey': key
-      },
-      signal: controller.signal
-    });
-    clearTimeout(timeoutId);
-
-    if (res.ok || res.status === 200 || res.status === 401 || res.status === 403) {
-      return { success: true, message: 'Conexão com o servidor Supabase realizada com sucesso!' };
-    }
-    return { success: false, message: `Servidor respondeu com status ${res.status}.` };
-  } catch (err: any) {
-    clearTimeout(timeoutId);
-    if (err?.name === 'AbortError') {
-      return { success: false, message: 'Tempo limite esgotado ao tentar alcançar o servidor Supabase.' };
-    }
-    return { success: false, message: 'Não foi possível alcançar o servidor Supabase. Verifique a URL ou o status da rede.' };
-  }
-};
-
 /**
  * Fetch seguro que intercepta erros de rede e tokens expirados
  * evitando o lançamento de exceções não tratadas no runtime.
@@ -139,8 +67,11 @@ const safeFetch = async (input: RequestInfo | URL, init?: RequestInit): Promise<
           errStr.includes('refresh token not found') ||
           errStr.includes('refresh_token_not_found')
         ) {
-          console.warn('Token de atualização expirado detectado no Supabase. Limpando sessão local.');
+          console.warn('Sessão expirada ou token de atualização inválido. Limpando sessão local.');
           clearSupabaseAuth();
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new Event('supabase-session-expired'));
+          }
         }
       } catch (_) {
         // Ignorado se não for JSON
@@ -153,7 +84,7 @@ const safeFetch = async (input: RequestInfo | URL, init?: RequestInit): Promise<
     console.warn('Conexão de rede com Supabase indisponível:', err?.message || err);
     return new Response(
       JSON.stringify({
-        message: 'Servidor Supabase indisponível no momento. Modo offline ou armazenamento local recomendado.',
+        message: 'Servidor Supabase indisponível no momento. Verifique sua conexão com a internet.',
         error: 'network_connection_failed',
         statusCode: 503
       }),
@@ -168,7 +99,45 @@ const safeFetch = async (input: RequestInfo | URL, init?: RequestInit): Promise<
   }
 };
 
+const sanitizeStoredSupabaseSession = (supabaseUrl: string) => {
+  if (typeof window === 'undefined' || !window.localStorage) return;
+  try {
+    const projectRefMatch = supabaseUrl.match(/^https?:\/\/([^.]+)\./i);
+    const activeProjectRef = projectRefMatch ? projectRefMatch[1] : '';
+
+    const keysToRemove: string[] = [];
+    for (let i = 0; i < window.localStorage.length; i++) {
+      const key = window.localStorage.key(i);
+      if (!key || !key.startsWith('sb-') || !key.endsWith('-auth-token')) continue;
+
+      // Remove tokens de outros projetos Supabase se houver troca de URL
+      if (activeProjectRef && !key.includes(`sb-${activeProjectRef}-`)) {
+        keysToRemove.push(key);
+        continue;
+      }
+
+      const raw = window.localStorage.getItem(key);
+      if (!raw) {
+        keysToRemove.push(key);
+        continue;
+      }
+
+      try {
+        const parsed = JSON.parse(raw);
+        if (!parsed || typeof parsed !== 'object' || !parsed.refresh_token || !parsed.access_token) {
+          keysToRemove.push(key);
+        }
+      } catch {
+        keysToRemove.push(key);
+      }
+    }
+
+    keysToRemove.forEach((k) => window.localStorage.removeItem(k));
+  } catch (_) {}
+};
+
 const initialConfig = getSupabaseConfig();
+sanitizeStoredSupabaseSession(initialConfig.url);
 
 export const supabase: SupabaseClient = createClient(
   initialConfig.url,
